@@ -3,6 +3,7 @@ package jp.ac.meijou.s231205036.android.schedulestrengthcalendar;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 
@@ -27,6 +28,8 @@ public class CalendarActivity extends AppCompatActivity {
 
         TableLayout tableLayout = findViewById(R.id.calender);
 
+        int idCounter = 0;
+
         for (int i = 0; i < 6; i++) {
             TableRow tableRow = new TableRow(this);
             TableLayout.LayoutParams rowParams = new TableLayout.LayoutParams(
@@ -36,18 +39,18 @@ public class CalendarActivity extends AppCompatActivity {
             );
             tableRow.setLayoutParams(rowParams);
             for (int j = 0; j < 7; j++) {
-                Button button = new Button(this);
-                button.setText("Button " + (i * 7 + j));
+                LinearLayout linearLayout = new LinearLayout(this);
                 TableRow.LayoutParams params = new TableRow.LayoutParams(
                         0,
                         TableRow.LayoutParams.MATCH_PARENT,
                         1f
                 );
-                button.setLayoutParams(params);
-                button.setTextAlignment(Button.TEXT_ALIGNMENT_CENTER);
-                button.setEllipsize(android.text.TextUtils.TruncateAt.END);
-                button.setBackgroundColor(Color.rgb(255, 0, 0));
-                tableRow.addView(button);
+                linearLayout.setLayoutParams(params);
+                linearLayout.setTextAlignment(Button.TEXT_ALIGNMENT_CENTER);
+                linearLayout.setBackgroundColor(Color.rgb(255, 0, 0));
+                linearLayout.setId(idCounter);
+                idCounter++;
+                tableRow.addView(linearLayout);
             }
             tableLayout.addView(tableRow);
         }

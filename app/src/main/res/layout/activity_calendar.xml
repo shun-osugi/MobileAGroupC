@@ -49,6 +49,36 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
+    <ImageButton
+        android:id="@+id/lastMonthButton"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="@drawable/ic_arrow_back"
+        app:layout_constraintTop_toTopOf="@id/footer"
+        app:layout_constraintBottom_toBottomOf="@id/footer"
+        app:layout_constraintStart_toStartOf="@id/footer"
+        app:layout_constraintEnd_toStartOf="@+id/addButton"/>
+
+    <ImageButton
+        android:id="@+id/addButton"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:background="@drawable/ic_add_circle"
+        app:layout_constraintTop_toTopOf="@id/footer"
+        app:layout_constraintBottom_toBottomOf="@id/footer"
+        app:layout_constraintStart_toEndOf="@id/lastMonthButton"
+        app:layout_constraintEnd_toStartOf="@+id/nextMonthButton"/>
+
+    <ImageButton
+        android:id="@+id/nextMonthButton"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="@drawable/ic_arrow_forward"
+        app:layout_constraintTop_toTopOf="@id/footer"
+        app:layout_constraintBottom_toBottomOf="@id/footer"
+        app:layout_constraintStart_toEndOf="@+id/addButton"
+        app:layout_constraintEnd_toEndOf="@id/footer"/>
+
 
     <!--カレンダー-->
     <TableLayout
@@ -60,5 +90,14 @@
         app:layout_constraintBottom_toTopOf="@+id/footer"
         app:layout_constraintTop_toBottomOf="@+id/header"
         android:stretchColumns="*">
+        <TableRow>
+            <TextView android:text="日" android:layout_weight="1" android:gravity="center"/>
+            <TextView android:text="月" android:layout_weight="1" android:gravity="center"/>
+            <TextView android:text="火" android:layout_weight="1" android:gravity="center"/>
+            <TextView android:text="水" android:layout_weight="1" android:gravity="center"/>
+            <TextView android:text="木" android:layout_weight="1" android:gravity="center"/>
+            <TextView android:text="金" android:layout_weight="1" android:gravity="center"/>
+            <TextView android:text="土" android:layout_weight="1" android:gravity="center"/>
+        </TableRow>
     </TableLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
