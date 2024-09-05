@@ -24,12 +24,17 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        coreLibraryDesugaringEnabled true
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    viewBinding{
+        enabled = true
     }
 }
 
 dependencies {
+    coreLibraryDesugaring libs.desugar.jdk.libs
 
     implementation platform('com.google.firebase:firebase-bom:33.2.0')
     implementation libs.appcompat
@@ -41,7 +46,7 @@ dependencies {
     androidTestImplementation libs.espresso.core
     implementation("com.google.firebase:firebase-firestore")
 
-    coreLibraryDesugaring libs.desugar.jdk.libs
+
     implementation libs.datastore.preferences
     implementation libs.datastore.preferences.rxjava3
 }
