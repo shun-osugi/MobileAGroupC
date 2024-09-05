@@ -18,7 +18,7 @@
     - 削除 remove:
     - 仕様の変更 change:
     - 整理 clean:
-  - pull request 作成の際にも template を用いますが，github 上から選択できないので，`./.github/PULL_REQUEST_TEMPLATE/feature.md` の中身をコピーし作成してください．
+  - pull request 作成の際にも template を用いますが，github 上から選択できないので，`./PULL_REQUEST_TEMPLATE/feature.md` の中身をコピーし作成してください．
 - 基本的にはアジャイル開発チックに進めていきましょう．
   - 機能考えつくして一気に開発していくという流れではなく，色々作って試行錯誤的に完成させていくという流れです．
   - 資料よりもコードを書いたり実装しましょう．
