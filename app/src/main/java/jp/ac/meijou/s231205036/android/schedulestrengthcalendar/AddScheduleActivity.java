@@ -21,4 +21,5 @@ public class AddScheduleActivity extends AppCompatActivity {
             return insets;
         });
     }
+
 }
