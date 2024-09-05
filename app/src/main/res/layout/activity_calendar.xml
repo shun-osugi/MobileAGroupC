@@ -24,7 +24,6 @@
         android:id="@+id/footer"
         android:layout_width="match_parent"
         android:layout_height="60sp"
-        android:layout_marginBottom="1dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/calender"
         tools:layout_editor_absoluteX="1dp">
@@ -35,7 +34,6 @@
         android:id="@+id/calender"
         android:layout_width="392dp"
         android:layout_height="541dp"
-        android:layout_marginTop="2dp"
         app:layout_constraintBottom_toTopOf="@+id/footer"
         app:layout_constraintTop_toBottomOf="@+id/header"
         tools:layout_editor_absoluteX="1dp">
