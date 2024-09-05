@@ -2,11 +2,17 @@ package jp.ac.meijou.s231205036.android.schedulestrengthcalendar;
 
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.widget.Button;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
+import android.widget.TextView;
+import java.util.Calendar;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -57,8 +63,8 @@ public class CalendarActivity extends AppCompatActivity {
                 linearLayout.setTextAlignment(Button.TEXT_ALIGNMENT_CENTER);
                 linearLayout.setBackgroundColor(Color.rgb(255, 0, 0));
                 linearLayout.setId(idCounter);
-                idCounter++;
                 tableRow.addView(linearLayout);
+                idCounter++;
             }
             tableLayout.addView(tableRow);
         }
@@ -68,4 +74,82 @@ public class CalendarActivity extends AppCompatActivity {
             startActivity(intent);
         });
     }
+
+    protected void onStart() {
+        super.onStart();
+        Calendar calendar = Calendar.getInstance();
+        int year  = 2024;
+        int month = 10 - 1;
+        int date  = 1;
+        int dayNum = 0;
+        int firstDay = 0;
+        calendar.set(year, month, date);
+        switch (calendar.get(Calendar.DAY_OF_WEEK)) {
+            case Calendar.SUNDAY:
+                firstDay = 0;
+                break;
+            case Calendar.MONDAY:
+                firstDay = 1;
+                break;
+            case Calendar.TUESDAY:
+                firstDay = 2;
+                break;
+            case Calendar.WEDNESDAY:
+                firstDay = 3;
+                break;
+            case Calendar.THURSDAY:
+                firstDay = 4;
+                break;
+            case Calendar.FRIDAY:
+                firstDay = 5;
+                break;
+            case Calendar.SATURDAY:
+                firstDay = 6;
+                break;
+        }
+
+        for (int i = 0; i < 42; i++) {
+            LinearLayout linearLayout = findViewById(i);
+
+            FrameLayout frameLayout = new FrameLayout(this);
+
+            ImageView imageView = new ImageView(this);
+            FrameLayout.LayoutParams imageParams = new FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.WRAP_CONTENT,
+                    FrameLayout.LayoutParams.WRAP_CONTENT
+            );
+            imageParams.gravity = Gravity.CENTER;
+            imageView.setLayoutParams(imageParams);
+
+            Drawable drawable = getResources().getDrawable(R.drawable.ic_circle);
+            imageView.setImageDrawable(drawable);
+
+            TextView textView = new TextView(this);
+            FrameLayout.LayoutParams textParams = new FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.WRAP_CONTENT,
+                    FrameLayout.LayoutParams.WRAP_CONTENT
+            );
+            textParams.gravity = Gravity.CENTER;
+            textView.setLayoutParams(textParams);
+            int day = dayNum + 1 - firstDay;
+            if (day <= 0) {
+                day += calendar.getActualMaximum(Calendar.DAY_OF_MONTH - 1);
+            } else if (day > calendar.getActualMaximum(Calendar.DAY_OF_MONTH)) {
+                day -= calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+            }
+            textView.setText(day + "");
+            dayNum++;
+
+            frameLayout.addView(imageView);
+            frameLayout.addView(textView);
+
+            FrameLayout.LayoutParams params2 = new FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.MATCH_PARENT,
+                    FrameLayout.LayoutParams.WRAP_CONTENT
+            );
+            frameLayout.setLayoutParams(params2);
+            linearLayout.addView(frameLayout);
+        }
+    }
+
 }
