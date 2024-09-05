@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1021756530453",
+    "project_id": "sscalendar-ad59d",
+    "storage_bucket": "sscalendar-ad59d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1021756530453:android:223f44eae01c24c2f5131c",
+        "android_client_info": {
+          "package_name": "jp.ac.meijou.s231205036.android.schedulestrengthcalendar"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDhiJdkWOrziuz8BbWWlNK-LzXBsErsEGI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
