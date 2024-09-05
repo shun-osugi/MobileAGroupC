@@ -21,6 +21,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        //hhhhh
         super.onCreate(savedInstanceState);
         db = FirebaseFirestore.getInstance();
         binding = ActivityMainBinding.inflate(getLayoutInflater());
