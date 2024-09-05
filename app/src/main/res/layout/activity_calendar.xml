@@ -8,32 +8,28 @@
     tools:context=".CalendarActivity">
 
 
-    <FrameLayout
+    <ImageView
         android:id="@+id/header"
         android:layout_width="match_parent"
-        android:layout_height="60sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
+        android:layout_height="64sp"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/calender">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
-    </FrameLayout>
 
-    <FrameLayout
+    <ImageView
         android:id="@+id/footer"
         android:layout_width="match_parent"
-        android:layout_height="60sp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_height="64sp"
         app:layout_constraintTop_toBottomOf="@+id/calender"
-        tools:layout_editor_absoluteX="1dp">
-
-    </FrameLayout>
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
     <TableLayout
         android:id="@+id/calender"
-        android:layout_width="392dp"
-        android:layout_height="541dp"
+        android:layout_width="match_parent"
+        android:layout_height="600sp"
         app:layout_constraintBottom_toTopOf="@+id/footer"
         app:layout_constraintTop_toBottomOf="@+id/header"
         tools:layout_editor_absoluteX="1dp">
