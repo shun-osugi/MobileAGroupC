@@ -7,4 +7,125 @@
     android:layout_height="match_parent"
     tools:context=".AddScheduleActivity">
 
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="44dp"
+        android:layout_marginTop="48dp"
+        android:text="タイトル : "
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <EditText
+        android:id="@+id/input_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="ここに予定を入力"
+        app:layout_constraintTop_toTopOf="@id/title"
+        app:layout_constraintStart_toEndOf="@+id/title"
+         />
+
+    <TextView
+        android:id="@+id/first_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="44dp"
+        android:layout_marginTop="44dp"
+        android:text="開始時刻 : "
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/title" />
+
+    <EditText
+        android:id="@+id/Time_first"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="time"
+        android:text="開始時刻の入力"
+        app:layout_constraintTop_toTopOf="@+id/first_time"
+        app:layout_constraintStart_toEndOf="@+id/first_time"
+         />
+
+    <TextView
+        android:id="@+id/final_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="44dp"
+        android:layout_marginTop="44dp"
+        android:text="終了時刻 : "
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/first_time" />
+
+    <EditText
+        android:id="@+id/Time_final"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="time"
+        android:text="終了時刻の入力"
+        app:layout_constraintTop_toTopOf="@+id/final_time"
+        app:layout_constraintStart_toEndOf="@+id/final_time" />
+
+
+    <TextView
+        android:id="@+id/strong"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="44dp"
+        android:layout_marginTop="44dp"
+        android:inputType="time"
+        android:text="強度(1-7) : "
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/final_time" />
+
+    <EditText
+        android:id="@+id/number"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="強度の入力"
+        app:layout_constraintStart_toEndOf="@+id/strong"
+        app:layout_constraintTop_toTopOf="@+id/strong"
+        />
+
+    <TextView
+        android:id="@+id/text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="44dp"
+        android:layout_marginTop="44dp"
+        android:text="メモ : "
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/strong" />
+
+    <EditText
+        android:id="@+id/memo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="text"
+        android:layout_marginStart="44dp"
+        android:text="メモの内容"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/text"
+         />
+
+    <TextView
+        android:id="@+id/repeat"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="44dp"
+        android:layout_marginTop="44dp"
+        android:text="繰り返し(有/無) : "
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/memo" />
+
+
+    <EditText
+        android:id="@+id/answer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="有/無のどちらかを入力 "
+        app:layout_constraintStart_toEndOf="@id/repeat"
+        app:layout_constraintTop_toTopOf="@id/repeat" />
+
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>
