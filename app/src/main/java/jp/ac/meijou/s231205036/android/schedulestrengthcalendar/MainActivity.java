@@ -11,15 +11,19 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.HashMap;
 import java.util.Map;
 
+import jp.ac.meijou.s231205036.android.schedulestrengthcalendar.databinding.ActivityMainBinding;
+
 
 public class MainActivity extends AppCompatActivity {
     private FirebaseFirestore db;
+    private ActivityMainBinding binding;
 
     public void saveData() {
         // 保存するデータを作成
         Map<String, Object> user = new HashMap<>();
         user.put("first", "Ada");
         user.put("last", "Lovelace");
+        user.put("born", 1815);
 
         // "users" コレクションにドキュメントを追加
         db.collection("users")
