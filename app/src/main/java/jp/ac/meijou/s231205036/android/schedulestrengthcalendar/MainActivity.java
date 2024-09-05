@@ -20,7 +20,6 @@ public class MainActivity extends AppCompatActivity {
         Map<String, Object> user = new HashMap<>();
         user.put("first", "Ada");
         user.put("last", "Lovelace");
-        user.put("born", 1815);
 
         // "users" コレクションにドキュメントを追加
         db.collection("users")
