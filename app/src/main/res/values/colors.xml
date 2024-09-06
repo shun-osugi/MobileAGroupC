@@ -2,4 +2,12 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="busyColer7">#AF49FF</color>
+    <color name="busyColer6">#FF4949</color>
+    <color name="busyColer5">#FF9549</color>
+    <color name="busyColer4">#FFD749</color>
+    <color name="busyColer3">#BAFF49</color>
+    <color name="busyColer2">#49FF92</color>
+    <color name="busyColer1">#49FFE9</color>
+    <color name="busyColer0">#BCBCBC</color>
 </resources>
