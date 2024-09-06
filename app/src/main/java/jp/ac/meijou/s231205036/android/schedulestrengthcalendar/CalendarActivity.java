@@ -51,6 +51,8 @@ public class CalendarActivity extends AppCompatActivity {
             return insets;
         });
 
+        prefDataStore = PrefDataStore.getInstance(this);
+
         TableLayout tableLayout = findViewById(R.id.calender);
 
 
@@ -73,7 +75,7 @@ public class CalendarActivity extends AppCompatActivity {
                 );
                 linearLayout.setLayoutParams(params);
                 linearLayout.setTextAlignment(Button.TEXT_ALIGNMENT_CENTER);
-                linearLayout.setBackgroundColor(Color.rgb(255, 0, 0));
+                linearLayout.setBackgroundColor(Color.rgb(255, 255, 255));
                 linearLayout.setId(idCounter);
                 tableRow.addView(linearLayout);
                 idCounter++;
@@ -109,6 +111,7 @@ public class CalendarActivity extends AppCompatActivity {
             default -> firstDay;
         };
 
+        int yestardayBusy = 0;
         for (int i = 0; i < 42; i++) {
             LinearLayout linearLayout = findViewById(i);
             linearLayout.setOrientation(LinearLayout.VERTICAL);
@@ -160,7 +163,8 @@ public class CalendarActivity extends AppCompatActivity {
             calendarRef.get().addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {
                     if (task.getResult().exists()) {
-                        String data = task.getResult().getString("タイトル"); // フィールド名に合わせて変更
+                        String data = task.getResult().getString("タイトル");
+                        prefDataStore.setString("todayBusy", task.getResult().getString("強度"));
                         Button button = new Button(this);
                         button.setText(data);
                         button.setTextSize(9);
@@ -177,8 +181,33 @@ public class CalendarActivity extends AppCompatActivity {
                     }
                 } else {
                     System.err.println("Error getting document: " + task.getException());
+                    prefDataStore.setString("todayBusy", "0");
                 }
             });
+
+
+            yestardayBusy = getTodayBusy(yestardayBusy, linearLayout);
         }
+    }
+
+    private int getTodayBusy(final int yesterdayBusy, final LinearLayout linearLayout) {
+        return prefDataStore.getString("todayBusy")
+                .map(value -> {
+                    int todayBusy = Integer.valueOf(value) + yesterdayBusy % 2;
+                    prefDataStore.setString("todayBusy", todayBusy + "");
+
+                    switch (todayBusy) {
+                        case 7 -> linearLayout.setBackgroundColor(Color.rgb(157, 73, 255));
+                        case 6 -> linearLayout.setBackgroundColor(Color.rgb(255, 73, 73));
+                        case 5 -> linearLayout.setBackgroundColor(Color.rgb(255, 149, 73));
+                        case 4 -> linearLayout.setBackgroundColor(Color.rgb(255, 215, 73));
+                        case 3 -> linearLayout.setBackgroundColor(Color.rgb(186, 155, 73));
+                        case 2 -> linearLayout.setBackgroundColor(Color.rgb(73, 255, 146));
+                        case 1 -> linearLayout.setBackgroundColor(Color.rgb(73, 255, 233));
+                        case 0 -> linearLayout.setBackgroundColor(Color.rgb(188, 188, 188));
+                    }
+                    return todayBusy;
+                })
+                .orElse(0 + yesterdayBusy);
     }
 }
