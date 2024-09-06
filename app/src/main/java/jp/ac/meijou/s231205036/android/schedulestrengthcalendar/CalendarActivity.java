@@ -154,37 +154,31 @@ public class CalendarActivity extends AppCompatActivity {
 
             FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-            if (day > 0 && day < 31) {
-                String documentPath = name + "/" + year + "/" + month + "/" + day;
-                DocumentReference calendarRef = db.document(documentPath);
+            String documentPath = name + "/" + year + "/" + month + "/" + day;
+            DocumentReference calendarRef = db.document(documentPath);
 
-                calendarRef.get().addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        // ドキュメントデータを取得
-                        if (task.getResult().exists()) {
-                            String data = task.getResult().getString("タイトル"); // フィールド名に合わせて変更
-                            Button button = new Button(this);
-                            button.setText(data);
+            calendarRef.get().addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    if (task.getResult().exists()) {
+                        String data = task.getResult().getString("タイトル"); // フィールド名に合わせて変更
+                        Button button = new Button(this);
+                        button.setText(data);
+                        button.setTextSize(9);
+                        button.setEllipsize(TextUtils.TruncateAt.END);
+                        button.setMaxLines(1);
 
-                            button.setEllipsize(TextUtils.TruncateAt.END);
-                            button.setMaxLines(1);
+                        LinearLayout.LayoutParams buttonParams = new LinearLayout.LayoutParams(
+                                LinearLayout.LayoutParams.MATCH_PARENT,
+                                LinearLayout.LayoutParams.WRAP_CONTENT
+                        );
+                        button.setLayoutParams(buttonParams);
 
-                            LinearLayout.LayoutParams buttonParams = new LinearLayout.LayoutParams(
-                                    LinearLayout.LayoutParams.MATCH_PARENT,
-                                    LinearLayout.LayoutParams.WRAP_CONTENT
-                            );
-                            button.setLayoutParams(buttonParams);
-
-                            linearLayout.addView(button);
-                        }
-                    } else {
-                        // エラーが発生した場合
-                        System.err.println("Error getting document: " + task.getException());
+                        linearLayout.addView(button);
                     }
-                });
-
-            }
-
+                } else {
+                    System.err.println("Error getting document: " + task.getException());
+                }
+            });
         }
     }
 }
