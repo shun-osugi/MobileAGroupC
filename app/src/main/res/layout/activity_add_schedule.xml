@@ -12,7 +12,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="44dp"
-        android:layout_marginTop="48dp"
+        android:layout_marginTop="84dp"
         android:text="タイトル : "
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -23,28 +23,27 @@
         android:layout_height="wrap_content"
         android:hint="ここに予定を入力"
         android:inputType="text"
-        app:layout_constraintStart_toEndOf="@+id/title"
-        app:layout_constraintTop_toTopOf="@id/title" />
+        app:layout_constraintBottom_toBottomOf="@+id/title"
+        app:layout_constraintStart_toEndOf="@+id/title" />
 
     <TextView
         android:id="@+id/first_time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="44dp"
-        android:layout_marginTop="44dp"
+        android:layout_marginTop="36dp"
         android:text="開始時刻 : "
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/title" />
+        app:layout_constraintTop_toBottomOf="@+id/textView2" />
 
     <EditText
         android:id="@+id/TimeFirst"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:inputType="time"
         android:hint="開始時刻の入力"
-        app:layout_constraintTop_toTopOf="@+id/first_time"
-        app:layout_constraintStart_toEndOf="@+id/first_time"
-         />
+        android:inputType="time"
+        app:layout_constraintBottom_toBottomOf="@+id/first_time"
+        app:layout_constraintStart_toEndOf="@+id/first_time" />
 
     <TextView
         android:id="@+id/final_time"
@@ -60,9 +59,9 @@
         android:id="@+id/TimeFinal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:inputType="time"
         android:hint="終了時刻の入力"
-        app:layout_constraintTop_toTopOf="@+id/final_time"
+        android:inputType="time"
+        app:layout_constraintBottom_toBottomOf="@+id/final_time"
         app:layout_constraintStart_toEndOf="@+id/final_time" />
 
 
@@ -72,7 +71,6 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="44dp"
         android:layout_marginTop="44dp"
-        android:inputType="time"
         android:text="強度(1-5) : "
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/final_time" />
@@ -81,9 +79,8 @@
         android:id="@+id/spinnerNumber"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintStart_toEndOf="@+id/strong"
-        app:layout_constraintTop_toTopOf="@+id/strong"
-        />
+        app:layout_constraintBottom_toBottomOf="@+id/strong"
+        app:layout_constraintStart_toEndOf="@+id/strong" />
 
     <TextView
         android:id="@+id/text"
@@ -133,6 +130,24 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
+
+    <EditText
+        android:id="@+id/input_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:hint="日付を選択"
+        app:layout_constraintBottom_toBottomOf="@+id/textView2"
+        app:layout_constraintStart_toEndOf="@+id/textView2" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="44dp"
+        android:layout_marginTop="36dp"
+        android:text="日付　 　: "
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/title" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
