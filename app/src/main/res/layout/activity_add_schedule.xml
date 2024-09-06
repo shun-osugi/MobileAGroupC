@@ -21,10 +21,10 @@
         android:id="@+id/inputText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="ここに予定を入力"
-        app:layout_constraintTop_toTopOf="@id/title"
+        android:hint="ここに予定を入力"
+        android:inputType="text"
         app:layout_constraintStart_toEndOf="@+id/title"
-         />
+        app:layout_constraintTop_toTopOf="@id/title" />
 
     <TextView
         android:id="@+id/first_time"
@@ -41,7 +41,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:inputType="time"
-        android:text="開始時刻の入力"
+        android:hint="開始時刻の入力"
         app:layout_constraintTop_toTopOf="@+id/first_time"
         app:layout_constraintStart_toEndOf="@+id/first_time"
          />
@@ -61,7 +61,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:inputType="time"
-        android:text="終了時刻の入力"
+        android:hint="終了時刻の入力"
         app:layout_constraintTop_toTopOf="@+id/final_time"
         app:layout_constraintStart_toEndOf="@+id/final_time" />
 
@@ -99,12 +99,12 @@
         android:id="@+id/memo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:inputType="text"
         android:layout_marginStart="44dp"
-        android:text="メモの内容"
+        android:hint="メモの内容"
+        android:inputType="textMultiLine"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/text"
-         />
+        app:layout_constraintTop_toBottomOf="@id/text" />
+
 
     <TextView
         android:id="@+id/repeat"
@@ -133,5 +133,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
