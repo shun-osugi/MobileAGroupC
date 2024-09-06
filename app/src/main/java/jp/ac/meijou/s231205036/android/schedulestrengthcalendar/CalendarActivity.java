@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.Gravity;
 import android.widget.Button;
 import android.widget.FrameLayout;
@@ -13,6 +14,12 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 import java.util.Calendar;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -20,13 +27,17 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+
 import jp.ac.meijou.s231205036.android.schedulestrengthcalendar.databinding.ActivityCalendarBinding;
-import jp.ac.meijou.s231205036.android.schedulestrengthcalendar.databinding.ActivityMainBinding;
 
 
 public class CalendarActivity extends AppCompatActivity {
-
     private ActivityCalendarBinding binding;
+    private PrefDataStore prefDataStore;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +52,7 @@ public class CalendarActivity extends AppCompatActivity {
         });
 
         TableLayout tableLayout = findViewById(R.id.calender);
+
 
         int idCounter = 0;
 
@@ -76,7 +88,9 @@ public class CalendarActivity extends AppCompatActivity {
     }
 
     protected void onStart() {
+        String name = "aaa";
         super.onStart();
+        //Optional<String> name = prefDataStore.getString("name");
         Calendar calendar = Calendar.getInstance();
         int year  = 2024;
         int month = 10 - 1;
@@ -84,32 +98,20 @@ public class CalendarActivity extends AppCompatActivity {
         int dayNum = 0;
         int firstDay = 0;
         calendar.set(year, month, date);
-        switch (calendar.get(Calendar.DAY_OF_WEEK)) {
-            case Calendar.SUNDAY:
-                firstDay = 0;
-                break;
-            case Calendar.MONDAY:
-                firstDay = 1;
-                break;
-            case Calendar.TUESDAY:
-                firstDay = 2;
-                break;
-            case Calendar.WEDNESDAY:
-                firstDay = 3;
-                break;
-            case Calendar.THURSDAY:
-                firstDay = 4;
-                break;
-            case Calendar.FRIDAY:
-                firstDay = 5;
-                break;
-            case Calendar.SATURDAY:
-                firstDay = 6;
-                break;
-        }
+        firstDay = switch (calendar.get(Calendar.DAY_OF_WEEK)) {
+            case Calendar.SUNDAY -> 0;
+            case Calendar.MONDAY -> 1;
+            case Calendar.TUESDAY -> 2;
+            case Calendar.WEDNESDAY -> 3;
+            case Calendar.THURSDAY -> 4;
+            case Calendar.FRIDAY -> 5;
+            case Calendar.SATURDAY -> 6;
+            default -> firstDay;
+        };
 
         for (int i = 0; i < 42; i++) {
             LinearLayout linearLayout = findViewById(i);
+            linearLayout.setOrientation(LinearLayout.VERTICAL);
 
             FrameLayout frameLayout = new FrameLayout(this);
 
@@ -149,7 +151,40 @@ public class CalendarActivity extends AppCompatActivity {
             );
             frameLayout.setLayoutParams(params2);
             linearLayout.addView(frameLayout);
+
+            FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+            if (day > 0 && day < 31) {
+                String documentPath = name + "/" + year + "/" + month + "/" + day;
+                DocumentReference calendarRef = db.document(documentPath);
+
+                calendarRef.get().addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        // ドキュメントデータを取得
+                        if (task.getResult().exists()) {
+                            String data = task.getResult().getString("タイトル"); // フィールド名に合わせて変更
+                            Button button = new Button(this);
+                            button.setText(data);
+
+                            button.setEllipsize(TextUtils.TruncateAt.END);
+                            button.setMaxLines(1);
+
+                            LinearLayout.LayoutParams buttonParams = new LinearLayout.LayoutParams(
+                                    LinearLayout.LayoutParams.MATCH_PARENT,
+                                    LinearLayout.LayoutParams.WRAP_CONTENT
+                            );
+                            button.setLayoutParams(buttonParams);
+
+                            linearLayout.addView(button);
+                        }
+                    } else {
+                        // エラーが発生した場合
+                        System.err.println("Error getting document: " + task.getException());
+                    }
+                });
+
+            }
+
         }
     }
-
 }
