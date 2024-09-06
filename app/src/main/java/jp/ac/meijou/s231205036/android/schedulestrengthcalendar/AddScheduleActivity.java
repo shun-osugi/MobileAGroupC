@@ -45,7 +45,6 @@ public class AddScheduleActivity extends AppCompatActivity {
             showConfirmationDialog(Message);
         });
     }
-
     private void showConfirmationDialog(String message) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("確認")
