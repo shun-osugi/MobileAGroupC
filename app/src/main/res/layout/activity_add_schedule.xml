@@ -18,7 +18,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
-        android:id="@+id/input_text"
+        android:id="@+id/inputText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="ここに予定を入力"
@@ -37,7 +37,7 @@
         app:layout_constraintTop_toBottomOf="@+id/title" />
 
     <EditText
-        android:id="@+id/Time_first"
+        android:id="@+id/TimeFirst"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:inputType="time"
@@ -57,7 +57,7 @@
         app:layout_constraintTop_toBottomOf="@+id/first_time" />
 
     <EditText
-        android:id="@+id/Time_final"
+        android:id="@+id/TimeFinal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:inputType="time"
@@ -73,15 +73,14 @@
         android:layout_marginStart="44dp"
         android:layout_marginTop="44dp"
         android:inputType="time"
-        android:text="強度(1-7) : "
+        android:text="強度(1-5) : "
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/final_time" />
 
-    <EditText
-        android:id="@+id/number"
+    <Spinner
+        android:id="@+id/spinnerNumber"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="強度の入力"
         app:layout_constraintStart_toEndOf="@+id/strong"
         app:layout_constraintTop_toTopOf="@+id/strong"
         />
@@ -118,11 +117,10 @@
         app:layout_constraintTop_toBottomOf="@id/memo" />
 
 
-    <EditText
+    <Spinner
         android:id="@+id/answer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="有/無のどちらかを入力 "
         app:layout_constraintStart_toEndOf="@id/repeat"
         app:layout_constraintTop_toTopOf="@id/repeat" />
 
@@ -135,6 +133,5 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>
