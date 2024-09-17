@@ -21,10 +21,30 @@
         android:id="@+id/inputText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="-12dp"
         android:hint="ここに予定を入力"
         android:inputType="text"
         app:layout_constraintBottom_toBottomOf="@+id/title"
         app:layout_constraintStart_toEndOf="@+id/title" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="44dp"
+        android:layout_marginTop="36dp"
+        android:text="日付　 　: "
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/title" />
+
+    <EditText
+        android:id="@+id/input_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="-12dp"
+        android:hint="日付を選択"
+        app:layout_constraintBottom_toBottomOf="@+id/textView2"
+        app:layout_constraintStart_toEndOf="@+id/textView2" />
 
     <TextView
         android:id="@+id/first_time"
@@ -40,6 +60,7 @@
         android:id="@+id/TimeFirst"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="-12dp"
         android:hint="開始時刻の入力"
         android:inputType="time"
         app:layout_constraintBottom_toBottomOf="@+id/first_time"
@@ -59,6 +80,7 @@
         android:id="@+id/TimeFinal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="-12dp"
         android:hint="終了時刻の入力"
         android:inputType="time"
         app:layout_constraintBottom_toBottomOf="@+id/final_time"
@@ -77,7 +99,7 @@
 
     <Spinner
         android:id="@+id/spinnerNumber"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="@+id/strong"
         app:layout_constraintStart_toEndOf="@+id/strong" />
@@ -109,14 +131,14 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="44dp"
         android:layout_marginTop="44dp"
-        android:text="繰り返し(有/無) : "
+        android:text="繰り返し : "
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/memo" />
 
 
     <Spinner
         android:id="@+id/answer"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         app:layout_constraintStart_toEndOf="@id/repeat"
         app:layout_constraintTop_toTopOf="@id/repeat" />
@@ -125,29 +147,21 @@
         android:id="@+id/save"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="150dp"
+        android:layout_marginBottom="120dp"
         android:text="保存"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/back"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <Button
+        android:id="@+id/back"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="120dp"
+        android:text="戻る"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/save"
         app:layout_constraintStart_toStartOf="parent" />
-
-    <EditText
-        android:id="@+id/input_date"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:hint="日付を選択"
-        app:layout_constraintBottom_toBottomOf="@+id/textView2"
-        app:layout_constraintStart_toEndOf="@+id/textView2" />
-
-    <TextView
-        android:id="@+id/textView2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="44dp"
-        android:layout_marginTop="36dp"
-        android:text="日付　 　: "
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/title" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -39,7 +39,7 @@ public class AddScheduleActivity extends AppCompatActivity {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         binding.spinnerNumber.setAdapter(adapter);
 
-        String[] repeatOptions = {"毎週", "隔週", "毎月", "なし"};
+        String[] repeatOptions = {"なし", "毎週", "隔週", "毎月"};
         var repeatAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, repeatOptions);
         repeatAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         binding.answer.setAdapter(repeatAdapter);
@@ -48,20 +48,24 @@ public class AddScheduleActivity extends AppCompatActivity {
         binding.TimeFirst.setOnClickListener(view -> showTimePickerDialog(binding.TimeFirst));
         binding.TimeFinal.setOnClickListener(view -> showTimePickerDialog(binding.TimeFinal));
 
+        binding.back.setOnClickListener(view -> {
+            finish(); // 現在のアクティビティを終了して前の画面に戻る
+        });
+
         binding.TimeFirst.setOnTouchListener((v, event) -> {
             if (event.getAction() == MotionEvent.ACTION_UP) {
                 showTimePickerDialog(binding.TimeFirst);
-                return true; // Return true to indicate the touch event is handled
+                return true;
             }
-            return false; // Return false to allow other touch events (like showing the keyboard) if needed
+            return false;
         });
 
         binding.TimeFinal.setOnTouchListener((v, event) -> {
             if (event.getAction() == MotionEvent.ACTION_UP) {
                 showTimePickerDialog(binding.TimeFinal);
-                return true; // Return true to indicate the touch event is handled
+                return true;
             }
-            return false; // Return false to allow other touch events (like showing the keyboard) if needed
+            return false;
         });
 
 
