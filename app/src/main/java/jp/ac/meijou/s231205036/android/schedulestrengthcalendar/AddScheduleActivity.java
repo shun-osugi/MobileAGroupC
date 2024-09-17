@@ -1,5 +1,6 @@
 package jp.ac.meijou.s231205036.android.schedulestrengthcalendar;
 
+import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.os.Bundle;
@@ -24,6 +25,7 @@ public class AddScheduleActivity extends AppCompatActivity {
 
     private int selectedYear, selectedMonth, selectedDay;
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -67,6 +69,15 @@ public class AddScheduleActivity extends AppCompatActivity {
             }
             return false;
         });
+
+        binding.inputDate.setOnTouchListener((v, event) -> {
+            if (event.getAction() == MotionEvent.ACTION_UP) {
+                showDatePickerDialog();
+                return true;
+            }
+            return false;
+        });
+
 
 
 
@@ -154,6 +165,7 @@ public class AddScheduleActivity extends AppCompatActivity {
                     System.err.println("Error saving data: " + e.getMessage());
                 });
     }
+
     private void showTimePickerDialog(final EditText editText) {
         Calendar calendar = Calendar.getInstance();
         int hour = calendar.get(Calendar.HOUR_OF_DAY);
