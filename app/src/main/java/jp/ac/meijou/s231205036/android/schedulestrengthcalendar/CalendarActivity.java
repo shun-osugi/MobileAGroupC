@@ -14,9 +14,6 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 import java.util.Calendar;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.ExecutionException;
 
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -26,11 +23,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import jp.ac.meijou.s231205036.android.schedulestrengthcalendar.databinding.ActivityCalendarBinding;
 
@@ -53,11 +45,22 @@ public class CalendarActivity extends AppCompatActivity {
 
         prefDataStore = PrefDataStore.getInstance(this);
 
+
+        binding.addButton.setOnClickListener(view -> {
+            var intent = new Intent(this, AddScheduleActivity.class);
+            startActivity(intent);
+        });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
         TableLayout tableLayout = findViewById(R.id.calender);
 
+        // 重複してカレンダーが生成されないようにビューをクリア
+        tableLayout.removeAllViews();
 
         int idCounter = 0;
-
         for (int i = 0; i < 6; i++) {
             TableRow tableRow = new TableRow(this);
             TableLayout.LayoutParams rowParams = new TableLayout.LayoutParams(
@@ -83,23 +86,22 @@ public class CalendarActivity extends AppCompatActivity {
             tableLayout.addView(tableRow);
         }
 
-        binding.addButton.setOnClickListener(view -> {
-            var intent = new Intent(this, AddScheduleActivity.class);
-            startActivity(intent);
-        });
+        // データの再描画
+        refreshCalendarData();
     }
 
-    protected void onStart() {
+
+    private void refreshCalendarData() {
         String name = "aaa";
-        super.onStart();
-        //Optional<String> name = prefDataStore.getString("name");
         Calendar calendar = Calendar.getInstance();
-        int year  = 2024;
+        int year = 2024;
         int month = 10 - 1;
-        int date  = 1;
+        int date = 1;
         int dayNum = 0;
         int firstDay = 0;
         calendar.set(year, month, date);
+
+        // カレンダーの最初の曜日を決定
         firstDay = switch (calendar.get(Calendar.DAY_OF_WEEK)) {
             case Calendar.SUNDAY -> 0;
             case Calendar.MONDAY -> 1;
@@ -111,7 +113,7 @@ public class CalendarActivity extends AppCompatActivity {
             default -> firstDay;
         };
 
-        int yestardayBusy = 0;
+        int yesterdayBusy = 0;
         for (int i = 0; i < 42; i++) {
             LinearLayout linearLayout = findViewById(i);
             linearLayout.setOrientation(LinearLayout.VERTICAL);
@@ -136,6 +138,8 @@ public class CalendarActivity extends AppCompatActivity {
             );
             textParams.gravity = Gravity.CENTER;
             textView.setLayoutParams(textParams);
+
+            // 日付を計算
             int day = dayNum + 1 - firstDay;
             if (day <= 0) {
                 day += calendar.getActualMaximum(Calendar.DAY_OF_MONTH - 1);
@@ -165,6 +169,7 @@ public class CalendarActivity extends AppCompatActivity {
                     if (task.getResult().exists()) {
                         String data = task.getResult().getString("タイトル");
                         prefDataStore.setString("todayBusy", task.getResult().getString("強度"));
+
                         Button button = new Button(this);
                         button.setText(data);
                         button.setTextSize(9);
@@ -185,10 +190,10 @@ public class CalendarActivity extends AppCompatActivity {
                 }
             });
 
-
-            yestardayBusy = getTodayBusy(yestardayBusy, linearLayout);
+            yesterdayBusy = getTodayBusy(yesterdayBusy, linearLayout);
         }
     }
+
 
     private int getTodayBusy(final int yesterdayBusy, final LinearLayout linearLayout) {
         return prefDataStore.getString("todayBusy")
