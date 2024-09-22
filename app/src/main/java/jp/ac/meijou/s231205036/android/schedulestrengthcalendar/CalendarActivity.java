@@ -8,6 +8,7 @@ import android.text.TextUtils;
 import android.view.Gravity;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
@@ -26,11 +27,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import jp.ac.meijou.s231205036.android.schedulestrengthcalendar.databinding.ActivityCalendarBinding;
 
@@ -87,6 +83,14 @@ public class CalendarActivity extends AppCompatActivity {
             var intent = new Intent(this, AddScheduleActivity.class);
             startActivity(intent);
         });
+
+        ImageButton settingButton = findViewById(R.id.settingButton);
+        settingButton.setOnClickListener(view -> {
+            // Intent を作成して Setting.java へ遷移
+            Intent intent = new Intent(CalendarActivity.this, SettingActivity.class);
+            startActivity(intent);
+        });
+
     }
 
     protected void onStart() {
