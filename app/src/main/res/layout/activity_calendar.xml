@@ -79,15 +79,12 @@
         app:layout_constraintStart_toEndOf="@+id/addButton"
         app:layout_constraintEnd_toEndOf="@id/footer"/>
 
-
-    <!--カレンダー-->
+    <!--曜日-->
     <TableLayout
-        android:id="@+id/calender"
+        android:id="@+id/days_of_week"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="64dp"
+        android:layout_height="24dp"
         android:layout_marginBottom="64dp"
-        app:layout_constraintBottom_toTopOf="@+id/footer"
         app:layout_constraintTop_toBottomOf="@+id/header"
         android:stretchColumns="*">
         <TableRow>
@@ -99,5 +96,17 @@
             <TextView android:text="金" android:layout_weight="1" android:gravity="center"/>
             <TextView android:text="土" android:layout_weight="1" android:gravity="center"/>
         </TableRow>
+    </TableLayout>
+
+    <!--カレンダー-->
+    <TableLayout
+        android:id="@+id/calender"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="88dp"
+        android:layout_marginBottom="64dp"
+        android:stretchColumns="*"
+        app:layout_constraintBottom_toTopOf="@+id/footer"
+        app:layout_constraintTop_toBottomOf="@+id/header">
     </TableLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
