@@ -8,6 +8,7 @@ import android.text.TextUtils;
 import android.view.Gravity;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
@@ -50,6 +51,12 @@ public class CalendarActivity extends AppCompatActivity {
             var intent = new Intent(this, AddScheduleActivity.class);
             startActivity(intent);
         });
+
+        binding.settingButton.setOnClickListener(view -> {
+            // Intent を作成して Setting.java へ遷移
+            Intent intent = new Intent(CalendarActivity.this, SettingActivity.class);
+            startActivity(intent);
+        });
     }
 
     @Override
@@ -85,7 +92,6 @@ public class CalendarActivity extends AppCompatActivity {
             }
             tableLayout.addView(tableRow);
         }
-
         // データの再描画
         refreshCalendarData();
     }
