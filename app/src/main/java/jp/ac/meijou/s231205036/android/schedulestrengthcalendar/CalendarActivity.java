@@ -8,7 +8,6 @@ import android.text.TextUtils;
 import android.view.Gravity;
 import android.widget.Button;
 import android.widget.FrameLayout;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
@@ -38,6 +37,36 @@ public class CalendarActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         binding = ActivityCalendarBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        // 現在の年と月を取得して headerText に設定
+        Calendar calendar = Calendar.getInstance();
+        updateHeaderText(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH));
+
+        // 前月・次月ボタンのクリックリスナーを設定
+        binding.lastMonthButton.setOnClickListener(view -> {
+            calendar.add(Calendar.MONTH, -1);
+            updateHeaderText(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH));
+            refreshCalendarData(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH));
+        });
+
+        binding.nextMonthButton.setOnClickListener(view -> {
+            calendar.add(Calendar.MONTH, 1);
+            updateHeaderText(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH));
+            refreshCalendarData(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH));
+        });
+
+        // 他の初期設定
+        prefDataStore = PrefDataStore.getInstance(this);
+        binding.addButton.setOnClickListener(view -> {
+            var intent = new Intent(this, AddScheduleActivity.class);
+            startActivity(intent);
+        });
+
+        binding.settingButton.setOnClickListener(view -> {
+            Intent intent = new Intent(CalendarActivity.this, SettingActivity.class);
+            startActivity(intent);
+        });
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
@@ -46,11 +75,12 @@ public class CalendarActivity extends AppCompatActivity {
 
         prefDataStore = PrefDataStore.getInstance(this);
 
-
         binding.addButton.setOnClickListener(view -> {
             var intent = new Intent(this, AddScheduleActivity.class);
             startActivity(intent);
         });
+
+
 
         binding.settingButton.setOnClickListener(view -> {
             // Intent を作成して Setting.java へ遷移
@@ -59,9 +89,16 @@ public class CalendarActivity extends AppCompatActivity {
         });
     }
 
+    // ヘッダーテキストを更新するメソッド
+    private void updateHeaderText(int year, int month) {
+        String headerText = year + "年 " + (month+1) + "月";
+        binding.headerText.setText(headerText);
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
+        Calendar calendar = Calendar.getInstance();  // 現在のカレンダーを取得
         TableLayout tableLayout = findViewById(R.id.calender);
 
         // 重複してカレンダーが生成されないようにビューをクリア
@@ -93,15 +130,18 @@ public class CalendarActivity extends AppCompatActivity {
             tableLayout.addView(tableRow);
         }
         // データの再描画
-        refreshCalendarData();
+        refreshCalendarData(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH));
     }
 
-
-    private void refreshCalendarData() {
-        String name = "aaa";
+    private void refreshCalendarData(int year, int month) {
+        // カレンダーの初期化
         Calendar calendar = Calendar.getInstance();
-        int year = 2024;
-        int month = 10 - 1;
+        calendar.set(year, month, 1);
+
+        String name = "aaa";
+        //Calendar calendar = Calendar.getInstance();
+        //int year = 2024;
+        //int month = 10 - 1;
         int date = 1;
         int dayNum = 0;
         int firstDay = 0;
@@ -122,6 +162,7 @@ public class CalendarActivity extends AppCompatActivity {
         int yesterdayBusy = 0;
         for (int i = 0; i < 42; i++) {
             LinearLayout linearLayout = findViewById(i);
+            linearLayout.removeAllViews();  // 全てのビューをクリア
             linearLayout.setOrientation(LinearLayout.VERTICAL);
 
             FrameLayout frameLayout = new FrameLayout(this);
@@ -166,8 +207,7 @@ public class CalendarActivity extends AppCompatActivity {
             linearLayout.addView(frameLayout);
 
             FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-            String documentPath = name + "/" + year + "/" + month + "/" + day;
+            String documentPath = name + "/" + year + "/" + (month+1) + "/" + day;
             DocumentReference calendarRef = db.document(documentPath);
 
             calendarRef.get().addOnCompleteListener(task -> {
