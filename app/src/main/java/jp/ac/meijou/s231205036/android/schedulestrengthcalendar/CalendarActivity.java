@@ -190,9 +190,12 @@ public class CalendarActivity extends AppCompatActivity {
             int day = dayNum + 1 - firstDay;
             if (day <= 0) {
                 day += calendar.getActualMaximum(Calendar.DAY_OF_MONTH - 1);
+                textView.setTextColor(Color.GRAY);  // 前月の日付はグレー
             } else if (day > calendar.getActualMaximum(Calendar.DAY_OF_MONTH)) {
                 day -= calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+                textView.setTextColor(Color.GRAY);  // 前月の日付はグレー
             }
+
             textView.setText(day + "");
             dayNum++;
 
