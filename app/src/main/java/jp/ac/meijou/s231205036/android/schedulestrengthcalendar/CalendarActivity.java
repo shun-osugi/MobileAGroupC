@@ -29,7 +29,6 @@ import jp.ac.meijou.s231205036.android.schedulestrengthcalendar.databinding.Acti
 
 public class CalendarActivity extends AppCompatActivity {
     private ActivityCalendarBinding binding;
-    private PrefDataStore prefDataStore;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,8 +54,7 @@ public class CalendarActivity extends AppCompatActivity {
             refreshCalendarData(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH));
         });
 
-        // 他の初期設定
-        prefDataStore = PrefDataStore.getInstance(this);
+        // 他の初期設定;
         binding.addButton.setOnClickListener(view -> {
             var intent = new Intent(this, AddScheduleActivity.class);
             startActivity(intent);
@@ -72,8 +70,6 @@ public class CalendarActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-
-        prefDataStore = PrefDataStore.getInstance(this);
 
         binding.addButton.setOnClickListener(view -> {
             var intent = new Intent(this, AddScheduleActivity.class);
@@ -217,7 +213,7 @@ public class CalendarActivity extends AppCompatActivity {
                 if (task.isSuccessful()) {
                     if (task.getResult().exists()) {
                         String data = task.getResult().getString("タイトル");
-                        prefDataStore.setString("todayBusy", task.getResult().getString("強度"));
+                        viewBusy(yesterdayBusy, Integer.valueOf(task.getResult().getString("強度")), linearLayout);
 
                         Button button = new Button(this);
                         button.setText(data);
@@ -235,33 +231,25 @@ public class CalendarActivity extends AppCompatActivity {
                     }
                 } else {
                     System.err.println("Error getting document: " + task.getException());
-                    prefDataStore.setString("todayBusy", "0");
                 }
             });
-
-            yesterdayBusy = getTodayBusy(yesterdayBusy, linearLayout);
         }
     }
 
+    //忙しさの表示
+    private int viewBusy(final int yesterdayBusy,final int todayBusy, final LinearLayout ll) {
+        int busy = todayBusy;
 
-    private int getTodayBusy(final int yesterdayBusy, final LinearLayout linearLayout) {
-        return prefDataStore.getString("todayBusy")
-                .map(value -> {
-                    int todayBusy = Integer.valueOf(value) + yesterdayBusy % 2;
-                    prefDataStore.setString("todayBusy", todayBusy + "");
-
-                    switch (todayBusy) {
-                        case 7 -> linearLayout.setBackgroundColor(Color.rgb(157, 73, 255));
-                        case 6 -> linearLayout.setBackgroundColor(Color.rgb(255, 73, 73));
-                        case 5 -> linearLayout.setBackgroundColor(Color.rgb(255, 149, 73));
-                        case 4 -> linearLayout.setBackgroundColor(Color.rgb(255, 215, 73));
-                        case 3 -> linearLayout.setBackgroundColor(Color.rgb(186, 155, 73));
-                        case 2 -> linearLayout.setBackgroundColor(Color.rgb(73, 255, 146));
-                        case 1 -> linearLayout.setBackgroundColor(Color.rgb(73, 255, 233));
-                        case 0 -> linearLayout.setBackgroundColor(Color.rgb(188, 188, 188));
-                    }
-                    return todayBusy;
-                })
-                .orElse(0 + yesterdayBusy);
+        switch (busy) {
+            case 7 -> ll.setBackgroundColor(Color.rgb(157, 73, 255));
+            case 6 -> ll.setBackgroundColor(Color.rgb(255, 73, 73));
+            case 5 -> ll.setBackgroundColor(Color.rgb(255, 149, 73));
+            case 4 -> ll.setBackgroundColor(Color.rgb(255, 215, 73));
+            case 3 -> ll.setBackgroundColor(Color.rgb(186, 155, 73));
+            case 2 -> ll.setBackgroundColor(Color.rgb(73, 255, 146));
+            case 1 -> ll.setBackgroundColor(Color.rgb(73, 255, 233));
+            case 0 -> ll.setBackgroundColor(Color.rgb(188, 188, 188));
+        }
+        return busy;
     }
 }
