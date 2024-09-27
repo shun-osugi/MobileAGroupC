@@ -161,6 +161,8 @@ public class CalendarActivity extends AppCompatActivity {
             linearLayout.removeAllViews();  // 全てのビューをクリア
             linearLayout.setOrientation(LinearLayout.VERTICAL);
 
+            linearLayout.setBackgroundColor(Color.WHITE);
+
             FrameLayout frameLayout = new FrameLayout(this);
 
             ImageView imageView = new ImageView(this);
