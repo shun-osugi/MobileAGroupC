@@ -6,6 +6,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.Gravity;
+import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -130,18 +131,14 @@ public class CalendarActivity extends AppCompatActivity {
     }
 
     private void refreshCalendarData(int year, int month) {
+        binding.progressBar.setVisibility(View.VISIBLE);  // ローディング表示開始
+        binding.lastMonthButton.setEnabled(false);        // ボタン無効化
+        binding.nextMonthButton.setEnabled(false);
         // カレンダーの初期化
         Calendar calendar = Calendar.getInstance();
         calendar.set(year, month, 1);
-
         String name = "aaa";
-        //Calendar calendar = Calendar.getInstance();
-        //int year = 2024;
-        //int month = 10 - 1;
-        int date = 1;
-        int dayNum = 0;
         int firstDay = 0;
-        calendar.set(year, month, date);
 
         // カレンダーの最初の曜日を決定
         firstDay = switch (calendar.get(Calendar.DAY_OF_WEEK)) {
@@ -160,85 +157,98 @@ public class CalendarActivity extends AppCompatActivity {
             LinearLayout linearLayout = findViewById(i);
             linearLayout.removeAllViews();  // 全てのビューをクリア
             linearLayout.setOrientation(LinearLayout.VERTICAL);
-
-            linearLayout.setBackgroundColor(Color.WHITE);
+            linearLayout.setBackgroundColor(Color.rgb(188, 188, 188));   // 背景色をリセット
 
             FrameLayout frameLayout = new FrameLayout(this);
-
-            ImageView imageView = new ImageView(this);
-            FrameLayout.LayoutParams imageParams = new FrameLayout.LayoutParams(
-                    FrameLayout.LayoutParams.WRAP_CONTENT,
-                    FrameLayout.LayoutParams.WRAP_CONTENT
-            );
-            imageParams.gravity = Gravity.CENTER;
-            imageView.setLayoutParams(imageParams);
-
-            Drawable drawable = getResources().getDrawable(R.drawable.ic_circle);
-            imageView.setImageDrawable(drawable);
-
-            TextView textView = new TextView(this);
-            FrameLayout.LayoutParams textParams = new FrameLayout.LayoutParams(
-                    FrameLayout.LayoutParams.WRAP_CONTENT,
-                    FrameLayout.LayoutParams.WRAP_CONTENT
-            );
-            textParams.gravity = Gravity.CENTER;
-            textView.setLayoutParams(textParams);
+            addCircle(frameLayout);
 
             // 日付を計算
-            int day = dayNum + 1 - firstDay;
-            if (day <= 0) {
-                day += calendar.getActualMaximum(Calendar.DAY_OF_MONTH - 1);
-                textView.setTextColor(Color.GRAY);  // 前月の日付はグレー
-            } else if (day > calendar.getActualMaximum(Calendar.DAY_OF_MONTH)) {
-                day -= calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
-                textView.setTextColor(Color.GRAY);  // 前月の日付はグレー
+            int date = i + 1 - firstDay;
+            if (date <= 0) {
+                calendar.add(Calendar.MONTH, -1);
+                date += calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+                addDate(frameLayout,linearLayout,date,true);
+                calendar.add(Calendar.MONTH, 1);
+                addSchedule(frameLayout,linearLayout,name,year,month-1,date,yesterdayBusy);
+            } else if (date > calendar.getActualMaximum(Calendar.DAY_OF_MONTH)) {
+                date -= calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+                addDate(frameLayout,linearLayout,date,true);
+                addSchedule(frameLayout,linearLayout,name,year,month+1,date,yesterdayBusy);
+            } else {
+                addDate(frameLayout,linearLayout,date,false);
+                addSchedule(frameLayout,linearLayout,name,year,month,date,yesterdayBusy);
             }
-
-            textView.setText(day + "");
-            dayNum++;
-
-            frameLayout.addView(imageView);
-            frameLayout.addView(textView);
-
-            FrameLayout.LayoutParams params2 = new FrameLayout.LayoutParams(
-                    FrameLayout.LayoutParams.MATCH_PARENT,
-                    FrameLayout.LayoutParams.WRAP_CONTENT
-            );
-            frameLayout.setLayoutParams(params2);
-            linearLayout.addView(frameLayout);
-
-            FirebaseFirestore db = FirebaseFirestore.getInstance();
-            String documentPath = name + "/" + year + "/" + (month+1) + "/" + day;
-            DocumentReference calendarRef = db.document(documentPath);
-
-            calendarRef.get().addOnCompleteListener(task -> {
-                if (task.isSuccessful()) {
-                    if (task.getResult().exists()) {
-                        String data = task.getResult().getString("タイトル");
-                        viewBusy(yesterdayBusy, Integer.valueOf(task.getResult().getString("強度")), linearLayout);
-
-                        Button button = new Button(this);
-                        button.setText(data);
-                        button.setTextSize(9);
-                        button.setEllipsize(TextUtils.TruncateAt.END);
-                        button.setMaxLines(1);
-
-                        LinearLayout.LayoutParams buttonParams = new LinearLayout.LayoutParams(
-                                LinearLayout.LayoutParams.MATCH_PARENT,
-                                LinearLayout.LayoutParams.WRAP_CONTENT
-                        );
-                        button.setLayoutParams(buttonParams);
-
-                        linearLayout.addView(button);
-                    }
-                } else {
-                    System.err.println("Error getting document: " + task.getException());
-                }
-            });
         }
     }
 
-    //忙しさの表示
+    // 日付の円の表示
+    private void addCircle(FrameLayout frameLayout) {
+        ImageView imageView = new ImageView(this);
+        FrameLayout.LayoutParams imageParams = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.WRAP_CONTENT,
+                FrameLayout.LayoutParams.WRAP_CONTENT
+        );
+        imageParams.gravity = Gravity.CENTER;
+        imageView.setLayoutParams(imageParams);
+        Drawable drawable = getResources().getDrawable(R.drawable.ic_circle);
+        imageView.setImageDrawable(drawable);
+        frameLayout.addView(imageView);
+    }
+
+    // 日付の表示
+    private void addDate(FrameLayout frameLayout, LinearLayout linearLayout, int date, boolean grey) {
+        TextView textView = new TextView(this);
+        FrameLayout.LayoutParams textParams = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.WRAP_CONTENT,
+                FrameLayout.LayoutParams.WRAP_CONTENT
+        );
+        textParams.gravity = Gravity.CENTER;
+        textView.setLayoutParams(textParams);
+        textView.setText(date + "");
+        frameLayout.addView(textView);
+        if(grey){textView.setTextColor(Color.GRAY);} // 当月以外の日付はグレー
+        linearLayout.addView(frameLayout);
+    }
+
+    // 予定の表示
+    private void addSchedule(FrameLayout frameLayout, LinearLayout linearLayout, String name, int year, int month, int date, int yesterdayBusy) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        String documentPath = name + "/" + year + "/" + (month+1) + "/" + date;
+        DocumentReference calendarRef = db.document(documentPath);
+
+        calendarRef.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                if (task.getResult().exists()) {
+                    String data = task.getResult().getString("タイトル");
+                    viewBusy(yesterdayBusy, Integer.valueOf(task.getResult().getString("強度")), linearLayout);
+
+                    Button button = new Button(this);
+                    button.setText(data);
+                    button.setTextSize(9);
+                    button.setEllipsize(TextUtils.TruncateAt.END);
+                    button.setMaxLines(1);
+
+                    LinearLayout.LayoutParams buttonParams = new LinearLayout.LayoutParams(
+                            LinearLayout.LayoutParams.MATCH_PARENT,
+                            LinearLayout.LayoutParams.WRAP_CONTENT
+                    );
+                    button.setLayoutParams(buttonParams);
+
+                    linearLayout.addView(button);
+                }
+                binding.progressBar.setVisibility(View.GONE);  // ローディング表示終了
+                binding.lastMonthButton.setEnabled(true);      // ボタン再有効化
+                binding.nextMonthButton.setEnabled(true);
+            } else {
+                System.err.println("Error getting document: " + task.getException());
+                binding.progressBar.setVisibility(View.GONE);  // ローディング表示終了
+                binding.lastMonthButton.setEnabled(true);      // ボタン再有効化
+                binding.nextMonthButton.setEnabled(true);
+            }
+        });
+    }
+
+    // 忙しさの表示
     private int viewBusy(final int yesterdayBusy,final int todayBusy, final LinearLayout ll) {
         int busy = todayBusy;
 
