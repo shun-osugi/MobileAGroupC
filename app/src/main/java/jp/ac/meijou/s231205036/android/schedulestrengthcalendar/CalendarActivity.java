@@ -2,11 +2,16 @@ package jp.ac.meijou.s231205036.android.schedulestrengthcalendar;
 
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.Point;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.TypedValue;
+import android.view.Display;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -101,21 +106,32 @@ public class CalendarActivity extends AppCompatActivity {
         // 重複してカレンダーが生成されないようにビューをクリア
         tableLayout.removeAllViews();
 
+        // 画面全体の高さを取得し、セルの高さを計算
+        WindowManager windowManager = getWindowManager();
+        Display display = windowManager.getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        int screenHeight = size.y;
+        int marginHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 152, getResources().getDisplayMetrics());
+        int cellHeight = (screenHeight - marginHeight) / 6;
+
         int idCounter = 0;
         for (int i = 0; i < 6; i++) {
             TableRow tableRow = new TableRow(this);
             TableLayout.LayoutParams rowParams = new TableLayout.LayoutParams(
                     TableLayout.LayoutParams.MATCH_PARENT,
-                    0,
-                    1f
+                    ViewGroup.LayoutParams.WRAP_CONTENT
             );
             tableRow.setLayoutParams(rowParams);
             for (int j = 0; j < 7; j++) {
                 LinearLayout linearLayout = new LinearLayout(this);
+
+                linearLayout.setClipChildren(true);
+                linearLayout.setClipToPadding(true);
+
                 TableRow.LayoutParams params = new TableRow.LayoutParams(
                         0,
-                        TableRow.LayoutParams.MATCH_PARENT,
-                        1f
+                        cellHeight
                 );
                 linearLayout.setLayoutParams(params);
                 linearLayout.setTextAlignment(Button.TEXT_ALIGNMENT_CENTER);
@@ -228,9 +244,10 @@ public class CalendarActivity extends AppCompatActivity {
                     button.setEllipsize(TextUtils.TruncateAt.END);
                     button.setMaxLines(1);
 
+                    // Buttonの高さを固定
                     LinearLayout.LayoutParams buttonParams = new LinearLayout.LayoutParams(
                             LinearLayout.LayoutParams.MATCH_PARENT,
-                            LinearLayout.LayoutParams.WRAP_CONTENT
+                            100  // 固定の高さ
                     );
                     button.setLayoutParams(buttonParams);
 
