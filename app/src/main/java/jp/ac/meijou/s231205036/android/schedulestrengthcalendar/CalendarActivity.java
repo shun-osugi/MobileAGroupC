@@ -26,7 +26,6 @@ import androidx.core.view.WindowInsetsCompat;
 
 import jp.ac.meijou.s231205036.android.schedulestrengthcalendar.databinding.ActivityCalendarBinding;
 
-
 public class CalendarActivity extends AppCompatActivity {
     private ActivityCalendarBinding binding;
 
@@ -155,7 +154,8 @@ public class CalendarActivity extends AppCompatActivity {
             default -> firstDay;
         };
 
-        int yesterdayBusy = 0;
+        CalendarCell cell = new CalendarCell(0, 0);
+
         for (int i = 0; i < 42; i++) {
             LinearLayout linearLayout = findViewById(i);
             linearLayout.removeAllViews();  // 全てのビューをクリア
@@ -213,7 +213,11 @@ public class CalendarActivity extends AppCompatActivity {
                 if (task.isSuccessful()) {
                     if (task.getResult().exists()) {
                         String data = task.getResult().getString("タイトル");
-                        viewBusy(yesterdayBusy, Integer.valueOf(task.getResult().getString("強度")), linearLayout);
+
+                        //忙しさ表示
+                        //viewBusy(Integer.valueOf(task.getResult().getString("強度")), linearLayout, CalendarCell);
+                        cell.setday1Busy(Integer.valueOf(task.getResult().getString("強度")));
+                        viewBusy(linearLayout, cell);
 
                         Button button = new Button(this);
                         button.setText(data);
@@ -236,10 +240,12 @@ public class CalendarActivity extends AppCompatActivity {
         }
     }
 
-    //忙しさの表示
-    private int viewBusy(final int yesterdayBusy,final int todayBusy, final LinearLayout ll) {
-        int busy = todayBusy;
-
+    //忙しさ表示関数
+    private void viewBusy(final LinearLayout ll, CalendarCell cell) {
+        int busy = cell.getday1Busy() + cell.getday0Busy() % 2;
+        if(busy > 7){
+            busy = 7;
+        }
         switch (busy) {
             case 7 -> ll.setBackgroundColor(Color.rgb(157, 73, 255));
             case 6 -> ll.setBackgroundColor(Color.rgb(255, 73, 73));
@@ -249,7 +255,8 @@ public class CalendarActivity extends AppCompatActivity {
             case 2 -> ll.setBackgroundColor(Color.rgb(73, 255, 146));
             case 1 -> ll.setBackgroundColor(Color.rgb(73, 255, 233));
             case 0 -> ll.setBackgroundColor(Color.rgb(188, 188, 188));
+            default -> ll.setBackgroundColor(Color.rgb(0,0,0));
         }
-        return busy;
+        //cell.shiftBusy();
     }
 }
