@@ -25,9 +25,11 @@ import android.widget.TextView;
 
 import java.util.Calendar;
 
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -158,7 +160,6 @@ public class CalendarActivity extends AppCompatActivity {
         // カレンダーの初期化
         Calendar calendar = Calendar.getInstance();
         calendar.set(year, month, 1);
-        String name = "aaa";
         int firstDay = 0;
 
         // カレンダーの最初の曜日を決定
@@ -190,14 +191,14 @@ public class CalendarActivity extends AppCompatActivity {
                 date += calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
                 addDate(frameLayout,linearLayout,date,true);
                 calendar.add(Calendar.MONTH, 1);
-                addSchedule(frameLayout,linearLayout,name,year,month-1,date,yesterdayBusy);
+                addSchedule(frameLayout,linearLayout,year,month-1,date,yesterdayBusy);
             } else if (date > calendar.getActualMaximum(Calendar.DAY_OF_MONTH)) {
                 date -= calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
                 addDate(frameLayout,linearLayout,date,true);
-                addSchedule(frameLayout,linearLayout,name,year,month+1,date,yesterdayBusy);
+                addSchedule(frameLayout,linearLayout,year,month+1,date,yesterdayBusy);
             } else {
                 addDate(frameLayout,linearLayout,date,false);
-                addSchedule(frameLayout,linearLayout,name,year,month,date,yesterdayBusy);
+                addSchedule(frameLayout,linearLayout,year,month,date,yesterdayBusy);
             }
         }
     }
@@ -232,20 +233,24 @@ public class CalendarActivity extends AppCompatActivity {
     }
 
     // 予定の表示
-    private void addSchedule(FrameLayout frameLayout, LinearLayout linearLayout, String name, int year, int month, int date, int yesterdayBusy) {
+    private void addSchedule(FrameLayout frameLayout, LinearLayout linearLayout, int year, int month, int date, int yesterdayBusy) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        String documentPath = name + "/" + year + "/" + (month+1) + "/" + date;
-        DocumentReference calendarRef = db.document(documentPath);
+        String collectionPath = year + "/" + (month + 1) + "/" + date;
+        CollectionReference calendarRef = db.collection(collectionPath);
 
         calendarRef.get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
-                if (task.getResult().exists()) {
-                    String title = task.getResult().getString("タイトル");
-                    String startTime = task.getResult().getString("開始時間");
-                    String endTime = task.getResult().getString("終了時間");
-                    String strong = task.getResult().getString("強度");
-                    String memo = task.getResult().getString("メモ");
-                    String repeat = task.getResult().getString("繰り返し");
+                for (QueryDocumentSnapshot document : task.getResult()) {
+                    // ここでドキュメントIDを取得し、その中のフィールドを取得する
+                    String documentID = document.getId();  // 一意のdocumentID
+
+                    // 予定の各フィールドを取得
+                    String title = document.getString("タイトル");
+                    String startTime = document.getString("開始時間");
+                    String endTime = document.getString("終了時間");
+                    String strong = document.getString("強度");
+                    String memo = document.getString("メモ");
+                    String repeat = document.getString("繰り返し");
 
                     viewBusy(yesterdayBusy, Integer.valueOf(strong), linearLayout);
 
@@ -293,7 +298,7 @@ public class CalendarActivity extends AppCompatActivity {
                         buttonEdit.setOnClickListener(edit -> {
                             // Intent を作成して EditSchedule へ遷移
                             Intent intent = new Intent(CalendarActivity.this, EditScheduleActivity.class);
-                            intent.putExtra("path",documentPath);
+                            intent.putExtra("collectionPath", documentID);
                             startActivity(intent);
                         });
 
@@ -302,8 +307,7 @@ public class CalendarActivity extends AppCompatActivity {
                             builder2.setTitle("予定を削除しますか？")
                             .setPositiveButton("削除", (dialog2, which) -> {
                                 // 削除し、ダイアログを閉じる
-                                db.document(documentPath)
-                                        .delete();
+                                db.collection(collectionPath).document(documentID).delete();
                                 dialog.dismiss();
                                 refreshCalendarData(year, month);
                             })
