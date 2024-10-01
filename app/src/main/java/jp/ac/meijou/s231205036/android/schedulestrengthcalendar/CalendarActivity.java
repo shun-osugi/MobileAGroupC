@@ -1,5 +1,6 @@
 package jp.ac.meijou.s231205036.android.schedulestrengthcalendar;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Point;
@@ -9,19 +10,23 @@ import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.Display;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
+
 import java.util.Calendar;
 
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import androidx.activity.EdgeToEdge;
@@ -235,11 +240,17 @@ public class CalendarActivity extends AppCompatActivity {
         calendarRef.get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 if (task.getResult().exists()) {
-                    String data = task.getResult().getString("タイトル");
-                    viewBusy(yesterdayBusy, Integer.valueOf(task.getResult().getString("強度")), linearLayout);
+                    String title = task.getResult().getString("タイトル");
+                    String startTime = task.getResult().getString("開始時間");
+                    String endTime = task.getResult().getString("終了時間");
+                    String strong = task.getResult().getString("強度");
+                    String memo = task.getResult().getString("メモ");
+                    String repeat = task.getResult().getString("繰り返し");
+
+                    viewBusy(yesterdayBusy, Integer.valueOf(strong), linearLayout);
 
                     Button button = new Button(this);
-                    button.setText(data);
+                    button.setText(title);
                     button.setTextSize(9);
                     button.setEllipsize(TextUtils.TruncateAt.END);
                     button.setMaxLines(1);
@@ -250,6 +261,65 @@ public class CalendarActivity extends AppCompatActivity {
                             100  // 固定の高さ
                     );
                     button.setLayoutParams(buttonParams);
+
+                    // 詳細ダイアログを表示
+                    button.setOnClickListener(viewDialog -> {
+                        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                        LayoutInflater inflater = this.getLayoutInflater();
+                        View dialogView = inflater.inflate(R.layout.dialog_detail_layout, null);
+
+                        builder.setView(dialogView);
+
+                        TextView dialogStrong = dialogView.findViewById(R.id.strong);
+                        TextView dialogTitle = dialogView.findViewById(R.id.title);
+                        TextView dialogDate = dialogView.findViewById(R.id.date);
+                        TextView dialogTime = dialogView.findViewById(R.id.time);
+                        TextView dialogRepeat = dialogView.findViewById(R.id.repeat);
+                        TextView dialogMemo = dialogView.findViewById(R.id.memo);
+                        ImageButton buttonEdit = dialogView.findViewById(R.id.buttonEdit);
+                        ImageButton buttonDelete = dialogView.findViewById(R.id.buttonDelete);
+                        ImageButton buttonCancel = dialogView.findViewById(R.id.buttonCancel);
+
+                        dialogStrong.setText(stringBusy(Integer.valueOf(strong)));
+                        dialogTitle.setText(title + "");
+                        dialogDate.setText(year + "/" + month + "/" + date);
+                        dialogTime.setText(startTime + " ~ " + endTime);
+                        dialogRepeat.setText(repeat + "");
+                        dialogMemo.setText(memo + "");
+
+                        AlertDialog dialog = builder.create();
+                        dialog.show();
+
+                        buttonEdit.setOnClickListener(edit -> {
+                            // Intent を作成して EditSchedule へ遷移
+                            Intent intent = new Intent(CalendarActivity.this, EditScheduleActivity.class);
+                            intent.putExtra("path",documentPath);
+                            startActivity(intent);
+                        });
+
+                        buttonDelete.setOnClickListener(delete -> {
+                            AlertDialog.Builder builder2 = new AlertDialog.Builder(this);
+                            builder2.setTitle("予定を削除しますか？")
+                            .setPositiveButton("削除", (dialog2, which) -> {
+                                // 削除し、ダイアログを閉じる
+                                db.document(documentPath)
+                                        .delete();
+                                dialog.dismiss();
+                                refreshCalendarData(year, month);
+                            })
+                            .setNegativeButton("キャンセル", (dialog2, which) -> {
+                                // ダイアログを閉じる
+                                dialog.dismiss();
+                            })
+                                    .show();
+
+                        });
+
+                        buttonCancel.setOnClickListener(cancel -> {
+                            // ダイアログを閉じる
+                            dialog.dismiss();
+                        });
+                    });
 
                     linearLayout.addView(button);
                 }
@@ -280,5 +350,17 @@ public class CalendarActivity extends AppCompatActivity {
             case 0 -> ll.setBackgroundColor(Color.rgb(188, 188, 188));
         }
         return busy;
+    }
+
+    // 忙しさの表示(ダイアログ用)
+    private String stringBusy(int busy) {
+        switch (busy) {
+            case 5 : return "⑤";
+            case 4 : return "④";
+            case 3 : return "③";
+            case 2 : return "②";
+            case 1 : return "①";
+        }
+        return "";
     }
 }
