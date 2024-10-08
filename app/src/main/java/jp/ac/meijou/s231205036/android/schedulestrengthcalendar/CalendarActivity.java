@@ -353,14 +353,14 @@ public class CalendarActivity extends AppCompatActivity {
             LinearLayout ll = findViewById(i);
             int busy = busydata[i].getDay1Busy() + busydata[i].getDay0Busy()/2;
             switch (busy) {
-                case 7 -> ll.setBackgroundColor(Color.rgb(157, 73, 255));
-                case 6 -> ll.setBackgroundColor(Color.rgb(255, 73, 73));
-                case 5 -> ll.setBackgroundColor(Color.rgb(255, 149, 73));
-                case 4 -> ll.setBackgroundColor(Color.rgb(255, 215, 73));
-                case 3 -> ll.setBackgroundColor(Color.rgb(186, 155, 73));
-                case 2 -> ll.setBackgroundColor(Color.rgb(73, 255, 146));
-                case 1 -> ll.setBackgroundColor(Color.rgb(73, 255, 233));
-                case 0 -> ll.setBackgroundColor(Color.rgb(188, 188, 188));
+                case 7 -> ll.setBackgroundColor(getResources().getColor(R.color.busyColer7));
+                case 6 -> ll.setBackgroundColor(getResources().getColor(R.color.busyColer6));
+                case 5 -> ll.setBackgroundColor(getResources().getColor(R.color.busyColer5));
+                case 4 -> ll.setBackgroundColor(getResources().getColor(R.color.busyColer4));
+                case 3 -> ll.setBackgroundColor(getResources().getColor(R.color.busyColer3));
+                case 2 -> ll.setBackgroundColor(getResources().getColor(R.color.busyColer2));
+                case 1 -> ll.setBackgroundColor(getResources().getColor(R.color.busyColer1));
+                case 0 -> ll.setBackgroundColor(getResources().getColor(R.color.busyColer0));
             }
             busydata[i+1].setDay0Busy(busy);
         }
