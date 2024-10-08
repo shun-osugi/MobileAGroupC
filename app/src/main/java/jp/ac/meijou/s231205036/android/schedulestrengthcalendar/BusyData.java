@@ -4,9 +4,9 @@ public class BusyData {
     private int day0Busy;   //1日前のBusy
     private int day1Busy;   //当日のBusy
 
-    public BusyData(int day0Busy, int day1Busy) {
-        this.setDay0Busy(day0Busy);
-        this.setDay1Busy(day1Busy);
+    public BusyData() {
+        this.setDay0Busy(0);
+        this.setDay1Busy(0);
     }
 
     public int getDay0Busy() {
@@ -23,9 +23,5 @@ public class BusyData {
 
     public void setDay1Busy(int day1Busy) {
         this.day1Busy = day1Busy;
-    }
-
-    public void shiftBusy(){
-        this.setDay0Busy(this.getDay1Busy());
     }
 }
