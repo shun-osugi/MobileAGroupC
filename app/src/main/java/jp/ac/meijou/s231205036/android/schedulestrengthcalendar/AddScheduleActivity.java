@@ -78,9 +78,6 @@ public class AddScheduleActivity extends AppCompatActivity {
             return false;
         });
 
-
-
-
         // 保存ボタンのクリックイベント
         binding.save.setOnClickListener(view -> {
             var title = binding.inputText.getText().toString();
@@ -100,18 +97,18 @@ public class AddScheduleActivity extends AppCompatActivity {
             scheduleData.put("繰り返し", answer);
 
             // 日付データを追加 (後で変数化)
-            String collectionName = "aaa"; // 他のコレクションと被らない名前
             String year = String.valueOf(selectedYear);
             String month = String.valueOf(selectedMonth);
-            String day = String.valueOf(selectedDay);  // ここに日付の変数を追加
+            String date = String.valueOf(selectedDay);
 
             // Firestore にデータを保存
-            saveDataToFirestore(collectionName, year, month, day, scheduleData);
+            saveDataToFirestore(year, month, date, scheduleData);
 
             // メッセージの表示
-            var message = "タイトル : " + title + "\n日付 : "+year + "/" + month + "/" + day + "\n開始時間 : " + startTime + "\n終了時間 : " + endTime +
+            var message = "タイトル : " + title + "\n日付 : "+year + "/" + month + "/" + date + "\n開始時間 : " + startTime + "\n終了時間 : " + endTime +
                     "\n強度 : " + intensity + "\nメモ : " + memo + "\n繰り返し : " + answer;
             showConfirmationDialog(message);
+            finish(); // 現在のアクティビティを終了して前の画面に戻る
         });
     }
 
@@ -152,12 +149,11 @@ public class AddScheduleActivity extends AppCompatActivity {
 
 
     // Firestore にデータを保存するメソッド
-    public void saveDataToFirestore(String collectionName, String documentYear, String month, String day, Map<String, Object> data) {
-        db.collection(collectionName)
-                .document(documentYear)
-                .collection(month)
-                .document(day)
-                .set(data)
+    public void saveDataToFirestore(String documentYear, String month, String date, Map<String, Object> data) {
+        db.collection(documentYear)
+                .document(month)
+                .collection(date)
+                .add(data)
                 .addOnSuccessListener(aVoid -> {
                     System.out.println("Data successfully saved!");
                 })
