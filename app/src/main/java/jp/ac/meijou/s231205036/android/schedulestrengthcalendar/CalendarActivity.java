@@ -24,6 +24,7 @@ import android.widget.TableRow;
 import android.widget.TextView;
 
 import java.util.Calendar;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
@@ -161,6 +162,12 @@ public class CalendarActivity extends AppCompatActivity {
         Calendar calendar = Calendar.getInstance();
         calendar.set(year, month, 1);
         int firstDay = 0;
+        BusyData[] busys = new BusyData[43];
+        for (int h = 0; h < 43; h++) {
+            busys[h] = new BusyData();
+        }
+        // Firestoreの呼び出しが完了した回数
+        AtomicInteger calls = new AtomicInteger(0);
 
         // カレンダーの最初の曜日を決定
         firstDay = switch (calendar.get(Calendar.DAY_OF_WEEK)) {
@@ -174,7 +181,6 @@ public class CalendarActivity extends AppCompatActivity {
             default -> firstDay;
         };
 
-        int yesterdayBusy = 0;
         for (int i = 0; i < 42; i++) {
             LinearLayout linearLayout = findViewById(i);
             linearLayout.removeAllViews();  // 全てのビューをクリア
@@ -191,14 +197,14 @@ public class CalendarActivity extends AppCompatActivity {
                 date += calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
                 addDate(frameLayout,linearLayout,date,true);
                 calendar.add(Calendar.MONTH, 1);
-                addSchedule(frameLayout,linearLayout,year,month-1,date,yesterdayBusy);
+                addSchedule(frameLayout,linearLayout,year,month-1,date,busys,i,calls);
             } else if (date > calendar.getActualMaximum(Calendar.DAY_OF_MONTH)) {
                 date -= calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
                 addDate(frameLayout,linearLayout,date,true);
-                addSchedule(frameLayout,linearLayout,year,month+1,date,yesterdayBusy);
+                addSchedule(frameLayout,linearLayout,year,month+1,date,busys,i,calls);
             } else {
                 addDate(frameLayout,linearLayout,date,false);
-                addSchedule(frameLayout,linearLayout,year,month,date,yesterdayBusy);
+                addSchedule(frameLayout,linearLayout,year,month,date,busys,i,calls);
             }
         }
     }
@@ -233,7 +239,7 @@ public class CalendarActivity extends AppCompatActivity {
     }
 
     // 予定の表示
-    private void addSchedule(FrameLayout frameLayout, LinearLayout linearLayout, int year, int month, int date, int yesterdayBusy) {
+    private void addSchedule(FrameLayout frameLayout, LinearLayout linearLayout, int year, int month, int date, BusyData busys[], int cell, AtomicInteger calls) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         String collectionPath = year + "/" + (month + 1) + "/" + date;
         CollectionReference calendarRef = db.collection(collectionPath);
@@ -252,7 +258,8 @@ public class CalendarActivity extends AppCompatActivity {
                     String memo = document.getString("メモ");
                     String repeat = document.getString("繰り返し");
 
-                    viewBusy(yesterdayBusy, Integer.valueOf(strong), linearLayout);
+                    //忙しさの保存
+                    busys[cell].setDay1Busy(Integer.valueOf(strong));
 
                     Button button = new Button(this);
                     button.setText(title);
@@ -336,24 +343,31 @@ public class CalendarActivity extends AppCompatActivity {
                 binding.lastMonthButton.setEnabled(true);      // ボタン再有効化
                 binding.nextMonthButton.setEnabled(true);
             }
+            //データ取得のカウンタ
+            int calledcount = calls.incrementAndGet();
+            if (calledcount == 42) {
+                viewBusy(busys);
+            }
         });
     }
 
     // 忙しさの表示
-    private int viewBusy(final int yesterdayBusy,final int todayBusy, final LinearLayout ll) {
-        int busy = todayBusy;
-
-        switch (busy) {
-            case 7 -> ll.setBackgroundColor(Color.rgb(157, 73, 255));
-            case 6 -> ll.setBackgroundColor(Color.rgb(255, 73, 73));
-            case 5 -> ll.setBackgroundColor(Color.rgb(255, 149, 73));
-            case 4 -> ll.setBackgroundColor(Color.rgb(255, 215, 73));
-            case 3 -> ll.setBackgroundColor(Color.rgb(186, 155, 73));
-            case 2 -> ll.setBackgroundColor(Color.rgb(73, 255, 146));
-            case 1 -> ll.setBackgroundColor(Color.rgb(73, 255, 233));
-            case 0 -> ll.setBackgroundColor(Color.rgb(188, 188, 188));
+    private void viewBusy(BusyData[] busydata) {
+        for(int i=0; i<42; i++){
+            LinearLayout ll = findViewById(i);
+            int busy = busydata[i].getDay1Busy() + busydata[i].getDay0Busy()/2;
+            switch (busy) {
+                case 7 -> ll.setBackgroundColor(getResources().getColor(R.color.busyColer7));
+                case 6 -> ll.setBackgroundColor(getResources().getColor(R.color.busyColer6));
+                case 5 -> ll.setBackgroundColor(getResources().getColor(R.color.busyColer5));
+                case 4 -> ll.setBackgroundColor(getResources().getColor(R.color.busyColer4));
+                case 3 -> ll.setBackgroundColor(getResources().getColor(R.color.busyColer3));
+                case 2 -> ll.setBackgroundColor(getResources().getColor(R.color.busyColer2));
+                case 1 -> ll.setBackgroundColor(getResources().getColor(R.color.busyColer1));
+                case 0 -> ll.setBackgroundColor(getResources().getColor(R.color.busyColer0));
+            }
+            busydata[i+1].setDay0Busy(busy);
         }
-        return busy;
     }
 
     // 忙しさの表示(ダイアログ用)
