@@ -2,12 +2,13 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="busyColer7">#AF49FF</color>
-    <color name="busyColer6">#FF4949</color>
-    <color name="busyColer5">#FF9549</color>
-    <color name="busyColer4">#FFD749</color>
-    <color name="busyColer3">#BAFF49</color>
-    <color name="busyColer2">#49FF92</color>
-    <color name="busyColer1">#49FFE9</color>
-    <color name="busyColer0">#BCBCBC</color>
+    <color name="gray">#7D7D7D</color>
+    <color name="busyColor7">#AF49FF</color>
+    <color name="busyColor6">#FF4949</color>
+    <color name="busyColor5">#FF9549</color>
+    <color name="busyColor4">#FFD749</color>
+    <color name="busyColor3">#BAFF49</color>
+    <color name="busyColor2">#49FF92</color>
+    <color name="busyColor1">#49FFE9</color>
+    <color name="busyColor0">#BCBCBC</color>
 </resources>
