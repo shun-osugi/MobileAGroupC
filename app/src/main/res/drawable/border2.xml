@@ -1,0 +1,4 @@
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="@color/busyColor2" /><!-- セルの背景色 -->
+    <stroke android:width="1dp" android:color="@color/gray" /> <!-- 枠線の色と幅 -->
+</shape>

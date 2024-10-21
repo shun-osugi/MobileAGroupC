@@ -27,8 +27,6 @@ import java.util.Calendar;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -143,7 +141,7 @@ public class CalendarActivity extends AppCompatActivity {
                 );
                 linearLayout.setLayoutParams(params);
                 linearLayout.setTextAlignment(Button.TEXT_ALIGNMENT_CENTER);
-                linearLayout.setBackgroundColor(Color.rgb(255, 255, 255));
+                linearLayout.setBackgroundResource(R.drawable.border0);
                 linearLayout.setId(idCounter);
                 tableRow.addView(linearLayout);
                 idCounter++;
@@ -357,14 +355,14 @@ public class CalendarActivity extends AppCompatActivity {
             LinearLayout ll = findViewById(i);
             int busy = busydata[i].getDay1Busy() + busydata[i].getDay0Busy()/2;
             switch (busy) {
-                case 7 -> ll.setBackgroundColor(getResources().getColor(R.color.busyColer7));
-                case 6 -> ll.setBackgroundColor(getResources().getColor(R.color.busyColer6));
-                case 5 -> ll.setBackgroundColor(getResources().getColor(R.color.busyColer5));
-                case 4 -> ll.setBackgroundColor(getResources().getColor(R.color.busyColer4));
-                case 3 -> ll.setBackgroundColor(getResources().getColor(R.color.busyColer3));
-                case 2 -> ll.setBackgroundColor(getResources().getColor(R.color.busyColer2));
-                case 1 -> ll.setBackgroundColor(getResources().getColor(R.color.busyColer1));
-                case 0 -> ll.setBackgroundColor(getResources().getColor(R.color.busyColer0));
+                case 7 -> ll.setBackgroundResource(R.drawable.border7);
+                case 6 -> ll.setBackgroundResource(R.drawable.border6);
+                case 5 -> ll.setBackgroundResource(R.drawable.border5);
+                case 4 -> ll.setBackgroundResource(R.drawable.border4);
+                case 3 -> ll.setBackgroundResource(R.drawable.border3);
+                case 2 -> ll.setBackgroundResource(R.drawable.border2);
+                case 1 -> ll.setBackgroundResource(R.drawable.border1);
+                case 0 -> ll.setBackgroundResource(R.drawable.border0);
             }
             busydata[i+1].setDay0Busy(busy);
         }
