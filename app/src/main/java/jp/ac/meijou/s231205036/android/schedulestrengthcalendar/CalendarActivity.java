@@ -109,6 +109,9 @@ public class CalendarActivity extends AppCompatActivity {
         Calendar calendar = Calendar.getInstance();  // 現在のカレンダーを取得
         TableLayout tableLayout = findViewById(R.id.calender);
 
+        // 現在の年と月を取得して headerText に設定
+        updateHeaderText(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH));
+
         // 重複してカレンダーが生成されないようにビューをクリア
         tableLayout.removeAllViews();
 
