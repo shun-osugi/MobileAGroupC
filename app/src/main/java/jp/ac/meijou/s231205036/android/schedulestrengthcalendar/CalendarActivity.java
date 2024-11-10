@@ -295,7 +295,7 @@ public class CalendarActivity extends AppCompatActivity {
 
                         dialogStrong.setText(stringBusy(Integer.valueOf(strong)));
                         dialogTitle.setText(title + "");
-                        dialogDate.setText(year + "/" + month + "/" + date);
+                        dialogDate.setText(year + "/" + (month+1) + "/" + date);
                         dialogTime.setText(startTime + " ~ " + endTime);
                         dialogRepeat.setText(repeat + "");
                         dialogMemo.setText(memo + "");
@@ -317,7 +317,7 @@ public class CalendarActivity extends AppCompatActivity {
                                 // 削除し、ダイアログを閉じる
                                 db.collection(collectionPath).document(documentID).delete();
                                 dialog.dismiss();
-                                refreshCalendarData(year, month);
+                                refreshCalendarData(year, month+1);
                             })
                             .setNegativeButton("キャンセル", (dialog2, which) -> {
                                 // ダイアログを閉じる
