@@ -8,6 +8,7 @@ import android.view.MotionEvent;
 import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.NumberPicker;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -37,14 +38,24 @@ public class AddScheduleActivity extends AppCompatActivity {
 
         // Spinner の設定
         String[] strongOptions = {"1","2", "3", "4", "5"};
-        var adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, strongOptions);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        binding.spinnerNumber.setAdapter(adapter);
+        binding.spinnerNumber.setMinValue(0);
+        binding.spinnerNumber.setMaxValue(strongOptions.length - 1);
+        binding.spinnerNumber.setDisplayedValues(strongOptions);
+        binding.spinnerNumber.setWrapSelectorWheel(true);
+
+        //var adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, strongOptions);
+        //adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        //binding.spinnerNumber.setAdapter(adapter);
 
         String[] repeatOptions = {"なし", "毎週", "隔週", "毎月"};
-        var repeatAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, repeatOptions);
-        repeatAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        binding.answer.setAdapter(repeatAdapter);
+        binding.answer.setMinValue(0);
+        binding.answer.setMaxValue(repeatOptions.length - 1);
+        binding.answer.setDisplayedValues(repeatOptions);
+        binding.answer.setWrapSelectorWheel(true);
+
+        //var repeatAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, repeatOptions);
+        //repeatAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        //binding.answer.setAdapter(repeatAdapter);
 
         binding.inputDate.setOnClickListener(view -> showDatePickerDialog());
         binding.TimeFirst.setOnClickListener(view -> showTimePickerDialog(binding.TimeFirst));
@@ -84,8 +95,9 @@ public class AddScheduleActivity extends AppCompatActivity {
             var startTime = binding.TimeFirst.getText().toString();
             var endTime = binding.TimeFinal.getText().toString();
             var memo = binding.memo.getText().toString();
-            var answer = binding.answer.getSelectedItem().toString();
-            var intensity = binding.spinnerNumber.getSelectedItem().toString();
+            var intensity = strongOptions[binding.spinnerNumber.getValue()];
+            var answer =  repeatOptions[binding.answer.getValue()];
+
 
             // Firestore に保存するデータを作成
             Map<String, Object> scheduleData = new HashMap<>();
@@ -141,7 +153,9 @@ public class AddScheduleActivity extends AppCompatActivity {
             this.selectedMonth = selectedMonth + 1;
             this.selectedDay = selectedDay;
 
-            binding.inputDate.setText(selectedYear + "/" + this.selectedMonth + "/" + this.selectedDay);
+            String dateText = selectedYear + "/" + this.selectedMonth + "/" + this.selectedDay;
+            binding.inputDate.setText(dateText);
+            binding.inputDate2.setText(dateText);  // input_date2に同じ日を表示
         }, year, month, day);
 
         datePickerDialog.show();

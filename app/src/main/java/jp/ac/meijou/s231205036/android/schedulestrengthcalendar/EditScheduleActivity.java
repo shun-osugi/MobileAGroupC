@@ -48,14 +48,22 @@ public class EditScheduleActivity extends AppCompatActivity {
 
         // Spinner の設定
         String[] strongOptions = {"1","2", "3", "4", "5"};
-        var adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, strongOptions);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        binding.spinnerNumber.setAdapter(adapter);
+        binding.spinnerNumber.setMinValue(0);
+        binding.spinnerNumber.setMaxValue(strongOptions.length - 1);
+        binding.spinnerNumber.setDisplayedValues(strongOptions);
+        binding.spinnerNumber.setWrapSelectorWheel(true);
+        //var adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, strongOptions);
+        //adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        //binding.spinnerNumber.setAdapter(adapter);
 
         String[] repeatOptions = {"なし", "毎週", "隔週", "毎月"};
-        var repeatAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, repeatOptions);
-        repeatAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        binding.answer.setAdapter(repeatAdapter);
+        binding.answer.setMinValue(0);
+        binding.answer.setMaxValue(repeatOptions.length - 1);
+        binding.answer.setDisplayedValues(repeatOptions);
+        binding.answer.setWrapSelectorWheel(true);
+        //var repeatAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, repeatOptions);
+        //repeatAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        //binding.answer.setAdapter(repeatAdapter);
 
         binding.inputDate.setOnClickListener(view -> showDatePickerDialog());
         binding.TimeFirst.setOnClickListener(view -> showTimePickerDialog(binding.TimeFirst));
@@ -106,8 +114,15 @@ public class EditScheduleActivity extends AppCompatActivity {
                     binding.TimeFirst.setText(initialStartTime);
                     binding.TimeFinal.setText(initialEndTime);
                     binding.memo.setText(initialMemo);
-                    binding.spinnerNumber.setSelection(adapter.getPosition(initialIntensity));
-                    binding.answer.setSelection(repeatAdapter.getPosition(initialRepeat));
+
+                    binding.spinnerNumber.setValue(
+                            java.util.Arrays.asList(strongOptions).indexOf(initialIntensity)
+                    );
+
+                    binding.answer.setValue(
+                            java.util.Arrays.asList(repeatOptions).indexOf(initialRepeat)
+                    );
+
                     binding.inputDate.setText(selectedYear + "/" + (selectedMonth + 1) + "/" + selectedDay);
 
                     // 保存ボタンのクリックイベント
@@ -116,8 +131,8 @@ public class EditScheduleActivity extends AppCompatActivity {
                         var startTime = binding.TimeFirst.getText().toString();
                         var endTime = binding.TimeFinal.getText().toString();
                         var memo = binding.memo.getText().toString();
-                        var answer = binding.answer.getSelectedItem().toString();
-                        var intensity = binding.spinnerNumber.getSelectedItem().toString();
+                        var answer = strongOptions[binding.spinnerNumber.getValue()];
+                        var intensity = repeatOptions[binding.answer.getValue()];
 
                         // Firestore に保存するデータを作成
                         Map<String, Object> scheduleData = new HashMap<>();
