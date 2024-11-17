@@ -5,175 +5,254 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:backgroundTint="#FFFFFF"
-    android:backgroundTintMode="add"
+    android:background="#F4F3F3"
     tools:context=".AddScheduleActivity">
 
-    <EditText
-        android:id="@+id/inputText"
-        android:layout_width="330dp"
-        android:layout_height="70dp"
-        android:layout_marginStart="44dp"
-        android:layout_marginTop="90dp"
-        android:hint="タイトル"
-        android:inputType="text"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <EditText
-        android:id="@+id/input_date"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="-12dp"
-        android:layout_marginStart="20dp"
-        android:clickable="true"
-        android:focusable="false"
-        android:hint="日付を選択"
-        app:layout_constraintBottom_toBottomOf="@+id/first_time"
-        app:layout_constraintStart_toEndOf="@+id/first_time" />
-
-    <TextView
-        android:id="@+id/first_time"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="44dp"
-        android:layout_marginTop="50dp"
-        android:text="開始時刻 : "
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/inputText" />
-
-    <EditText
-        android:id="@+id/TimeFirst"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="40dp"
-        android:layout_marginBottom="-12dp"
-        android:clickable="true"
-        android:focusable="false"
-        android:hint="開始時刻の入力"
-        android:inputType="time"
-        app:layout_constraintBottom_toBottomOf="@+id/first_time"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <TextView
-        android:id="@+id/final_time"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="44dp"
-        android:layout_marginTop="50dp"
-        android:text="終了時刻 : "
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/first_time" />
-
-    <EditText
-        android:id="@+id/input_date2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="-12dp"
-        android:layout_marginStart="20dp"
-        android:focusable="false"
-        android:hint="日付を選択"
-        app:layout_constraintBottom_toBottomOf="@+id/final_time"
-        app:layout_constraintStart_toEndOf="@+id/final_time" />
-
-    <EditText
-        android:id="@+id/TimeFinal"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="40dp"
-        android:layout_marginBottom="-12dp"
-        android:clickable="true"
-        android:focusable="false"
-        android:hint="終了時刻の入力"
-        android:inputType="time"
-        app:layout_constraintBottom_toBottomOf="@+id/final_time"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-
-    <TextView
-        android:id="@+id/strong"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="44dp"
-        android:layout_marginTop="100dp"
-        android:text="強度(1-5) : "
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/final_time" />
-
-    <NumberPicker
-        android:id="@+id/spinnerNumber"
-        android:layout_width="100dp"
-        android:layout_height="80dp"
-        android:layout_marginBottom="-25dp"
-        android:layout_marginStart="20dp"
-        app:layout_constraintStart_toEndOf="@+id/strong"
-        app:layout_constraintBottom_toBottomOf="@+id/strong" />
-
-    <TextView
-        android:id="@+id/text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="44dp"
-        android:layout_marginTop="90dp"
-        android:text="メモ : "
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/repeat"/>
-
-
-    <EditText
-        android:id="@+id/memo"
-        android:layout_width="294dp"
+    <!-- タイトル行 -->
+    <LinearLayout
+        android:id="@+id/title_row"
+        android:layout_width="0dp"
         android:layout_height="100dp"
-        android:layout_marginStart="60dp"
-        android:hint="メモの内容"
-        android:inputType="textMultiLine"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/text" />
-
-    <TextView
-        android:id="@+id/repeat"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="44dp"
         android:layout_marginTop="100dp"
-        android:text="繰り返し : "
+        android:background="#FFFFFF"
+        android:orientation="vertical"
+
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/strong"
-        />
+        app:layout_constraintTop_toTopOf="parent">
 
-    <NumberPicker
-        android:id="@+id/answer"
-        android:layout_width="100dp"
-        android:layout_height="80dp"
-        android:layout_marginBottom="-25dp"
-        android:layout_marginStart="20dp"
-        app:layout_constraintStart_toEndOf="@id/repeat"
-        app:layout_constraintBottom_toBottomOf="@id/repeat" />
+        <EditText
+            android:id="@+id/inputText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:hint="タイトル"
+            android:inputType="text" />
+    </LinearLayout>
 
+    <!-- 開始時刻行 -->
+    <LinearLayout
+        android:id="@+id/start_time_row"
+        android:layout_width="0dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="30dp"
+        android:background="#FFFFFF"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/title_row">
+
+        <TextView
+            android:id="@+id/first_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:text="開始時刻 :"
+            android:textSize="16sp" />
+
+        <EditText
+            android:id="@+id/input_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:background="#FFFFFF"
+            android:clickable="true"
+            android:focusable="false"
+            android:hint="日付を選択"
+            android:padding="8dp" />
+
+        <EditText
+            android:id="@+id/TimeFirst"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:background="#FFFFFF"
+            android:clickable="true"
+            android:focusable="false"
+            android:hint="開始時刻の入力"
+            android:inputType="time"
+            android:padding="8dp" />
+    </LinearLayout>
+
+    <!-- 終了時刻行 -->
+    <LinearLayout
+        android:id="@+id/end_time_row"
+        android:layout_width="0dp"
+        android:layout_height="60dp"
+        android:background="#FFFFFF"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/start_time_row">
+
+        <TextView
+            android:id="@+id/final_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:text="終了時刻 :"
+            android:textSize="16sp" />
+
+        <EditText
+            android:id="@+id/input_date2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:background="#FFFFFF"
+            android:clickable="true"
+            android:focusable="false"
+            android:hint="日付を選択"
+            android:padding="8dp" />
+
+        <EditText
+            android:id="@+id/TimeFinal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:background="#FFFFFF"
+            android:clickable="true"
+            android:focusable="false"
+            android:hint="終了時刻の入力"
+            android:inputType="time"
+            android:padding="8dp" />
+    </LinearLayout>
+
+    <!-- 強度行 -->
+    <LinearLayout
+        android:id="@+id/strength_row"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:background="#FFFFFF"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/end_time_row">
+
+        <TextView
+            android:id="@+id/strong"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:text="強度(1-5) :"
+            android:textSize="16sp" />
+
+        <NumberPicker
+            android:id="@+id/spinnerNumber"
+            android:layout_width="wrap_content"
+            android:layout_height="100dp"
+            android:layout_marginStart="20dp" />
+    </LinearLayout>
+
+    <!-- 繰り返し行 -->
+    <LinearLayout
+        android:id="@+id/repeat_row"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="#FFFFFF"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/strength_row">
+
+        <TextView
+            android:id="@+id/repeat"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:text="繰り返し :"
+            android:textSize="16sp" />
+
+        <NumberPicker
+            android:id="@+id/answer"
+            android:layout_width="wrap_content"
+            android:layout_height="100dp"
+            android:layout_marginStart="20dp" />
+    </LinearLayout>
+
+    <!-- メモ行 -->
+    <LinearLayout
+        android:id="@+id/memo_row"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:background="#FFFFFF"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/repeat_row">
+
+        <TextView
+            android:id="@+id/text"
+            android:layout_width="370dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:background="#FFFFFF"
+            android:text="メモ :"
+            android:textSize="16sp" />
+
+        <EditText
+            android:id="@+id/memo"
+            android:layout_width="370dp"
+            android:layout_height="100dp"
+            android:background="#FFFFFF"
+            android:inputType="textMultiLine"
+            android:padding="8dp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/Button_row"
+        android:layout_width="0dp"
+        android:layout_height="70dp"
+        android:background="#FFFFFF"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+    </LinearLayout>
+
+    <!-- ボタン -->
     <Button
         android:id="@+id/save"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:layout_marginEnd="24dp"
+        android:layout_marginEnd="10dp"
         android:backgroundTint="#00FFFFFF"
         android:text="保存"
-        android:textColor="#C62196F3"
-        android:textSize="20sp"
+        android:textColor="#034AFF"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/incident"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="16dp"
+        android:text="新規イベント"
+        android:textColor="#000000"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toBottomOf="@id/back"
+        app:layout_constraintEnd_toStartOf="@id/save"
+        app:layout_constraintStart_toEndOf="@id/back"
+        app:layout_constraintTop_toTopOf="@id/back" />
 
     <Button
         android:id="@+id/back"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
+        android:layout_marginStart="5dp"
         android:layout_marginTop="16dp"
         android:backgroundTint="#00FFFFFF"
-        android:text="戻る"
-        android:textColor="#C62196F3"
-        android:textSize="20sp"
+        android:text="キャンセル"
+        android:textColor="#034AFF"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
