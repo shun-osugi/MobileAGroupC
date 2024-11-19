@@ -196,15 +196,15 @@ public class CalendarActivity extends AppCompatActivity {
             if (date <= 0) {
                 calendar.add(Calendar.MONTH, -1);
                 date += calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
-                addDate(frameLayout,linearLayout,date,true);
+                addDate(frameLayout,linearLayout,year,month,date,true);
                 calendar.add(Calendar.MONTH, 1);
                 addSchedule(frameLayout,linearLayout,year,month-1,date,busys,i,calls);
             } else if (date > calendar.getActualMaximum(Calendar.DAY_OF_MONTH)) {
                 date -= calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
-                addDate(frameLayout,linearLayout,date,true);
+                addDate(frameLayout,linearLayout,year,month,date,true);
                 addSchedule(frameLayout,linearLayout,year,month+1,date,busys,i,calls);
             } else {
-                addDate(frameLayout,linearLayout,date,false);
+                addDate(frameLayout,linearLayout,year,month,date,false);
                 addSchedule(frameLayout,linearLayout,year,month,date,busys,i,calls);
             }
         }
@@ -225,7 +225,7 @@ public class CalendarActivity extends AppCompatActivity {
     }
 
     // 日付の表示
-    private void addDate(FrameLayout frameLayout, LinearLayout linearLayout, int date, boolean grey) {
+    private void addDate(FrameLayout frameLayout, LinearLayout linearLayout,int year, int month, int date, boolean grey) {
         TextView textView = new TextView(this);
         FrameLayout.LayoutParams textParams = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.WRAP_CONTENT,
@@ -235,7 +235,22 @@ public class CalendarActivity extends AppCompatActivity {
         textView.setLayoutParams(textParams);
         textView.setText(date + "");
         frameLayout.addView(textView);
-        if(grey){textView.setTextColor(Color.GRAY);} // 当月以外の日付はグレー
+        if(grey){
+            textView.setTextColor(Color.GRAY); // 当月以外の日付はグレー
+        } else {
+            // 曜日による色分け
+            Calendar calendar = Calendar.getInstance();
+            calendar.set(year, month, date);
+            int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
+
+            if (dayOfWeek == Calendar.SATURDAY) {
+                textView.setTextColor(Color.BLUE); // 土曜日は青色
+            } else if (dayOfWeek == Calendar.SUNDAY) {
+                textView.setTextColor(Color.RED); // 日曜日は赤色
+            } else {
+                textView.setTextColor(Color.BLACK); // 平日は黒色
+            }
+        }
         linearLayout.addView(frameLayout);
     }
 
