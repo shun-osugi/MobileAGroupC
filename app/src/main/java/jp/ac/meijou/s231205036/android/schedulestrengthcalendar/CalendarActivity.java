@@ -189,21 +189,23 @@ public class CalendarActivity extends AppCompatActivity {
             linearLayout.setBackgroundColor(Color.rgb(188, 188, 188));   // 背景色をリセット
 
             FrameLayout frameLayout = new FrameLayout(this);
-            addCircle(frameLayout);
 
             // 日付を計算
             int date = i + 1 - firstDay;
             if (date <= 0) {
                 calendar.add(Calendar.MONTH, -1);
                 date += calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+                addCircle(frameLayout,year,month,date);
                 addDate(frameLayout,linearLayout,year,month,date,true);
                 calendar.add(Calendar.MONTH, 1);
                 addSchedule(frameLayout,linearLayout,year,month-1,date,busys,i,calls);
             } else if (date > calendar.getActualMaximum(Calendar.DAY_OF_MONTH)) {
                 date -= calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+                addCircle(frameLayout,year,month,date);
                 addDate(frameLayout,linearLayout,year,month,date,true);
                 addSchedule(frameLayout,linearLayout,year,month+1,date,busys,i,calls);
             } else {
+                addCircle(frameLayout,year,month,date);
                 addDate(frameLayout,linearLayout,year,month,date,false);
                 addSchedule(frameLayout,linearLayout,year,month,date,busys,i,calls);
             }
@@ -211,7 +213,7 @@ public class CalendarActivity extends AppCompatActivity {
     }
 
     // 日付の円の表示
-    private void addCircle(FrameLayout frameLayout) {
+    private void addCircle(FrameLayout frameLayout, int year, int month, int date) {
         ImageView imageView = new ImageView(this);
         FrameLayout.LayoutParams imageParams = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.WRAP_CONTENT,
@@ -219,8 +221,23 @@ public class CalendarActivity extends AppCompatActivity {
         );
         imageParams.gravity = Gravity.CENTER;
         imageView.setLayoutParams(imageParams);
-        Drawable drawable = getResources().getDrawable(R.drawable.ic_circle);
-        imageView.setImageDrawable(drawable);
+        imageView.setImageDrawable(getResources().getDrawable(R.drawable.ic_circle));
+        Calendar today = Calendar.getInstance();
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(year, month, date);
+        boolean isToday = today.get(Calendar.YEAR) == calendar.get(Calendar.YEAR)
+                && today.get(Calendar.MONTH) == calendar.get(Calendar.MONTH)
+                && today.get(Calendar.DAY_OF_MONTH) == date;
+        if(isToday) {
+            int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
+            if (dayOfWeek == Calendar.SATURDAY) {
+                imageView.setImageDrawable(getResources().getDrawable(R.drawable.ic_circle_blue)); // 土曜日は青色
+            } else if (dayOfWeek == Calendar.SUNDAY) {
+                imageView.setImageDrawable(getResources().getDrawable(R.drawable.ic_circle_red)); // 日曜日は赤色
+            } else {
+                imageView.setImageDrawable(getResources().getDrawable(R.drawable.ic_circle_black)); // 平日は黒色
+            }
+        }
         frameLayout.addView(imageView);
     }
 
@@ -235,12 +252,21 @@ public class CalendarActivity extends AppCompatActivity {
         textView.setLayoutParams(textParams);
         textView.setText(date + "");
         frameLayout.addView(textView);
+
+        Calendar today = Calendar.getInstance();
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(year, month, date);
+        boolean isToday = today.get(Calendar.YEAR) == calendar.get(Calendar.YEAR)
+                && today.get(Calendar.MONTH) == calendar.get(Calendar.MONTH)
+                && today.get(Calendar.DAY_OF_MONTH) == date;
+
         if(grey){
             textView.setTextColor(Color.GRAY); // 当月以外の日付はグレー
+        } else if(isToday) {
+            // 今日を強調表示
+            textView.setTextColor(Color.WHITE); // 今日は白色
         } else {
             // 曜日による色分け
-            Calendar calendar = Calendar.getInstance();
-            calendar.set(year, month, date);
             int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
 
             if (dayOfWeek == Calendar.SATURDAY) {
