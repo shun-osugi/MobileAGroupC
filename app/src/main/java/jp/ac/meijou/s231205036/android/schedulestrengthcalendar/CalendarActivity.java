@@ -35,6 +35,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import android.util.Log;
+
+
+import org.json.JSONObject;
 
 import jp.ac.meijou.s231205036.android.schedulestrengthcalendar.databinding.ActivityCalendarBinding;
 
@@ -52,6 +56,28 @@ public class CalendarActivity extends AppCompatActivity {
         // 現在の年と月を取得して headerText に設定
         Calendar calendar = Calendar.getInstance();
         updateHeaderText(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH));
+
+        //----------祝日に関するプログラム(ここから)-----------------
+
+        //祝日のデータ取得（json形式で帰ってくる）
+        HolidayApiFetcher apiFetcher = new HolidayApiFetcher();
+        int year = calendar.get(Calendar.YEAR);
+        apiFetcher.fetchHolidayData(year, new HolidayApiFetcher.HolidayCallback() {
+            @Override
+            public void onHolidayDataReceived(JSONObject holidayData) {
+                // ログに出力
+                Log.d("HolidayApiFetcher", "Received holiday data: " + holidayData.toString());
+
+            }
+
+            @Override
+            public void onError(Exception e) {
+                // エラー処理
+                e.printStackTrace();
+            }
+        });
+
+        //----------祝日に関するプログラム(ここまで)-----------------
 
         // 前月・次月ボタンのクリックリスナーを設定
         binding.lastMonthButton.setOnClickListener(view -> {
