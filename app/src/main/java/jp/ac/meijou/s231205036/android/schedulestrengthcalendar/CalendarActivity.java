@@ -195,17 +195,17 @@ public class CalendarActivity extends AppCompatActivity {
             if (date <= 0) {
                 calendar.add(Calendar.MONTH, -1);
                 date += calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
-                addCircle(frameLayout,year,month,date);
+                addCircle(frameLayout,year,month,date, true);
                 addDate(frameLayout,linearLayout,year,month,date,true);
                 calendar.add(Calendar.MONTH, 1);
                 addSchedule(frameLayout,linearLayout,year,month-1,date,busys,i,calls);
             } else if (date > calendar.getActualMaximum(Calendar.DAY_OF_MONTH)) {
                 date -= calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
-                addCircle(frameLayout,year,month,date);
+                addCircle(frameLayout,year,month,date, true);
                 addDate(frameLayout,linearLayout,year,month,date,true);
                 addSchedule(frameLayout,linearLayout,year,month+1,date,busys,i,calls);
             } else {
-                addCircle(frameLayout,year,month,date);
+                addCircle(frameLayout,year,month,date, false);
                 addDate(frameLayout,linearLayout,year,month,date,false);
                 addSchedule(frameLayout,linearLayout,year,month,date,busys,i,calls);
             }
@@ -213,7 +213,7 @@ public class CalendarActivity extends AppCompatActivity {
     }
 
     // 日付の円の表示
-    private void addCircle(FrameLayout frameLayout, int year, int month, int date) {
+    private void addCircle(FrameLayout frameLayout, int year, int month, int date, boolean grey) {
         ImageView imageView = new ImageView(this);
         FrameLayout.LayoutParams imageParams = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.WRAP_CONTENT,
@@ -227,7 +227,8 @@ public class CalendarActivity extends AppCompatActivity {
         calendar.set(year, month, date);
         boolean isToday = today.get(Calendar.YEAR) == calendar.get(Calendar.YEAR)
                 && today.get(Calendar.MONTH) == calendar.get(Calendar.MONTH)
-                && today.get(Calendar.DAY_OF_MONTH) == date;
+                && today.get(Calendar.DAY_OF_MONTH) == date
+                && !grey;
         if(isToday) {
             int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
             if (dayOfWeek == Calendar.SATURDAY) {
@@ -258,7 +259,8 @@ public class CalendarActivity extends AppCompatActivity {
         calendar.set(year, month, date);
         boolean isToday = today.get(Calendar.YEAR) == calendar.get(Calendar.YEAR)
                 && today.get(Calendar.MONTH) == calendar.get(Calendar.MONTH)
-                && today.get(Calendar.DAY_OF_MONTH) == date;
+                && today.get(Calendar.DAY_OF_MONTH) == date
+                && !grey;
 
         if(grey){
             textView.setTextColor(Color.GRAY); // 当月以外の日付はグレー
