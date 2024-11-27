@@ -60,28 +60,7 @@ public class CalendarActivity extends AppCompatActivity {
         Calendar calendar = Calendar.getInstance();
         updateHeaderText(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH));
 
-        //----------祝日に関するプログラム(ここから)-----------------
-
-        //祝日のデータ取得（json形式で帰ってくる）
-        HolidayApiFetcher apiFetcher = new HolidayApiFetcher();
-        int year = calendar.get(Calendar.YEAR);
-        apiFetcher.fetchHolidayData(year, new HolidayApiFetcher.HolidayCallback() {
-            @Override
-            public void onHolidayDataReceived(JSONObject holidayData) {
-                setHolidays(holidayData);
-                // ログに出力
-                Log.d("HolidayApiFetcher", "Received holiday data: " + holidayData.toString());
-
-            }
-
-            @Override
-            public void onError(Exception e) {
-                // エラー処理
-                e.printStackTrace();
-            }
-        });
-
-        //----------祝日に関するプログラム(ここまで)-----------------
+        setHolidays(calendar.get(Calendar.YEAR));
 
         // 前月・次月ボタンのクリックリスナーを設定
         binding.lastMonthButton.setOnClickListener(view -> {
@@ -129,18 +108,41 @@ public class CalendarActivity extends AppCompatActivity {
 
     // 祝日データを格納するセット
     private Set<String> holidaySet = new HashSet<>();
+    // 祝日を読み込んだ年を格納するセット
+    private Set<Integer> fetchedYears = new HashSet<>();
 
-    // HolidayApiFetcher で取得したデータをセットに格納
-    private void setHolidays(JSONObject holidayData) {
-        try {
-            Iterator<String> keys = holidayData.keys();
-            while (keys.hasNext()) {
-                String key = keys.next(); // 祝日の日付 (yyyy-MM-dd)
-                holidaySet.add(key);
+    // HolidayApiFetcher で祝日データを取得してセットに格納
+    private void setHolidays(int year) {
+        //----------祝日に関するプログラム(ここから)-----------------
+
+        //祝日のデータ取得（json形式で帰ってくる）
+        HolidayApiFetcher apiFetcher = new HolidayApiFetcher();
+        apiFetcher.fetchHolidayData(year, new HolidayApiFetcher.HolidayCallback() {
+            @Override
+            public void onHolidayDataReceived(JSONObject holidayData) {
+                try {
+                    Iterator<String> keys = holidayData.keys();
+                    while (keys.hasNext()) {
+                        String key = keys.next(); // 祝日の日付 (yyyy-MM-dd)
+                        holidaySet.add(key);
+                    }
+                    fetchedYears.add(year);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                // ログに出力
+                Log.d("HolidayApiFetcher", "Received holiday data: " + holidayData.toString());
+
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+
+            @Override
+            public void onError(Exception e) {
+                // エラー処理
+                e.printStackTrace();
+            }
+        });
+
+        //----------祝日に関するプログラム(ここまで)-----------------
     }
 
     // ヘッダーテキストを更新するメソッド
@@ -215,6 +217,9 @@ public class CalendarActivity extends AppCompatActivity {
         }
         // Firestoreの呼び出しが完了した回数
         AtomicInteger calls = new AtomicInteger(0);
+
+        // 未取得の年なら祝日を新たに取得
+        if (!fetchedYears.contains(year)) {setHolidays(year);}
 
         // カレンダーの最初の曜日を決定
         firstDay = switch (calendar.get(Calendar.DAY_OF_WEEK)) {
