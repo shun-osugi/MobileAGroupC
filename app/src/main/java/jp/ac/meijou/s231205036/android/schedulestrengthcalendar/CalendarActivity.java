@@ -24,6 +24,9 @@ import android.widget.TableRow;
 import android.widget.TextView;
 
 import java.util.Calendar;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.firebase.firestore.CollectionReference;
@@ -65,6 +68,7 @@ public class CalendarActivity extends AppCompatActivity {
         apiFetcher.fetchHolidayData(year, new HolidayApiFetcher.HolidayCallback() {
             @Override
             public void onHolidayDataReceived(JSONObject holidayData) {
+                setHolidays(holidayData);
                 // ログに出力
                 Log.d("HolidayApiFetcher", "Received holiday data: " + holidayData.toString());
 
@@ -121,6 +125,22 @@ public class CalendarActivity extends AppCompatActivity {
             Intent intent = new Intent(CalendarActivity.this, SettingActivity.class);
             startActivity(intent);
         });
+    }
+
+    // 祝日データを格納するセット
+    private Set<String> holidaySet = new HashSet<>();
+
+    // HolidayApiFetcher で取得したデータをセットに格納
+    private void setHolidays(JSONObject holidayData) {
+        try {
+            Iterator<String> keys = holidayData.keys();
+            while (keys.hasNext()) {
+                String key = keys.next(); // 祝日の日付 (yyyy-MM-dd)
+                holidaySet.add(key);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     // ヘッダーテキストを更新するメソッド
@@ -288,11 +308,15 @@ public class CalendarActivity extends AppCompatActivity {
                 && today.get(Calendar.DAY_OF_MONTH) == date
                 && !grey;
 
+        String formattedDate = String.format("%04d-%02d-%02d", year, month + 1, date);
+
         if(grey){
             textView.setTextColor(Color.GRAY); // 当月以外の日付はグレー
         } else if(isToday) {
             // 今日を強調表示
             textView.setTextColor(Color.WHITE); // 今日は白色
+        } else if (holidaySet.contains(formattedDate)) {
+            textView.setTextColor(Color.RED); // 祝日は赤色
         } else {
             // 曜日による色分け
             int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
