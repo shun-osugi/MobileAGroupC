@@ -97,8 +97,6 @@ public class CalendarActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-
-
         binding.settingButton.setOnClickListener(view -> {
             // Intent を作成して Setting.java へ遷移
             Intent intent = new Intent(CalendarActivity.this, SettingActivity.class);
@@ -113,6 +111,7 @@ public class CalendarActivity extends AppCompatActivity {
 
     // HolidayApiFetcher で祝日データを取得してセットに格納
     private void setHolidays(int year) {
+
         //----------祝日に関するプログラム(ここから)-----------------
 
         //祝日のデータ取得（json形式で帰ってくる）
@@ -172,6 +171,7 @@ public class CalendarActivity extends AppCompatActivity {
         int marginHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 152, getResources().getDisplayMetrics());
         int cellHeight = (screenHeight - marginHeight) / 6;
 
+        // カレンダーテーブルに各セルを追加
         int idCounter = 0;
         for (int i = 0; i < 6; i++) {
             TableRow tableRow = new TableRow(this);
@@ -204,9 +204,12 @@ public class CalendarActivity extends AppCompatActivity {
     }
 
     private void refreshCalendarData(int year, int month) {
+
+        // 読み込み終了までロック
         binding.progressBar.setVisibility(View.VISIBLE);  // ローディング表示開始
         binding.lastMonthButton.setEnabled(false);        // ボタン無効化
         binding.nextMonthButton.setEnabled(false);
+
         // カレンダーの初期化
         Calendar calendar = Calendar.getInstance();
         calendar.set(year, month, 1);
@@ -233,6 +236,7 @@ public class CalendarActivity extends AppCompatActivity {
             default -> firstDay;
         };
 
+        // 各セルに日付の数字、日付の円、予定のボタンを追加
         for (int i = 0; i < 42; i++) {
             LinearLayout linearLayout = findViewById(i);
             linearLayout.removeAllViews();  // 全てのビューをクリア
@@ -276,10 +280,14 @@ public class CalendarActivity extends AppCompatActivity {
         Calendar today = Calendar.getInstance();
         Calendar calendar = Calendar.getInstance();
         calendar.set(year, month, date);
+
+        // 今日を判定
         boolean isToday = today.get(Calendar.YEAR) == calendar.get(Calendar.YEAR)
                 && today.get(Calendar.MONTH) == calendar.get(Calendar.MONTH)
                 && today.get(Calendar.DAY_OF_MONTH) == date
                 && !grey;
+
+        // 今日なら色を変更
         if(isToday) {
             int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
             if (dayOfWeek == Calendar.SATURDAY) {
@@ -308,6 +316,8 @@ public class CalendarActivity extends AppCompatActivity {
         Calendar today = Calendar.getInstance();
         Calendar calendar = Calendar.getInstance();
         calendar.set(year, month, date);
+
+        // 今日を判定
         boolean isToday = today.get(Calendar.YEAR) == calendar.get(Calendar.YEAR)
                 && today.get(Calendar.MONTH) == calendar.get(Calendar.MONTH)
                 && today.get(Calendar.DAY_OF_MONTH) == date
@@ -433,11 +443,16 @@ public class CalendarActivity extends AppCompatActivity {
 
                     linearLayout.addView(button);
                 }
+
+                // 読み込み終了後、ロック解除
                 binding.progressBar.setVisibility(View.GONE);  // ローディング表示終了
                 binding.lastMonthButton.setEnabled(true);      // ボタン再有効化
                 binding.nextMonthButton.setEnabled(true);
+
             } else {
                 System.err.println("Error getting document: " + task.getException());
+
+                // 読み込み終了後、ロック解除
                 binding.progressBar.setVisibility(View.GONE);  // ローディング表示終了
                 binding.lastMonthButton.setEnabled(true);      // ボタン再有効化
                 binding.nextMonthButton.setEnabled(true);
