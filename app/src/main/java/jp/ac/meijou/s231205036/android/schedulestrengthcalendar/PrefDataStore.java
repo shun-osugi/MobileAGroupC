@@ -4,6 +4,7 @@ package jp.ac.meijou.s231205036.android.schedulestrengthcalendar;
 import android.content.Context;
 
 import androidx.datastore.preferences.core.Preferences;
+import androidx.datastore.preferences.core.Preferences.Key;
 import androidx.datastore.preferences.core.PreferencesKeys;
 import androidx.datastore.preferences.rxjava3.RxPreferenceDataStoreBuilder;
 import androidx.datastore.rxjava3.RxDataStore;
@@ -48,6 +49,26 @@ public class PrefDataStore {
                     return Optional.ofNullable(prefs.get(prefKey));
                 })
                 .blockingFirst();
+    }
+
+    public Optional<Integer> getInteger(String key) {
+        return dataStore.data()
+                .map(prefs -> {
+                    Key<Integer> prefKey = PreferencesKeys.intKey(key);
+                    return Optional.ofNullable(prefs.get(prefKey));
+                })
+                .blockingFirst();
+    }
+
+    public void setInteger(String key, int value) {
+        dataStore.updateDataAsync(prefsIN -> {
+                    var mutablePreferences = prefsIN.toMutablePreferences();
+                    var prefKey = PreferencesKeys.intKey(key);
+
+                    mutablePreferences.set(prefKey, value);
+                    return Single.just(mutablePreferences);
+                })
+                .subscribe();
     }
 
 }
