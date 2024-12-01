@@ -48,6 +48,7 @@ import jp.ac.meijou.s231205036.android.schedulestrengthcalendar.databinding.Acti
 
 public class CalendarActivity extends AppCompatActivity {
     private ActivityCalendarBinding binding;
+    private PrefDataStore prefDataStore;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +56,7 @@ public class CalendarActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         binding = ActivityCalendarBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        prefDataStore = PrefDataStore.getInstance(this);
 
         // 現在の年と月を取得して headerText に設定
         Calendar calendar = Calendar.getInstance();
@@ -258,6 +260,7 @@ public class CalendarActivity extends AppCompatActivity {
             } else {
                 addCircle(frameLayout,year,month,date, false);
                 addDate(frameLayout,linearLayout,year,month,date,false);
+                setDefaultBusy(year,month, date,busys,i);
                 addSchedule(frameLayout,linearLayout,year,month,date,busys,i,calls);
             }
         }
@@ -450,6 +453,36 @@ public class CalendarActivity extends AppCompatActivity {
         });
     }
 
+    //デフォルトの忙しさ反映(当月の曜日操作)
+    private void setDefaultBusy(int year, int month, int date, BusyData busys[], int cell) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(year, month, date);
+        int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
+        switch(dayOfWeek){
+            case Calendar.SUNDAY :
+                busys[cell].setDay1Busy(prefDataStore.getInteger("sunBusy").orElse(0));
+                break;
+            case Calendar.MONDAY:
+                busys[cell].setDay1Busy(prefDataStore.getInteger("monBusy").orElse(0));
+                break;
+            case Calendar.TUESDAY:
+                busys[cell].setDay1Busy(prefDataStore.getInteger("tueBusy").orElse(0));
+                break;
+            case Calendar.WEDNESDAY:
+                busys[cell].setDay1Busy(prefDataStore.getInteger("wedBusy").orElse(0));
+                break;
+            case Calendar.THURSDAY:
+                busys[cell].setDay1Busy(prefDataStore.getInteger("thuBusy").orElse(0));
+                break;
+            case Calendar.FRIDAY:
+                busys[cell].setDay1Busy(prefDataStore.getInteger("friBusy").orElse(0));
+                break;
+            case Calendar.SATURDAY:
+                busys[cell].setDay1Busy(prefDataStore.getInteger("satBusy").orElse(0));
+                break;
+        }
+    }
+
     // 忙しさの表示
     private void viewBusy(BusyData[] busydata) {
         for(int i=0; i<42; i++){
@@ -465,7 +498,7 @@ public class CalendarActivity extends AppCompatActivity {
                 case 1 -> ll.setBackgroundResource(R.drawable.border1);
                 case 0 -> ll.setBackgroundResource(R.drawable.border0);
             }
-            busydata[i+1].setDay0Busy(busy);
+            //busydata[i+1].setDay0Busy(busy);
         }
     }
 
