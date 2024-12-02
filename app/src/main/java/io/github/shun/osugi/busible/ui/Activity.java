@@ -11,7 +11,7 @@ import java.util.List;
 
 import io.github.shun.osugi.busible.entity.Schedule;
 import io.github.shun.osugi.busible.viewmodel.ScheduleViewModel;
-import jp.ac.meijou.s231205036.android.schedulestrengthcalendar.R;
+import io.github.shun.osugi.busible.R;
 
 public class Activity extends AppCompatActivity {
 

@@ -10,10 +10,8 @@ import io.github.shun.osugi.busible.entity.Schedule;
 import io.github.shun.osugi.busible.dao.DateDao;
 import io.github.shun.osugi.busible.entity.Date;
 
-@Database(entities = {Schedule.class}, version = 1, exportSchema = false)
+@Database(entities = {Schedule.class, Date.class}, version = 1, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
-
-    private static volatile AppDatabase INSTANCE;
 
     public abstract ScheduleDao scheduleDao();
     // DateDaoのインターフェースを提供
