@@ -1,4 +1,4 @@
-package jp.ac.meijou.s231205036.android.schedulestrengthcalendar;
+package io.github.shun.osugi.busible;
 
 public class BusyData {
     private int day0Busy;   //1日前のBusy

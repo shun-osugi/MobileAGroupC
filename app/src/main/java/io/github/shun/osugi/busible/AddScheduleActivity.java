@@ -1,31 +1,26 @@
-package jp.ac.meijou.s231205036.android.schedulestrengthcalendar;
+package io.github.shun.osugi.busible;
 
 import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.WindowManager;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
-import jp.ac.meijou.s231205036.android.schedulestrengthcalendar.databinding.ActivityAddScheduleBinding;
+import io.github.shun.osugi.busible.databinding.ActivityAddScheduleBinding;
 
-public class EditScheduleActivity extends AppCompatActivity {
+public class AddScheduleActivity extends AppCompatActivity {
 
     private ActivityAddScheduleBinding binding;
+    private FirebaseFirestore db;
 
     private int selectedYear, selectedMonth, selectedDay;
 
@@ -36,15 +31,8 @@ public class EditScheduleActivity extends AppCompatActivity {
         binding = ActivityAddScheduleBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // CalendarActivityからdocumentIDを取得し、Firebaseに接続
-        Intent intent = getIntent();
-        String collectionPath = intent.getStringExtra("collectionPath");
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        CollectionReference calendarRef = db.collection(collectionPath);
-
-        // Button名を変更
-        binding.save.setText("変更を適用");
-        binding.back.setText("キャンセル");
+        // Firestore インスタンスを取得
+        db = FirebaseFirestore.getInstance();
 
         // Spinner の設定
         String[] strongOptions = {"1","2", "3", "4", "5"};
@@ -52,6 +40,7 @@ public class EditScheduleActivity extends AppCompatActivity {
         binding.spinnerNumber.setMaxValue(strongOptions.length - 1);
         binding.spinnerNumber.setDisplayedValues(strongOptions);
         binding.spinnerNumber.setWrapSelectorWheel(true);
+
         //var adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, strongOptions);
         //adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         //binding.spinnerNumber.setAdapter(adapter);
@@ -61,6 +50,7 @@ public class EditScheduleActivity extends AppCompatActivity {
         binding.answer.setMaxValue(repeatOptions.length - 1);
         binding.answer.setDisplayedValues(repeatOptions);
         binding.answer.setWrapSelectorWheel(true);
+
         //var repeatAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, repeatOptions);
         //repeatAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         //binding.answer.setAdapter(repeatAdapter);
@@ -97,69 +87,39 @@ public class EditScheduleActivity extends AppCompatActivity {
             return false;
         });
 
-        calendarRef.get().addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                for (QueryDocumentSnapshot document : task.getResult()) {
-                    // 予定の各フィールドを取得
-                    String initialTitle = document.getString("タイトル");
-                    String initialStartTime = document.getString("開始時間");
-                    String initialEndTime = document.getString("終了時間");
-                    String initialIntensity = document.getString("強度");
-                    String initialMemo = document.getString("メモ");
-                    String initialRepeat = document.getString("繰り返し");
-                    String documentID = document.getId();
+        // 保存ボタンのクリックイベント
+        binding.save.setOnClickListener(view -> {
+            var title = binding.inputText.getText().toString();
+            var startTime = binding.TimeFirst.getText().toString();
+            var endTime = binding.TimeFinal.getText().toString();
+            var memo = binding.memo.getText().toString();
+            var intensity = strongOptions[binding.spinnerNumber.getValue()];
+            var answer =  repeatOptions[binding.answer.getValue()];
 
-                    // UIに反映
-                    binding.inputText.setText(initialTitle);
-                    binding.TimeFirst.setText(initialStartTime);
-                    binding.TimeFinal.setText(initialEndTime);
-                    binding.memo.setText(initialMemo);
 
-                    binding.spinnerNumber.setValue(
-                            java.util.Arrays.asList(strongOptions).indexOf(initialIntensity)
-                    );
+            // Firestore に保存するデータを作成
+            Map<String, Object> scheduleData = new HashMap<>();
+            scheduleData.put("タイトル", title);
+            scheduleData.put("開始時間", startTime);
+            scheduleData.put("終了時間", endTime);
+            scheduleData.put("強度", intensity);
+            scheduleData.put("メモ", memo);
+            scheduleData.put("繰り返し", answer);
 
-                    binding.answer.setValue(
-                            java.util.Arrays.asList(repeatOptions).indexOf(initialRepeat)
-                    );
+            // 日付データを追加 (後で変数化)
+            String year = String.valueOf(selectedYear);
+            String month = String.valueOf(selectedMonth);
+            String date = String.valueOf(selectedDay);
 
-                    binding.inputDate.setText(selectedYear + "/" + (selectedMonth + 1) + "/" + selectedDay);
+            // Firestore にデータを保存
+            saveDataToFirestore(year, month, date, scheduleData);
 
-                    // 保存ボタンのクリックイベント
-                    binding.save.setOnClickListener(view -> {
-                        var title = binding.inputText.getText().toString();
-                        var startTime = binding.TimeFirst.getText().toString();
-                        var endTime = binding.TimeFinal.getText().toString();
-                        var memo = binding.memo.getText().toString();
-                        var answer = strongOptions[binding.spinnerNumber.getValue()];
-                        var intensity = repeatOptions[binding.answer.getValue()];
-
-                        // Firestore に保存するデータを作成
-                        Map<String, Object> scheduleData = new HashMap<>();
-                        scheduleData.put("タイトル", title);
-                        scheduleData.put("開始時間", startTime);
-                        scheduleData.put("終了時間", endTime);
-                        scheduleData.put("強度", intensity);
-                        scheduleData.put("メモ", memo);
-                        scheduleData.put("繰り返し", answer);
-
-                        // 日付データを追加 (後で変数化)
-                        String year = String.valueOf(selectedYear);
-                        String month = String.valueOf(selectedMonth);
-                        String date = String.valueOf(selectedDay);  // ここに日付の変数を追加
-
-                        // Firestore にデータを保存
-                        setDataToFirestore(db, year, month, date, documentID, scheduleData);
-
-                        // メッセージの表示
-                        var message = "タイトル : " + title + "\n日付 : "+year + "/" + month + "/" + date + "\n開始時間 : " + startTime + "\n終了時間 : " + endTime +
-                                "\n強度 : " + intensity + "\nメモ : " + memo + "\n繰り返し : " + answer;
-                        showConfirmationDialog(message);
-                    });
-                }
-            }
+            // メッセージの表示
+            var message = "タイトル : " + title + "\n日付 : "+year + "/" + month + "/" + date + "\n開始時間 : " + startTime + "\n終了時間 : " + endTime +
+                    "\n強度 : " + intensity + "\nメモ : " + memo + "\n繰り返し : " + answer;
+            showConfirmationDialog(message);
+            finish(); // 現在のアクティビティを終了して前の画面に戻る
         });
-
     }
 
     private void showConfirmationDialog(String message) {
@@ -191,19 +151,21 @@ public class EditScheduleActivity extends AppCompatActivity {
             this.selectedMonth = selectedMonth + 1;
             this.selectedDay = selectedDay;
 
-            binding.inputDate.setText(selectedYear + "/" + this.selectedMonth + "/" + this.selectedDay);
+            String dateText = selectedYear + "/" + this.selectedMonth + "/" + this.selectedDay;
+            binding.inputDate.setText(dateText);
+            binding.inputDate2.setText(dateText);  // input_date2に同じ日を表示
         }, year, month, day);
 
         datePickerDialog.show();
     }
 
+
     // Firestore にデータを保存するメソッド
-    public void setDataToFirestore(FirebaseFirestore db,String documentYear, String month, String date,String documentID, Map<String, Object> data) {
+    public void saveDataToFirestore(String documentYear, String month, String date, Map<String, Object> data) {
         db.collection(documentYear)
                 .document(month)
                 .collection(date)
-                .document(documentID)
-                .set(data)
+                .add(data)
                 .addOnSuccessListener(aVoid -> {
                     System.out.println("Data successfully saved!");
                 })

@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace 'jp.ac.meijou.s231205036.android.schedulestrengthcalendar'
+    namespace 'io.github.shun.osugi.busible'
     compileSdk 34
 
     defaultConfig {
-        applicationId "jp.ac.meijou.s231205036.android.schedulestrengthcalendar"
+        applicationId "io.github.shun.osugi.busible"
         minSdk 24
         targetSdk 34
         versionCode 1

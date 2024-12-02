@@ -9,7 +9,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:1021756530453:android:223f44eae01c24c2f5131c",
         "android_client_info": {
-          "package_name": "jp.ac.meijou.s231205036.android.schedulestrengthcalendar"
+          "package_name": "io.github.shun.osugi.busible"
         }
       },
       "oauth_client": [],
