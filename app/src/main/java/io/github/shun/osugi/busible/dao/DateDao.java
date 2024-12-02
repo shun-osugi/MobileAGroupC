@@ -17,7 +17,7 @@ public interface DateDao {
 
     // 非同期でDateを挿入するメソッド
     @Insert
-    void insert(Date date);
+    long insert(Date date);
 
     // 非同期で複数のDateを挿入するメソッド
     @Insert

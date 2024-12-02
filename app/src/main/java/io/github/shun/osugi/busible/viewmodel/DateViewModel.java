@@ -36,7 +36,10 @@ public class DateViewModel extends AndroidViewModel {
 
     // 日付を挿入
     public void insert(Date date) {
-        new Thread(() -> dateDao.insert(date)).start();
+        new Thread(() -> {
+            long newId = dateDao.insert(date);
+            date.setId((int) newId); // 自動生成されたIDをセット
+        }).start();
     }
 
     // 日付を複数挿入

@@ -65,7 +65,7 @@ public class Activity extends AppCompatActivity {
         });
 
         // 5. データを削除
-        //scheduleViewModel.delete(newSchedule);
+        scheduleViewModel.delete(newSchedule);
 
         // 削除後の確認
         scheduleViewModel.getScheduleById(1).observe(this, new Observer<Schedule>() {
