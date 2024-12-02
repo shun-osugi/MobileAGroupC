@@ -86,6 +86,10 @@ public class CalendarActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
+        binding.homeButton.setOnClickListener(view -> {
+            recreate();
+        });
+
         binding.settingButton.setOnClickListener(view -> {
             Intent intent = new Intent(CalendarActivity.this, SettingActivity.class);
             startActivity(intent);
@@ -97,16 +101,6 @@ public class CalendarActivity extends AppCompatActivity {
             return insets;
         });
 
-        binding.addButton.setOnClickListener(view -> {
-            var intent = new Intent(this, AddScheduleActivity.class);
-            startActivity(intent);
-        });
-
-        binding.settingButton.setOnClickListener(view -> {
-            // Intent を作成して Setting.java へ遷移
-            Intent intent = new Intent(CalendarActivity.this, SettingActivity.class);
-            startActivity(intent);
-        });
     }
 
     // 祝日データを格納するセット

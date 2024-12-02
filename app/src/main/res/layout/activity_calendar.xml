@@ -28,6 +28,18 @@
         />
 
     <ImageButton
+        android:id="@+id/homeButton"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:background="@drawable/ic_home"
+        app:layout_constraintTop_toTopOf="@id/header"
+        app:layout_constraintTop_toBottomOf="@id/header"
+        app:layout_constraintBottom_toBottomOf="@id/header"
+        app:layout_constraintStart_toStartOf="@id/header"
+        app:layout_constraintEnd_toStartOf="@id/headerText"
+        />
+
+    <ImageButton
         android:id="@+id/settingButton"
         android:layout_width="64dp"
         android:layout_height="64dp"
