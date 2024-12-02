@@ -1,10 +1,9 @@
-package jp.ac.meijou.s231205036.android.schedulestrengthcalendar;
+package io.github.shun.osugi.busible;
 
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Point;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.TypedValue;
@@ -43,7 +42,7 @@ import android.util.Log;
 
 import org.json.JSONObject;
 
-import jp.ac.meijou.s231205036.android.schedulestrengthcalendar.databinding.ActivityCalendarBinding;
+import io.github.shun.osugi.busible.databinding.ActivityCalendarBinding;
 
 
 public class CalendarActivity extends AppCompatActivity {
