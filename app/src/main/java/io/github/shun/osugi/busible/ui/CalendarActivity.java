@@ -1,4 +1,4 @@
-package io.github.shun.osugi.busible;
+package io.github.shun.osugi.busible.ui;
 
 import android.app.AlertDialog;
 import android.content.Intent;
@@ -42,6 +42,10 @@ import android.util.Log;
 
 import org.json.JSONObject;
 
+import io.github.shun.osugi.busible.model.BusyData;
+import io.github.shun.osugi.busible.model.HolidayApiFetcher;
+import io.github.shun.osugi.busible.model.PrefDataStore;
+import io.github.shun.osugi.busible.R;
 import io.github.shun.osugi.busible.databinding.ActivityCalendarBinding;
 
 

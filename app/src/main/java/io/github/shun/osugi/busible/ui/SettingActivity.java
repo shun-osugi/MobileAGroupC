@@ -1,4 +1,4 @@
-package io.github.shun.osugi.busible;
+package io.github.shun.osugi.busible.ui;
 
 import android.os.Bundle;
 import android.widget.SeekBar;
@@ -9,8 +9,8 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import io.github.shun.osugi.busible.databinding.ActivityAddScheduleBinding;
-import io.github.shun.osugi.busible.databinding.ActivityCalendarBinding;
+import io.github.shun.osugi.busible.model.PrefDataStore;
+import io.github.shun.osugi.busible.R;
 import io.github.shun.osugi.busible.databinding.ActivitySettingBinding;
 
 public class SettingActivity extends AppCompatActivity {

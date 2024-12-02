@@ -1,4 +1,4 @@
-package io.github.shun.osugi.busible;
+package io.github.shun.osugi.busible.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -6,6 +6,7 @@ import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import io.github.shun.osugi.busible.model.PrefDataStore;
 import io.github.shun.osugi.busible.databinding.ActivityMainBinding;
 
 

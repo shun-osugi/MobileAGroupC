@@ -1,4 +1,4 @@
-package io.github.shun.osugi.busible;
+package io.github.shun.osugi.busible.ui;
 
 import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
