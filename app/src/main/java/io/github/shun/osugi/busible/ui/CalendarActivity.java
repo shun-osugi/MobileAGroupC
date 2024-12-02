@@ -67,31 +67,34 @@ public class CalendarActivity extends AppCompatActivity {
 
         setHolidays(calendar.get(Calendar.YEAR));
 
-        // 前月・次月ボタンのクリックリスナーを設定
+        // 前月ボタンのクリックリスナーを設定
         binding.lastMonthButton.setOnClickListener(view -> {
             calendar.add(Calendar.MONTH, -1);
             updateHeaderText(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH));
             refreshCalendarData(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH));
         });
 
+        // 次月ボタンのクリックリスナーを設定
         binding.nextMonthButton.setOnClickListener(view -> {
             calendar.add(Calendar.MONTH, 1);
             updateHeaderText(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH));
             refreshCalendarData(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH));
         });
 
-        // 他の初期設定;
-        binding.addButton.setOnClickListener(view -> {
-            var intent = new Intent(this, AddScheduleActivity.class);
-            startActivity(intent);
-        });
-
+        //ホームボタンのクリックリスナー
         binding.homeButton.setOnClickListener(view -> {
             recreate();
         });
 
+        //設定ボタンのクリックリスナー
         binding.settingButton.setOnClickListener(view -> {
             Intent intent = new Intent(CalendarActivity.this, SettingActivity.class);
+            startActivity(intent);
+        });
+
+        // 他の初期設定;
+        binding.addButton.setOnClickListener(view -> {
+            var intent = new Intent(this, AddScheduleActivity.class);
             startActivity(intent);
         });
 
@@ -191,7 +194,7 @@ public class CalendarActivity extends AppCompatActivity {
                 );
                 linearLayout.setLayoutParams(params);
                 linearLayout.setTextAlignment(Button.TEXT_ALIGNMENT_CENTER);
-                linearLayout.setBackgroundResource(R.drawable.border0);
+                linearLayout.setBackgroundResource(R.drawable.borderx);
                 linearLayout.setId(idCounter);
                 tableRow.addView(linearLayout);
                 idCounter++;
@@ -253,16 +256,19 @@ public class CalendarActivity extends AppCompatActivity {
                 addDate(frameLayout,linearLayout,year,month,date,true);
                 calendar.add(Calendar.MONTH, 1);
                 addSchedule(frameLayout,linearLayout,year,month-1,date,busys,i,calls);
+                busys[i].setGray(true);
             } else if (date > calendar.getActualMaximum(Calendar.DAY_OF_MONTH)) {
                 date -= calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
                 addCircle(frameLayout,year,month,date, true);
                 addDate(frameLayout,linearLayout,year,month,date,true);
                 addSchedule(frameLayout,linearLayout,year,month+1,date,busys,i,calls);
+                busys[i].setGray(true);
             } else {
                 addCircle(frameLayout,year,month,date, false);
                 addDate(frameLayout,linearLayout,year,month,date,false);
                 setDefaultBusy(year,month, date,busys,i);
                 addSchedule(frameLayout,linearLayout,year,month,date,busys,i,calls);
+                busys[i].setGray(false);
             }
         }
     }
@@ -457,7 +463,8 @@ public class CalendarActivity extends AppCompatActivity {
                 binding.lastMonthButton.setEnabled(true);      // ボタン再有効化
                 binding.nextMonthButton.setEnabled(true);
             }
-            //データ取得のカウンタ
+
+            //データ取得のカウンタ(忙しさ設定用)
             int calledcount = calls.incrementAndGet();
             if (calledcount == 42) {
                 viewBusy(busys);
@@ -465,7 +472,7 @@ public class CalendarActivity extends AppCompatActivity {
         });
     }
 
-    //デフォルトの忙しさ反映(当月の曜日操作)
+    //デフォルトの忙しさ反映(当月の曜日走査)
     private void setDefaultBusy(int year, int month, int date, BusyData busys[], int cell) {
         Calendar calendar = Calendar.getInstance();
         calendar.set(year, month, date);
@@ -509,6 +516,9 @@ public class CalendarActivity extends AppCompatActivity {
                 case 2 -> ll.setBackgroundResource(R.drawable.border2);
                 case 1 -> ll.setBackgroundResource(R.drawable.border1);
                 case 0 -> ll.setBackgroundResource(R.drawable.border0);
+            }
+            if(busydata[i].getGray() == true){
+                ll.setBackgroundResource(R.drawable.borderx);
             }
             //busydata[i+1].setDay0Busy(busy);
         }

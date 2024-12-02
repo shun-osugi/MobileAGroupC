@@ -3,6 +3,7 @@ package io.github.shun.osugi.busible.model;
 public class BusyData {
     private int day0Busy;   //1日前のBusy
     private int day1Busy;   //当日のBusy
+    private boolean gray;
 
     public BusyData() {
         this.setDay0Busy(0);
@@ -24,4 +25,7 @@ public class BusyData {
     public void setDay1Busy(int day1Busy) {
         this.day1Busy = day1Busy;
     }
+
+    public void setGray(boolean gray){ this.gray = gray; }
+    public boolean getGray(){ return this.gray; }
 }

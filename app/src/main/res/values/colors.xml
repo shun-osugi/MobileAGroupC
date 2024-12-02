@@ -10,5 +10,6 @@
     <color name="busyColor3">#BAFF49</color>
     <color name="busyColor2">#49FF92</color>
     <color name="busyColor1">#49FFE9</color>
-    <color name="busyColor0">#BCBCBC</color>
+    <color name="busyColor0">#FaFFFe</color>
+    <color name="busyColorx">#adadad</color>
 </resources>
