@@ -5,13 +5,17 @@ import android.content.Context;
 import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
-
+import io.github.shun.osugi.busible.dao.ScheduleDao;
+import io.github.shun.osugi.busible.entity.Schedule;
 import io.github.shun.osugi.busible.dao.DateDao;
 import io.github.shun.osugi.busible.entity.Date;
 
-@Database(entities = {Date.class}, version = 1, exportSchema = false)
+@Database(entities = {Schedule.class}, version = 1, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
 
+    private static volatile AppDatabase INSTANCE;
+
+    public abstract ScheduleDao scheduleDao();
     // DateDaoのインターフェースを提供
     public abstract DateDao dateDao();
 
@@ -23,9 +27,9 @@ public abstract class AppDatabase extends RoomDatabase {
         if (INSTANCE == null) {
             synchronized (AppDatabase.class) {
                 if (INSTANCE == null) {
-                    // Roomデータベースのインスタンスを作成
-                    INSTANCE = Room.databaseBuilder(context.getApplicationContext(),
-                                    AppDatabase.class, "app_database")
+  // Roomデータベースのインスタンスを作成                  
+  INSTANCE = Room.databaseBuilder(context.getApplicationContext(),
+                                    AppDatabase.class, "schedule_database")
                             .fallbackToDestructiveMigration() // バージョン変更時にデータベースを再作成
                             .build();
                 }
