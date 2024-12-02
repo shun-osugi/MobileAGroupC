@@ -41,30 +41,44 @@ public class DateActivity extends AppCompatActivity {
         // 1. 日付をデータベースに挿入
         dateViewModel.insert(newDate);
 
-        // 2. 全ての日付を取得して確認
-        dateViewModel.getAllDates().observe(this, new Observer<List<Date>>() {
-            @Override
-            public void onChanged(List<Date> dates) {
-                Log.d(TAG, "All Dates: " + dates);
-            }
-        });
+        // 2. データ挿入後に全ての日付を取得して表示
+        dateViewModel.getAllDates().observe(this, dates -> {
+            if (dates != null && !dates.isEmpty()) {
+                Date dateToProcess = dates.get(0);
+                // 更新処理
+                dateToProcess.setDay(3);
+                dateViewModel.update(dateToProcess); // 更新
+                Log.d(TAG, "Updated Date: " + dateToProcess);
 
-        // 3. 特定の日付を取得
-        dateViewModel.getDateBySpecificDay(2024, 12, 2).observe(this, new Observer<Date>() {
-            @Override
-            public void onChanged(Date date) {
-                if (date != null) {
-                    Log.d(TAG, "Date: " + date.getYear() + "-" + date.getMonth() + "-" + date.getDay());
+                // 削除処理
+                dateViewModel.delete(dateToProcess);
+                Log.d(TAG, "Deleted Date: " + dateToProcess);
+            }
+
+            // 更新後に再度全データを取得
+            dateViewModel.getAllDates().observe(this, new Observer<List<Date>>() {
+                boolean hasLogged = false; // 一度だけログを表示するフラグ
+
+                @Override
+                public void onChanged(List<Date> allDates) {
+                    if (!hasLogged) {
+                        // 最初のデータ取得時だけログを表示
+                        Log.d(TAG, "All Dates after deletion: " + allDates.toString());
+                        hasLogged = true;  // ログを一度だけ表示したことを記録
+                    }
                 }
-            }
+            });
+
+            // 3. 特定の日付を取得して表示
+            // ここで再度特定の日付を取得して表示
+            dateViewModel.getDateBySpecificDay(2024, 12, 2).observe(this, new Observer<Date>() {
+                @Override
+                public void onChanged(Date date) {
+                    if (date != null) {
+                        Log.d(TAG, "Date Found: " + date);
+                    }
+                }
+            });
         });
-
-        // 4. 日付を更新
-        newDate.setDay(3);
-        dateViewModel.update(newDate);
-
-        // 5. 日付を削除
-        Log.d("DateActivity", "Deleting Date: " + newDate.toString());
-        dateViewModel.delete(newDate);
     }
 }
