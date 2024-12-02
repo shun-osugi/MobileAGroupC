@@ -1,4 +1,4 @@
-package io.github.shun.osugi.busible;
+package io.github.shun.osugi.busible.model;
 
 public class BusyData {
     private int day0Busy;   //1日前のBusy

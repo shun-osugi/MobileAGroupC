@@ -20,19 +20,19 @@
 
         </activity>
         <activity
-            android:name=".EditScheduleActivity"
+            android:name=".ui.EditScheduleActivity"
             android:exported="false" />
         <activity
-            android:name=".SettingActivity"
+            android:name=".ui.SettingActivity"
             android:exported="false" />
         <activity
-            android:name=".AddScheduleActivity"
+            android:name=".ui.AddScheduleActivity"
             android:exported="true" />
         <activity
-            android:name=".CalendarActivity"
+            android:name=".ui.CalendarActivity"
             android:exported="true" />
         <activity
-            android:name=".MainActivity"
+            android:name=".ui.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

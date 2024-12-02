@@ -1,4 +1,4 @@
-package io.github.shun.osugi.busible;
+package io.github.shun.osugi.busible.model;
 
 import org.json.JSONObject;
 import java.io.BufferedReader;
