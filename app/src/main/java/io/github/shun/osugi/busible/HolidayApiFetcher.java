@@ -1,4 +1,4 @@
-package jp.ac.meijou.s231205036.android.schedulestrengthcalendar;
+package io.github.shun.osugi.busible;
 
 import org.json.JSONObject;
 import java.io.BufferedReader;

@@ -1,4 +1,4 @@
-package jp.ac.meijou.s231205036.android.schedulestrengthcalendar;
+package io.github.shun.osugi.busible;
 
 import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
@@ -7,21 +7,19 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.WindowManager;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
-import jp.ac.meijou.s231205036.android.schedulestrengthcalendar.databinding.ActivityAddScheduleBinding;
+import io.github.shun.osugi.busible.databinding.ActivityAddScheduleBinding;
 
 public class EditScheduleActivity extends AppCompatActivity {
 

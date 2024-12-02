@@ -1,4 +1,4 @@
-package jp.ac.meijou.s231205036.android.schedulestrengthcalendar;
+package io.github.shun.osugi.busible;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -6,7 +6,7 @@ import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import jp.ac.meijou.s231205036.android.schedulestrengthcalendar.databinding.ActivityMainBinding;
+import io.github.shun.osugi.busible.databinding.ActivityMainBinding;
 
 
 public class MainActivity extends AppCompatActivity {

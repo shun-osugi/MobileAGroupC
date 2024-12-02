@@ -1,4 +1,4 @@
-package jp.ac.meijou.s231205036.android.schedulestrengthcalendar;
+package jp.ac.meijou.s231205036.android.busible;
 
 import org.junit.Test;
 
