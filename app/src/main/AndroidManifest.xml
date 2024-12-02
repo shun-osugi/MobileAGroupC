@@ -15,10 +15,11 @@
         android:theme="@style/Theme.ScheduleStrengthCalendar"
         tools:targetApi="31">
         <activity
-            android:name="io.github.shun.osugi.busible.ui.Activity"
-            android:exported="true">
-
-        </activity>
+            android:name=".ui.DateActivity"
+            android:exported="true"/>
+        <activity
+            android:name=".ui.Activity"
+            android:exported="true"></activity>
         <activity
             android:name=".ui.EditScheduleActivity"
             android:exported="false" />
@@ -36,6 +37,7 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>

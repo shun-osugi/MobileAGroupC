@@ -1,20 +1,18 @@
 package io.github.shun.osugi.busible.entity;
-// 必要なインポート文
+
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
-@Entity(tableName = "date") // テーブル名を指定
+@Entity(tableName = "date")
 public class Date {
-    @PrimaryKey(autoGenerate = true) // 主キーを設定
+    @PrimaryKey(autoGenerate = true)
     private int id;
 
     private int year;
-
     private int month;
-
     private int day;
 
-    // 必要なGetterとSetter
+    // GetterとSetter
     public int getId() {
         return id;
     }
@@ -46,6 +44,15 @@ public class Date {
     public void setDay(int day) {
         this.day = day;
     }
+
+    // toString()メソッドのオーバーライド
+    @Override
+    public String toString() {
+        return "Date{" +
+                "id=" + id +
+                ", year=" + year +
+                ", month=" + month +
+                ", day=" + day +
+                '}';
+    }
 }
-
-
