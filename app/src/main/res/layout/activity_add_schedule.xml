@@ -197,7 +197,7 @@
 
         <EditText
             android:id="@+id/memo"
-            android:layout_width="370dp"
+            android:layout_width="match_parent"
             android:layout_height="100dp"
             android:background="#FFFFFF"
             android:inputType="textMultiLine"

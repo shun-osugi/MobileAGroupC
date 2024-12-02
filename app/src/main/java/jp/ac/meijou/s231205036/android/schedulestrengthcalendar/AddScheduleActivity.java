@@ -6,18 +6,17 @@ import android.app.TimePickerDialog;
 import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.WindowManager;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.NumberPicker;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import java.lang.reflect.Field;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
+
 import jp.ac.meijou.s231205036.android.schedulestrengthcalendar.databinding.ActivityAddScheduleBinding;
 
 public class AddScheduleActivity extends AppCompatActivity {
@@ -47,6 +46,7 @@ public class AddScheduleActivity extends AppCompatActivity {
         //var adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, strongOptions);
         //adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         //binding.spinnerNumber.setAdapter(adapter);
+
 
         String[] repeatOptions = {"なし", "毎週", "隔週", "毎月"};
         binding.answer.setMinValue(0);
@@ -97,8 +97,7 @@ public class AddScheduleActivity extends AppCompatActivity {
             var endTime = binding.TimeFinal.getText().toString();
             var memo = binding.memo.getText().toString();
             var intensity = strongOptions[binding.spinnerNumber.getValue()];
-            var answer =  repeatOptions[binding.answer.getValue()];
-
+            var answer = repeatOptions[binding.answer.getValue()];
 
             // Firestore に保存するデータを作成
             Map<String, Object> scheduleData = new HashMap<>();
@@ -109,7 +108,7 @@ public class AddScheduleActivity extends AppCompatActivity {
             scheduleData.put("メモ", memo);
             scheduleData.put("繰り返し", answer);
 
-            // 日付データを追加 (後で変数化)
+            // 日付データを追加
             String year = String.valueOf(selectedYear);
             String month = String.valueOf(selectedMonth);
             String date = String.valueOf(selectedDay);
@@ -117,8 +116,8 @@ public class AddScheduleActivity extends AppCompatActivity {
             // Firestore にデータを保存
             saveDataToFirestore(year, month, date, scheduleData);
 
-            // メッセージの表示
-            var message = "タイトル : " + title + "\n日付 : "+year + "/" + month + "/" + date + "\n開始時間 : " + startTime + "\n終了時間 : " + endTime +
+            // 確認メッセージの表示
+            var message = "タイトル : " + title + "\n日付 : " + year + "/" + month + "/" + date + "\n開始時間 : " + startTime + "\n終了時間 : " + endTime +
                     "\n強度 : " + intensity + "\nメモ : " + memo + "\n繰り返し : " + answer;
             showConfirmationDialog(message);
             finish(); // 現在のアクティビティを終了して前の画面に戻る
@@ -142,39 +141,22 @@ public class AddScheduleActivity extends AppCompatActivity {
     }
 
     private void showDatePickerDialog() {
-
         Calendar calendar = Calendar.getInstance();
         int year = calendar.get(Calendar.YEAR);
         int month = calendar.get(Calendar.MONTH);
         int day = calendar.get(Calendar.DAY_OF_MONTH);
 
         DatePickerDialog datePickerDialog = new DatePickerDialog(this, (view, selectedYear, selectedMonth, selectedDay) -> {
-
             this.selectedYear = selectedYear;
             this.selectedMonth = selectedMonth + 1;
             this.selectedDay = selectedDay;
 
             String dateText = selectedYear + "/" + this.selectedMonth + "/" + this.selectedDay;
             binding.inputDate.setText(dateText);
-            binding.inputDate2.setText(dateText);  // input_date2に同じ日を表示
+            binding.inputDate2.setText(dateText);  // input_date2 に同じ日を表示
         }, year, month, day);
 
         datePickerDialog.show();
-    }
-
-
-    // Firestore にデータを保存するメソッド
-    public void saveDataToFirestore(String documentYear, String month, String date, Map<String, Object> data) {
-        db.collection(documentYear)
-                .document(month)
-                .collection(date)
-                .add(data)
-                .addOnSuccessListener(aVoid -> {
-                    System.out.println("Data successfully saved!");
-                })
-                .addOnFailureListener(e -> {
-                    System.err.println("Error saving data: " + e.getMessage());
-                });
     }
 
     private void showTimePickerDialog(final EditText editText) {
@@ -191,4 +173,16 @@ public class AddScheduleActivity extends AppCompatActivity {
         timePickerDialog.show();
     }
 
+    public void saveDataToFirestore(String documentYear, String month, String date, Map<String, Object> data) {
+        db.collection(documentYear)
+                .document(month)
+                .collection(date)
+                .add(data)
+                .addOnSuccessListener(aVoid -> {
+                    System.out.println("Data successfully saved!");
+                })
+                .addOnFailureListener(e -> {
+                    System.err.println("Error saving data: " + e.getMessage());
+                });
+    }
 }
