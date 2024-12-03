@@ -38,4 +38,7 @@ public interface DateDao {
     // 非同期で特定の日付を取得するメソッド
     @Query("SELECT * FROM date WHERE year = :year AND month = :month AND day = :day")
     LiveData<Date> getDateBySpecificDay(int year, int month, int day);
+
+    @Query("SELECT * FROM date WHERE year = :year AND month = :month AND day = :day")
+    Date getDate(int year, int month, int day);
 }

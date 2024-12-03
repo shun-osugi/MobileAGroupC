@@ -51,18 +51,5 @@ public class ScheduleViewModel extends AndroidViewModel {
         return allSchedules;
     }
 
-    // 繰り返し設定でスケジュールを取得
-    public LiveData<List<Schedule>> getSchedulesByRepeat(String repeat) {
-        return scheduleDao.getSchedulesByRepeat(repeat);
-    }
 
-    // 特定の開始時間を持つスケジュールを取得
-    public LiveData<List<Schedule>> getSchedulesByStartTime(String startTime) {
-        return scheduleDao.getSchedulesByStartTime(startTime);
-    }
-
-    // 特定の終了時間を持つスケジュールを取得
-    public LiveData<List<Schedule>> getSchedulesByEndTime(String endTime) {
-        return scheduleDao.getSchedulesByEndTime(endTime);
-    }
 }

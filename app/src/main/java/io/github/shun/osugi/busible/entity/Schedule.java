@@ -2,24 +2,24 @@ package io.github.shun.osugi.busible.entity;
 
 // 必要なインポート文
 import androidx.room.Entity;
+import androidx.room.ForeignKey;
 import androidx.room.PrimaryKey;
 
-@Entity(tableName = "schedule") // テーブル名を "schedule" に設定
+
+@Entity(tableName = "schedule")
 public class Schedule {
     @PrimaryKey(autoGenerate = true) // 主キーを自動生成
     private int id;
 
     private String title; // 予定のタイトル
     private String memo; // 詳細な説明
+    private int strong; //強度
     private String startTime; // 開始時間
     private String endTime; // 終了時間
     private String color; // 色
     private String repeat; //繰り返し
 
-    // コンストラクタ（必要に応じて追加）
-    public Schedule() {
-        // デフォルトコンストラクタ
-    }
+
 
     // Getter と Setter
     public int getId() {
@@ -28,6 +28,14 @@ public class Schedule {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public int getStrong() { // ここで強度の getter を追加
+        return strong;
+    }
+
+    public void setStrong(int strong) { // 強度の setter
+        this.strong = strong;
     }
 
     public String getTitle() {
@@ -78,17 +86,4 @@ public class Schedule {
         this.repeat = repeat;
     }
 
-    // デバッグ用の toString メソッド
-    @Override
-    public String toString() {
-        return "Schedule{" +
-                "id=" + id +
-                ", title='" + title + '\'' +
-                ", memo='" + memo + '\'' +
-                ", startTime=" + startTime + '\'' +
-                ", endTime=" + endTime + '\'' +
-                ", color='" + color + '\'' +
-                ", repeat='" + repeat + '\'' +
-                '}';
-    }
 }

@@ -427,16 +427,16 @@ public class CalendarActivity extends AppCompatActivity {
                         buttonDelete.setOnClickListener(delete -> {
                             AlertDialog.Builder builder2 = new AlertDialog.Builder(this);
                             builder2.setTitle("予定を削除しますか？")
-                            .setPositiveButton("削除", (dialog2, which) -> {
-                                // 削除し、ダイアログを閉じる
-                                db.collection(collectionPath).document(documentID).delete();
-                                dialog.dismiss();
-                                refreshCalendarData(year, month+1);
-                            })
-                            .setNegativeButton("キャンセル", (dialog2, which) -> {
-                                // ダイアログを閉じる
-                                dialog.dismiss();
-                            })
+                                    .setPositiveButton("削除", (dialog2, which) -> {
+                                        // 削除し、ダイアログを閉じる
+                                        db.collection(collectionPath).document(documentID).delete();
+                                        dialog.dismiss();
+                                        refreshCalendarData(year, month+1);
+                                    })
+                                    .setNegativeButton("キャンセル", (dialog2, which) -> {
+                                        // ダイアログを閉じる
+                                        dialog.dismiss();
+                                    })
                                     .show();
 
                         });
