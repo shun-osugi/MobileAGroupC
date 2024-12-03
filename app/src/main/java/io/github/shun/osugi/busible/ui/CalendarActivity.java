@@ -67,31 +67,34 @@ public class CalendarActivity extends AppCompatActivity {
 
         setHolidays(calendar.get(Calendar.YEAR));
 
-        // 前月・次月ボタンのクリックリスナーを設定
+        // 前月ボタンのクリックリスナーを設定
         binding.lastMonthButton.setOnClickListener(view -> {
             calendar.add(Calendar.MONTH, -1);
             updateHeaderText(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH));
             refreshCalendarData(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH));
         });
 
+        // 次月ボタンのクリックリスナーを設定
         binding.nextMonthButton.setOnClickListener(view -> {
             calendar.add(Calendar.MONTH, 1);
             updateHeaderText(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH));
             refreshCalendarData(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH));
         });
 
-        // 他の初期設定;
-        binding.addButton.setOnClickListener(view -> {
-            var intent = new Intent(this, AddScheduleActivity.class);
-            startActivity(intent);
-        });
-
+        //ホームボタンのクリックリスナー
         binding.homeButton.setOnClickListener(view -> {
             recreate();
         });
 
+        //設定ボタンのクリックリスナー
         binding.settingButton.setOnClickListener(view -> {
             Intent intent = new Intent(CalendarActivity.this, SettingActivity.class);
+            startActivity(intent);
+        });
+
+        // 他の初期設定;
+        binding.addButton.setOnClickListener(view -> {
+            var intent = new Intent(this, AddScheduleActivity.class);
             startActivity(intent);
         });
 
@@ -191,7 +194,7 @@ public class CalendarActivity extends AppCompatActivity {
                 );
                 linearLayout.setLayoutParams(params);
                 linearLayout.setTextAlignment(Button.TEXT_ALIGNMENT_CENTER);
-                linearLayout.setBackgroundResource(R.drawable.border0);
+                linearLayout.setBackgroundResource(R.drawable.borderx);
                 linearLayout.setId(idCounter);
                 tableRow.addView(linearLayout);
                 idCounter++;
@@ -253,16 +256,19 @@ public class CalendarActivity extends AppCompatActivity {
                 addDate(frameLayout,linearLayout,year,month,date,true);
                 calendar.add(Calendar.MONTH, 1);
                 addSchedule(frameLayout,linearLayout,year,month-1,date,busys,i,calls);
+                busys[i].setGray(true);
             } else if (date > calendar.getActualMaximum(Calendar.DAY_OF_MONTH)) {
                 date -= calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
                 addCircle(frameLayout,year,month,date, true);
                 addDate(frameLayout,linearLayout,year,month,date,true);
                 addSchedule(frameLayout,linearLayout,year,month+1,date,busys,i,calls);
+                busys[i].setGray(true);
             } else {
                 addCircle(frameLayout,year,month,date, false);
                 addDate(frameLayout,linearLayout,year,month,date,false);
                 setDefaultBusy(year,month, date,busys,i);
                 addSchedule(frameLayout,linearLayout,year,month,date,busys,i,calls);
+                busys[i].setGray(false);
             }
         }
     }
@@ -368,7 +374,7 @@ public class CalendarActivity extends AppCompatActivity {
                     String repeat = document.getString("繰り返し");
 
                     //忙しさの保存
-                    busys[cell].setDay1Busy(Integer.valueOf(strong));
+                    busys[cell].setBusy(Integer.valueOf(strong));
 
                     Button button = new Button(this);
                     button.setText(title);
@@ -457,7 +463,8 @@ public class CalendarActivity extends AppCompatActivity {
                 binding.lastMonthButton.setEnabled(true);      // ボタン再有効化
                 binding.nextMonthButton.setEnabled(true);
             }
-            //データ取得のカウンタ
+
+            //データ取得のカウンタ(忙しさ設定用)
             int calledcount = calls.incrementAndGet();
             if (calledcount == 42) {
                 viewBusy(busys);
@@ -465,41 +472,50 @@ public class CalendarActivity extends AppCompatActivity {
         });
     }
 
-    //デフォルトの忙しさ反映(当月の曜日操作)
+    //デフォルトの忙しさ反映(当月の曜日走査)
     private void setDefaultBusy(int year, int month, int date, BusyData busys[], int cell) {
         Calendar calendar = Calendar.getInstance();
         calendar.set(year, month, date);
         int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
         switch(dayOfWeek){
             case Calendar.SUNDAY :
-                busys[cell].setDay1Busy(prefDataStore.getInteger("sunBusy").orElse(0));
+                busys[cell].setDefaultBusy(prefDataStore.getInteger("sunBusy").orElse(0));
                 break;
             case Calendar.MONDAY:
-                busys[cell].setDay1Busy(prefDataStore.getInteger("monBusy").orElse(0));
+                busys[cell].setDefaultBusy(prefDataStore.getInteger("monBusy").orElse(0));
                 break;
             case Calendar.TUESDAY:
-                busys[cell].setDay1Busy(prefDataStore.getInteger("tueBusy").orElse(0));
+                busys[cell].setDefaultBusy(prefDataStore.getInteger("tueBusy").orElse(0));
                 break;
             case Calendar.WEDNESDAY:
-                busys[cell].setDay1Busy(prefDataStore.getInteger("wedBusy").orElse(0));
+                busys[cell].setDefaultBusy(prefDataStore.getInteger("wedBusy").orElse(0));
                 break;
             case Calendar.THURSDAY:
-                busys[cell].setDay1Busy(prefDataStore.getInteger("thuBusy").orElse(0));
+                busys[cell].setDefaultBusy(prefDataStore.getInteger("thuBusy").orElse(0));
                 break;
             case Calendar.FRIDAY:
-                busys[cell].setDay1Busy(prefDataStore.getInteger("friBusy").orElse(0));
+                busys[cell].setDefaultBusy(prefDataStore.getInteger("friBusy").orElse(0));
                 break;
             case Calendar.SATURDAY:
-                busys[cell].setDay1Busy(prefDataStore.getInteger("satBusy").orElse(0));
+                busys[cell].setDefaultBusy(prefDataStore.getInteger("satBusy").orElse(0));
                 break;
         }
     }
 
     // 忙しさの表示
     private void viewBusy(BusyData[] busydata) {
+        int busy;
         for(int i=0; i<42; i++){
             LinearLayout ll = findViewById(i);
-            int busy = busydata[i].getDay1Busy() + busydata[i].getDay0Busy()/2;
+            if(i == 0){
+                busy = busydata[i].getBusy() + busydata[i+1].getBusy()/3;
+            } else if (i == 41) {
+                busy = busydata[i].getBusy() + busydata[i-1].getBusy()/3;
+            } else {
+                busy = busydata[i].getBusy() + (busydata[i+1].getBusy()+busydata[i+1].getBusy())/2;
+            }
+            busy += busydata[i].getDefaultBusy();
+            if(busy > 7){busy = 7;}
             switch (busy) {
                 case 7 -> ll.setBackgroundResource(R.drawable.border7);
                 case 6 -> ll.setBackgroundResource(R.drawable.border6);
@@ -509,8 +525,11 @@ public class CalendarActivity extends AppCompatActivity {
                 case 2 -> ll.setBackgroundResource(R.drawable.border2);
                 case 1 -> ll.setBackgroundResource(R.drawable.border1);
                 case 0 -> ll.setBackgroundResource(R.drawable.border0);
+                default -> ll.setBackgroundResource(R.drawable.borderx);
             }
-            //busydata[i+1].setDay0Busy(busy);
+            if(busydata[i].getGray() == true){
+                ll.setBackgroundResource(R.drawable.borderx);
+            }
         }
     }
 
