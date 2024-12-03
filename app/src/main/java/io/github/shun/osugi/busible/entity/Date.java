@@ -45,14 +45,4 @@ public class Date {
         this.day = day;
     }
 
-    // toString()メソッドのオーバーライド
-    @Override
-    public String toString() {
-        return "Date{" +
-                "id=" + id +
-                ", year=" + year +
-                ", month=" + month +
-                ", day=" + day +
-                '}';
-    }
 }

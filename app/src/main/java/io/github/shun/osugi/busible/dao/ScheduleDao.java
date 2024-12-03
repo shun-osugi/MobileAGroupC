@@ -31,7 +31,7 @@ public interface ScheduleDao {
 
     // 全スケジュールを取得
     @Query("SELECT * FROM schedule")
-    LiveData<List<Schedule>>  getAllSchedules();
+    LiveData<List<Schedule>> getAllSchedules();
 
     // 繰り返し設定でスケジュールを取得
     @Query("SELECT * FROM schedule WHERE repeat = :repeat")
