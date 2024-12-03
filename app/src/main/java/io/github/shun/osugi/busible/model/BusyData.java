@@ -1,29 +1,31 @@
 package io.github.shun.osugi.busible.model;
 
 public class BusyData {
-    private int day0Busy;   //1日前のBusy
-    private int day1Busy;   //当日のBusy
+    private int busy;
+    private int defaultBusy;
     private boolean gray;
 
     public BusyData() {
-        this.setDay0Busy(0);
-        this.setDay1Busy(0);
+        this.setBusy(0);
+        this.setDefaultBusy(0);
+        this.setGray(true);
     }
 
-    public int getDay0Busy() {
-        return this.day0Busy;
+    public void setDefaultBusy(int defaultBusy) {
+        this.defaultBusy += defaultBusy;
+    }
+    public int getDefaultBusy() {
+        return  this.defaultBusy;
     }
 
-    public void setDay0Busy(int day0Busy) {
-        this.day0Busy = day0Busy;
+    public void setBusy(int busy) {
+        this.busy += busy;
+        if (this.busy > 7){
+            this.busy = 7;
+        }
     }
-
-    public int getDay1Busy() {
-        return this.day1Busy;
-    }
-
-    public void setDay1Busy(int day1Busy) {
-        this.day1Busy = day1Busy;
+    public int getBusy() {
+        return this.busy;
     }
 
     public void setGray(boolean gray){ this.gray = gray; }

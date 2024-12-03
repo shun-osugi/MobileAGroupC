@@ -374,7 +374,7 @@ public class CalendarActivity extends AppCompatActivity {
                     String repeat = document.getString("繰り返し");
 
                     //忙しさの保存
-                    busys[cell].setDay1Busy(Integer.valueOf(strong));
+                    busys[cell].setBusy(Integer.valueOf(strong));
 
                     Button button = new Button(this);
                     button.setText(title);
@@ -479,34 +479,43 @@ public class CalendarActivity extends AppCompatActivity {
         int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
         switch(dayOfWeek){
             case Calendar.SUNDAY :
-                busys[cell].setDay1Busy(prefDataStore.getInteger("sunBusy").orElse(0));
+                busys[cell].setDefaultBusy(prefDataStore.getInteger("sunBusy").orElse(0));
                 break;
             case Calendar.MONDAY:
-                busys[cell].setDay1Busy(prefDataStore.getInteger("monBusy").orElse(0));
+                busys[cell].setDefaultBusy(prefDataStore.getInteger("monBusy").orElse(0));
                 break;
             case Calendar.TUESDAY:
-                busys[cell].setDay1Busy(prefDataStore.getInteger("tueBusy").orElse(0));
+                busys[cell].setDefaultBusy(prefDataStore.getInteger("tueBusy").orElse(0));
                 break;
             case Calendar.WEDNESDAY:
-                busys[cell].setDay1Busy(prefDataStore.getInteger("wedBusy").orElse(0));
+                busys[cell].setDefaultBusy(prefDataStore.getInteger("wedBusy").orElse(0));
                 break;
             case Calendar.THURSDAY:
-                busys[cell].setDay1Busy(prefDataStore.getInteger("thuBusy").orElse(0));
+                busys[cell].setDefaultBusy(prefDataStore.getInteger("thuBusy").orElse(0));
                 break;
             case Calendar.FRIDAY:
-                busys[cell].setDay1Busy(prefDataStore.getInteger("friBusy").orElse(0));
+                busys[cell].setDefaultBusy(prefDataStore.getInteger("friBusy").orElse(0));
                 break;
             case Calendar.SATURDAY:
-                busys[cell].setDay1Busy(prefDataStore.getInteger("satBusy").orElse(0));
+                busys[cell].setDefaultBusy(prefDataStore.getInteger("satBusy").orElse(0));
                 break;
         }
     }
 
     // 忙しさの表示
     private void viewBusy(BusyData[] busydata) {
+        int busy;
         for(int i=0; i<42; i++){
             LinearLayout ll = findViewById(i);
-            int busy = busydata[i].getDay1Busy() + busydata[i].getDay0Busy()/2;
+            if(i == 0){
+                busy = busydata[i].getBusy() + busydata[i+1].getBusy()/3;
+            } else if (i == 41) {
+                busy = busydata[i].getBusy() + busydata[i-1].getBusy()/3;
+            } else {
+                busy = busydata[i].getBusy() + (busydata[i+1].getBusy()+busydata[i+1].getBusy())/2;
+            }
+            busy += busydata[i].getDefaultBusy();
+            if(busy > 7){busy = 7;}
             switch (busy) {
                 case 7 -> ll.setBackgroundResource(R.drawable.border7);
                 case 6 -> ll.setBackgroundResource(R.drawable.border6);
@@ -516,11 +525,11 @@ public class CalendarActivity extends AppCompatActivity {
                 case 2 -> ll.setBackgroundResource(R.drawable.border2);
                 case 1 -> ll.setBackgroundResource(R.drawable.border1);
                 case 0 -> ll.setBackgroundResource(R.drawable.border0);
+                default -> ll.setBackgroundResource(R.drawable.borderx);
             }
             if(busydata[i].getGray() == true){
                 ll.setBackgroundResource(R.drawable.borderx);
             }
-            //busydata[i+1].setDay0Busy(busy);
         }
     }
 
