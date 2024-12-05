@@ -363,10 +363,10 @@ public class CalendarActivity extends AppCompatActivity {
 
     // 予定の表示
     private void addSchedule(FrameLayout frameLayout, LinearLayout linearLayout, int year, int month, int date, BusyData busys[], int cell, AtomicInteger calls) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        //FirebaseFirestore db = FirebaseFirestore.getInstance();
         scheduleViewModel = new ViewModelProvider(this).get(ScheduleViewModel.class);
         String collectionPath = year + "/" + (month + 1) + "/" + date;
-        CollectionReference calendarRef = db.collection(collectionPath);
+        //CollectionReference calendarRef = db.collection(collectionPath);
 
         scheduleViewModel.getAllSchedules().observe(this, schedules -> {
             if (schedules != null && !schedules.isEmpty()) {
@@ -426,7 +426,7 @@ public class CalendarActivity extends AppCompatActivity {
                         buttonEdit.setOnClickListener(edit -> {
                             // Intent を作成して EditSchedule へ遷移
                             Intent intent = new Intent(CalendarActivity.this, EditScheduleActivity.class);
-                            intent.putExtra("collectionPath", documentID);
+                            //intent.putExtra("collectionPath", documentID);
                             startActivity(intent);
                         });
 
@@ -435,7 +435,7 @@ public class CalendarActivity extends AppCompatActivity {
                             builder2.setTitle("予定を削除しますか？")
                                     .setPositiveButton("削除", (dialog2, which) -> {
                                         // 削除し、ダイアログを閉じる
-                                        db.collection(collectionPath).document(documentID).delete();
+                                        //db.collection(collectionPath).document(documentID).delete();
                                         dialog.dismiss();
                                         refreshCalendarData(year, month+1);
                                     })
