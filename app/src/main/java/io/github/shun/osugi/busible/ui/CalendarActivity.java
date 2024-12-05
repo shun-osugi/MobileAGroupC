@@ -25,6 +25,7 @@ import android.widget.TextView;
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -37,21 +38,28 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
+
 import android.util.Log;
 
 
 import org.json.JSONObject;
 
+import io.github.shun.osugi.busible.entity.Schedule;
 import io.github.shun.osugi.busible.model.BusyData;
 import io.github.shun.osugi.busible.model.HolidayApiFetcher;
 import io.github.shun.osugi.busible.model.PrefDataStore;
 import io.github.shun.osugi.busible.R;
 import io.github.shun.osugi.busible.databinding.ActivityCalendarBinding;
+import io.github.shun.osugi.busible.viewmodel.ScheduleViewModel;
 
 
 public class CalendarActivity extends AppCompatActivity {
     private ActivityCalendarBinding binding;
     private PrefDataStore prefDataStore;
+    private static final String TAG = "ScheduleActivity";
+    private ScheduleViewModel scheduleViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -356,22 +364,20 @@ public class CalendarActivity extends AppCompatActivity {
     // 予定の表示
     private void addSchedule(FrameLayout frameLayout, LinearLayout linearLayout, int year, int month, int date, BusyData busys[], int cell, AtomicInteger calls) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
+        scheduleViewModel = new ViewModelProvider(this).get(ScheduleViewModel.class);
         String collectionPath = year + "/" + (month + 1) + "/" + date;
         CollectionReference calendarRef = db.collection(collectionPath);
 
-        calendarRef.get().addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                for (QueryDocumentSnapshot document : task.getResult()) {
-                    // ここでドキュメントIDを取得し、その中のフィールドを取得する
-                    String documentID = document.getId();  // 一意のdocumentID
-
+        scheduleViewModel.getAllSchedules().observe(this, schedules -> {
+            if (schedules != null && !schedules.isEmpty()) {
+                Schedule sc = schedules.get(0);//繰り返し処理未実装
                     // 予定の各フィールドを取得
-                    String title = document.getString("タイトル");
-                    String startTime = document.getString("開始時間");
-                    String endTime = document.getString("終了時間");
-                    String strong = document.getString("強度");
-                    String memo = document.getString("メモ");
-                    String repeat = document.getString("繰り返し");
+                    String title = sc.getTitle();
+                    String startTime = sc.getStartTime();
+                    String endTime = sc.getEndTime();
+                    int strong = sc.getStrong();
+                    String memo = sc.getMemo();
+                    String repeat = sc.getRepeat();
 
                     //忙しさの保存
                     busys[cell].setBusy(Integer.valueOf(strong));
@@ -448,7 +454,6 @@ public class CalendarActivity extends AppCompatActivity {
                     });
 
                     linearLayout.addView(button);
-                }
 
                 // 読み込み終了後、ロック解除
                 binding.progressBar.setVisibility(View.GONE);  // ローディング表示終了
@@ -456,7 +461,7 @@ public class CalendarActivity extends AppCompatActivity {
                 binding.nextMonthButton.setEnabled(true);
 
             } else {
-                System.err.println("Error getting document: " + task.getException());
+                System.err.println("Error getting document: " + schedules.getClass());
 
                 // 読み込み終了後、ロック解除
                 binding.progressBar.setVisibility(View.GONE);  // ローディング表示終了
