@@ -15,7 +15,7 @@ import io.github.shun.osugi.busible.entity.Schedule;
 public interface ScheduleDao {
     // スケジュールの挿入
     @Insert
-    void insert(Schedule schedule);
+    long insert(Schedule schedule);
 
     // スケジュールの更新
     @Update
