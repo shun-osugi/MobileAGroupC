@@ -31,6 +31,10 @@ public interface DateDao {
     @Delete
     void delete(Date date);
 
+    // idからDateを取得するメソッド
+    @Query("SELECT * FROM date WHERE id = :id LIMIT 1")
+    LiveData<Date> getDateById(int id);
+
     // 非同期で全ての日付を取得するメソッド
     @Query("SELECT * FROM date")
     LiveData<List<Date>> getAllDates();
@@ -39,6 +43,6 @@ public interface DateDao {
     @Query("SELECT * FROM date WHERE year = :year AND month = :month AND day = :day")
     LiveData<Date> getDateBySpecificDay(int year, int month, int day);
 
-    @Query("SELECT * FROM date WHERE year = :year AND month = :month AND day = :day")
-    Date getDate(int year, int month, int day);
+    // @Query("SELECT * FROM date WHERE year = :year AND month = :month AND day = :day")
+    // Date getDate(int year, int month, int day);
 }

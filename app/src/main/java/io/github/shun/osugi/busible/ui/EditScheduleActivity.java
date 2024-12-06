@@ -1,5 +1,7 @@
 package io.github.shun.osugi.busible.ui;
 
+import static java.lang.Integer.parseInt;
+
 import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
@@ -11,6 +13,8 @@ import android.widget.EditText;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -20,6 +24,10 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 import io.github.shun.osugi.busible.databinding.ActivityAddScheduleBinding;
+import io.github.shun.osugi.busible.entity.Date;
+import io.github.shun.osugi.busible.entity.Schedule;
+import io.github.shun.osugi.busible.viewmodel.DateViewModel;
+import io.github.shun.osugi.busible.viewmodel.ScheduleViewModel;
 
 public class EditScheduleActivity extends AppCompatActivity {
 
@@ -34,11 +42,8 @@ public class EditScheduleActivity extends AppCompatActivity {
         binding = ActivityAddScheduleBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // CalendarActivityからdocumentIDを取得し、Firebaseに接続
-        Intent intent = getIntent();
-        String collectionPath = intent.getStringExtra("collectionPath");
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        CollectionReference calendarRef = db.collection(collectionPath);
+        ScheduleViewModel scheduleViewModel = new ViewModelProvider(this).get(ScheduleViewModel.class);
+        DateViewModel dateViewModel = new ViewModelProvider(this).get(DateViewModel.class);
 
         // Button名を変更
         binding.save.setText("変更を適用");
@@ -95,7 +100,94 @@ public class EditScheduleActivity extends AppCompatActivity {
             return false;
         });
 
-        calendarRef.get().addOnCompleteListener(task -> {
+        // CalendarActivityからdocumentIDを取得し、Firebaseに接続
+        Intent intent = getIntent();
+        int scheduleId = intent.getIntExtra("scheduleId", -1);
+
+        scheduleViewModel.getScheduleById(scheduleId).observe(this, schedule -> {
+            if(schedule != null) {
+                // 予定の各フィールドを取得
+                int initialdateId = schedule.getDateId();
+                String initialTitle = schedule.getTitle();
+                String initialStartTime = schedule.getStartTime();
+                String initialEndTime = schedule.getEndTime();
+                int initialStrong = schedule.getStrong();
+                String initialMemo = schedule.getMemo();
+                String initialRepeat = schedule.getRepeat();
+
+                // UIに反映
+                dateViewModel.getDateById(initialdateId).observe(this, date -> {
+                    if (date != null) {
+                        // Dateデータが取得できたら、UIに反映
+                        binding.inputDate.setText(date.getYear() + "/" + (date.getMonth() + 1) + "/" + date.getDay());
+                        binding.inputDate2.setText(date.getYear() + "/" + (date.getMonth() + 1) + "/" + date.getDay());
+                    }
+                });
+                binding.inputText.setText(initialTitle);
+                binding.TimeFirst.setText(initialStartTime);
+                binding.TimeFinal.setText(initialEndTime);
+                binding.memo.setText(initialMemo);
+
+                binding.spinnerNumber.setValue(
+                        java.util.Arrays.asList(strongOptions).indexOf(initialStrong + "")
+                );
+
+                binding.answer.setValue(
+                        java.util.Arrays.asList(repeatOptions).indexOf(initialRepeat)
+                );
+
+                binding.inputDate.setText(selectedYear + "/" + selectedMonth + "/" + selectedDay);
+
+                // 保存ボタンのクリックイベント
+                binding.save.setOnClickListener(view -> {
+                    var title = binding.inputText.getText().toString();
+                    var startTime = binding.TimeFirst.getText().toString();
+                    var endTime = binding.TimeFinal.getText().toString();
+                    var memo = binding.memo.getText().toString();
+                    var strong = strongOptions[binding.spinnerNumber.getValue()];
+                    var repeat = repeatOptions[binding.answer.getValue()];
+
+                    // Firestore に保存するデータを作成
+                    /*Map<String, Object> scheduleData = new HashMap<>();
+                    scheduleData.put("タイトル", title);
+                    scheduleData.put("開始時間", startTime);
+                    scheduleData.put("終了時間", endTime);
+                    scheduleData.put("強度", intensity);
+                    scheduleData.put("メモ", memo);
+                    scheduleData.put("繰り返し", answer);*/
+
+                    // 日付データを追加 (後で変数化)
+                    String year = String.valueOf(selectedYear);
+                    String month = String.valueOf(selectedMonth);
+                    String day = String.valueOf(selectedDay);  // ここに日付の変数を追加
+
+                    // DateIdを取得または作成
+                    LiveData<Date> dateLiveData = dateViewModel.getDateBySpecificDay(selectedYear, selectedMonth, selectedDay);
+                    dateLiveData.observe(this, date -> {
+                        int dateId = getOrMakeDateId(dateViewModel, date);
+                        schedule.setDateId(dateId);
+
+                    });
+
+                    // データを保存
+                    schedule.setTitle(title);
+                    schedule.setStartTime(startTime);
+                    schedule.setEndTime(endTime);
+                    schedule.setStrong(Integer.parseInt(strong));
+                    schedule.setMemo(memo);
+                    schedule.setRepeat(repeat);
+
+                    scheduleViewModel.update(schedule);
+
+                    // メッセージの表示
+                    var message = "タイトル : " + title + "\n日付 : "+year + "/" + month + "/" + day + "\n開始時間 : " + startTime + "\n終了時間 : " + endTime +
+                            "\n強度 : " + strong + "\nメモ : " + memo + "\n繰り返し : " + repeat;
+                    showConfirmationDialog(message);
+                });
+            }
+        });
+
+        /*calendarRef.get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 for (QueryDocumentSnapshot document : task.getResult()) {
                     // 予定の各フィールドを取得
@@ -156,24 +248,30 @@ public class EditScheduleActivity extends AppCompatActivity {
                     });
                 }
             }
-        });
+        });*/
 
     }
 
+    // 確認ダイアログを表示
     private void showConfirmationDialog(String message) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("確認")
-                .setMessage(message)
-                .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
-                .setCancelable(true);
+        if (!isFinishing() && !isDestroyed()) {  // アクティビティが終了していない場合のみ表示
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("確認")
+                    .setMessage(message)
+                    .setPositiveButton("OK", (dialog, which) -> {
+                        dialog.dismiss();
+                        finish();
+                    })
+                    .setCancelable(true);
 
-        AlertDialog dialog = builder.create();
-        dialog.show();
+            AlertDialog dialog = builder.create();
+            dialog.show();
 
-        dialog.getWindow().setLayout(
-                (int) (getResources().getDisplayMetrics().widthPixels * 0.9),
-                WindowManager.LayoutParams.WRAP_CONTENT
-        );
+            dialog.getWindow().setLayout(
+                    (int) (getResources().getDisplayMetrics().widthPixels * 0.9),
+                    WindowManager.LayoutParams.WRAP_CONTENT
+            );
+        }
     }
 
     private void showDatePickerDialog() {
@@ -186,10 +284,13 @@ public class EditScheduleActivity extends AppCompatActivity {
         DatePickerDialog datePickerDialog = new DatePickerDialog(this, (view, selectedYear, selectedMonth, selectedDay) -> {
 
             this.selectedYear = selectedYear;
-            this.selectedMonth = selectedMonth + 1;
+            this.selectedMonth = selectedMonth;
             this.selectedDay = selectedDay;
 
-            binding.inputDate.setText(selectedYear + "/" + this.selectedMonth + "/" + this.selectedDay);
+            // データ更新
+            String dateText = selectedYear + "/" + (this.selectedMonth + 1)+ "/" + this.selectedDay;
+            binding.inputDate.setText(dateText);
+            binding.inputDate2.setText(dateText); // 2つ目の日付フィールドも更新
         }, year, month, day);
 
         datePickerDialog.show();
@@ -224,4 +325,18 @@ public class EditScheduleActivity extends AppCompatActivity {
         timePickerDialog.show();
     }
 
+    // dateId取得
+    private int getOrMakeDateId(DateViewModel dateViewModel, Date date) {
+        if (date != null) {
+            return date.getId();
+        }else{
+            Date newdate = new Date();
+            newdate.setYear(selectedYear);
+            newdate.setMonth(selectedMonth);
+            newdate.setDay(selectedDay);
+            dateViewModel.insert(newdate);
+
+            return newdate.getId();
+        }
+    }
 }

@@ -6,11 +6,15 @@ import androidx.room.ForeignKey;
 import androidx.room.PrimaryKey;
 
 
-@Entity(tableName = "schedule")
-public class Schedule {
+@Entity(tableName = "schedule",
+        foreignKeys = @ForeignKey(entity = Date.class,
+                parentColumns = "id",
+                childColumns = "dateId",
+                onDelete = ForeignKey.CASCADE))public class Schedule {
     @PrimaryKey(autoGenerate = true) // 主キーを自動生成
-    private int id;
+    private int id; // 一意のID
 
+    private int dateId; // 外部キー
     private String title; // 予定のタイトル
     private String memo; // 詳細な説明
     private int strong; //強度
@@ -28,6 +32,14 @@ public class Schedule {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public int getDateId() {
+        return dateId;
+    }
+
+    public void setDateId(int dateId) {
+        this.dateId = dateId;
     }
 
     public int getStrong() { // ここで強度の getter を追加

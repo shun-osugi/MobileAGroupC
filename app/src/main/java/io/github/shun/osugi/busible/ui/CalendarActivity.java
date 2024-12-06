@@ -25,6 +25,7 @@ import android.widget.TextView;
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -37,21 +38,34 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
+
 import android.util.Log;
 
 
 import org.json.JSONObject;
 
+import io.github.shun.osugi.busible.entity.Date;
+import io.github.shun.osugi.busible.entity.Schedule;
 import io.github.shun.osugi.busible.model.BusyData;
 import io.github.shun.osugi.busible.model.HolidayApiFetcher;
 import io.github.shun.osugi.busible.model.PrefDataStore;
 import io.github.shun.osugi.busible.R;
 import io.github.shun.osugi.busible.databinding.ActivityCalendarBinding;
+import io.github.shun.osugi.busible.viewmodel.DateViewModel;
+import io.github.shun.osugi.busible.viewmodel.ScheduleViewModel;
 
 
 public class CalendarActivity extends AppCompatActivity {
+
+    private static final String TAG = "CalendarActivity";
     private ActivityCalendarBinding binding;
     private PrefDataStore prefDataStore;
+
+    private DateViewModel dateViewModel;
+    private ScheduleViewModel scheduleViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +74,10 @@ public class CalendarActivity extends AppCompatActivity {
         binding = ActivityCalendarBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         prefDataStore = PrefDataStore.getInstance(this);
+
+        // ViewModelの初期化
+        dateViewModel = new ViewModelProvider(this).get(DateViewModel.class);
+        scheduleViewModel = new ViewModelProvider(this).get(ScheduleViewModel.class);
 
         // 現在の年と月を取得して headerText に設定
         Calendar calendar = Calendar.getInstance();
@@ -354,8 +372,122 @@ public class CalendarActivity extends AppCompatActivity {
     }
 
     // 予定の表示
-    private void addSchedule(FrameLayout frameLayout, LinearLayout linearLayout, int year, int month, int date, BusyData busys[], int cell, AtomicInteger calls) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private void addSchedule(FrameLayout frameLayout, LinearLayout linearLayout, int year, int month, int day, BusyData busys[], int cell, AtomicInteger calls) {
+        LiveData<Date> dateLiveData = dateViewModel.getDateBySpecificDay(year, month, day);
+        dateLiveData.observe(this, date -> {
+            if (date != null) {
+                int dateId = date.getId();
+                LiveData<List<Schedule>> scheduleLiveData = scheduleViewModel.getSchedulesByDateId(dateId);
+                scheduleLiveData.observe(this, schedules -> {
+                    if (schedules != null) {
+                        for (Schedule schedule : schedules) {
+
+                            // 予定の各フィールドを取得
+                            String title = schedule.getTitle();
+                            String startTime = schedule.getStartTime();
+                            String endTime = schedule.getEndTime();
+                            int strong = schedule.getStrong();
+                            String memo = schedule.getMemo();
+                            String repeat = schedule.getRepeat();
+
+                            Log.d(TAG, "Schedule By ID: " + title + schedule.getId());
+
+                            //忙しさの保存
+                            busys[cell].setBusy(strong);
+
+                            // ボタンの生成
+                            Button button = new Button(this);
+                            button.setText(title);
+                            button.setTextSize(9);
+                            button.setEllipsize(TextUtils.TruncateAt.END);
+                            button.setMaxLines(1);
+
+                            // Buttonの高さを固定
+                            LinearLayout.LayoutParams buttonParams = new LinearLayout.LayoutParams(
+                                    LinearLayout.LayoutParams.MATCH_PARENT,
+                                    100  // 固定の高さ
+                            );
+                            button.setLayoutParams(buttonParams);
+
+                            // 詳細ダイアログを表示
+                            button.setOnClickListener(viewDialog -> {
+                                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                                LayoutInflater inflater = this.getLayoutInflater();
+                                View dialogView = inflater.inflate(R.layout.dialog_detail_layout, null);
+
+                                builder.setView(dialogView);
+
+                                TextView dialogStrong = dialogView.findViewById(R.id.strong);
+                                TextView dialogTitle = dialogView.findViewById(R.id.title);
+                                TextView dialogDate = dialogView.findViewById(R.id.date);
+                                TextView dialogTime = dialogView.findViewById(R.id.time);
+                                TextView dialogRepeat = dialogView.findViewById(R.id.repeat);
+                                TextView dialogMemo = dialogView.findViewById(R.id.memo);
+                                ImageButton buttonEdit = dialogView.findViewById(R.id.buttonEdit);
+                                ImageButton buttonDelete = dialogView.findViewById(R.id.buttonDelete);
+                                ImageButton buttonCancel = dialogView.findViewById(R.id.buttonCancel);
+
+                                dialogStrong.setText(stringBusy(Integer.valueOf(strong)));
+                                dialogTitle.setText(title);
+                                dialogDate.setText(year + "/" + (month+1) + "/" + day);
+                                dialogTime.setText(startTime + " ~ " + endTime);
+                                dialogRepeat.setText(repeat);
+                                dialogMemo.setText(memo);
+
+                                AlertDialog dialog = builder.create();
+                                dialog.show();
+
+                                buttonEdit.setOnClickListener(edit -> {
+                                    // Intent を作成して EditSchedule へ遷移
+                                    Intent intent = new Intent(CalendarActivity.this, EditScheduleActivity.class);
+                                    intent.putExtra("scheduleId", schedule.getId());
+                                    startActivity(intent);
+                                });
+
+                                buttonDelete.setOnClickListener(delete -> {
+                                    AlertDialog.Builder builder2 = new AlertDialog.Builder(this);
+                                    builder2.setTitle("予定を削除しますか？")
+                                            .setPositiveButton("削除", (dialog2, which) -> {
+                                                // 削除し、ダイアログを閉じる
+                                                scheduleViewModel.delete(schedule);
+                                                dialog.dismiss();
+                                                refreshCalendarData(year, month+1);
+                                            })
+                                            .setNegativeButton("キャンセル", (dialog2, which) -> {
+                                                // ダイアログを閉じる
+                                                dialog.dismiss();
+                                            })
+                                            .show();
+
+                                });
+
+                                buttonCancel.setOnClickListener(cancel -> {
+                                    // ダイアログを閉じる
+                                    dialog.dismiss();
+                                });
+                            });
+
+                            linearLayout.addView(button);
+                        }
+                    }
+                });
+            }else{
+                Log.d(TAG, "Date NotFound: " + date);
+            }
+        });
+
+        //データ取得のカウンタ(忙しさ設定用)
+        int calledcount = calls.incrementAndGet();
+        if (calledcount == 42) {
+            viewBusy(busys);
+        }
+
+        // 読み込み終了後、ロック解除
+        binding.progressBar.setVisibility(View.GONE);  // ローディング表示終了
+        binding.lastMonthButton.setEnabled(true);      // ボタン再有効化
+        binding.nextMonthButton.setEnabled(true);
+
+        /*FirebaseFirestore db = FirebaseFirestore.getInstance();
         String collectionPath = year + "/" + (month + 1) + "/" + date;
         CollectionReference calendarRef = db.collection(collectionPath);
 
@@ -464,13 +596,15 @@ public class CalendarActivity extends AppCompatActivity {
                 binding.nextMonthButton.setEnabled(true);
             }
 
+
             //データ取得のカウンタ(忙しさ設定用)
             int calledcount = calls.incrementAndGet();
             if (calledcount == 42) {
                 viewBusy(busys);
             }
-        });
+        });*/
     }
+
 
     //デフォルトの忙しさ反映(当月の曜日走査)
     private void setDefaultBusy(int year, int month, int date, BusyData busys[], int cell) {

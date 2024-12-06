@@ -33,7 +33,7 @@ public class Activity extends AppCompatActivity {
     private void testDatabaseOperations() {
         // 新しいスケジュールを作成
         Schedule newSchedule = new Schedule();
-        newSchedule.setId(1);
+        newSchedule.setDateId(1);
         newSchedule.setTitle("Test Schedule");
         newSchedule.setStartTime("10:00");
         newSchedule.setEndTime("11:00");
