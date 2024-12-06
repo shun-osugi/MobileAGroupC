@@ -27,7 +27,7 @@ public abstract class AppDatabase extends RoomDatabase {
                 if (INSTANCE == null) {
   // Roomデータベースのインスタンスを作成                  
   INSTANCE = Room.databaseBuilder(context.getApplicationContext(),
-                                    AppDatabase.class, "schedule_database")
+                                    AppDatabase.class, "busible_database")
                             .fallbackToDestructiveMigration() // バージョン変更時にデータベースを再作成
                             .build();
                 }

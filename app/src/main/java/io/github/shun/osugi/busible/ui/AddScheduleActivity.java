@@ -15,16 +15,19 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
 import java.util.Calendar;
-import java.util.List;
 
 import io.github.shun.osugi.busible.databinding.ActivityAddScheduleBinding;
+import io.github.shun.osugi.busible.entity.Date;
 import io.github.shun.osugi.busible.entity.Schedule;
-import io.github.shun.osugi.busible.viewmodel.AddScheduleViewModel;
+import io.github.shun.osugi.busible.viewmodel.DateViewModel;
+import io.github.shun.osugi.busible.viewmodel.ScheduleViewModel;
 
 public class AddScheduleActivity extends AppCompatActivity {
 
     private ActivityAddScheduleBinding binding;
-    private AddScheduleViewModel viewModel;
+    private ScheduleViewModel scheduleViewModel;
+    private DateViewModel dateViewModel;
+
 
     private int selectedYear = Calendar.getInstance().get(Calendar.YEAR);
     private int selectedMonth = Calendar.getInstance().get(Calendar.MONTH) + 1; // 1-based
@@ -39,16 +42,9 @@ public class AddScheduleActivity extends AppCompatActivity {
         binding = ActivityAddScheduleBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        viewModel = new ViewModelProvider(this).get(AddScheduleViewModel.class);
-
-        // LiveDataの監視
-        viewModel.getAllSchedules().observe(this, schedules -> {
-            if (schedules != null && !schedules.isEmpty()) {
-                for (Schedule schedule : schedules) {
-                    Log.d("AddScheduleActivity", "Saved schedule: " + schedule.getTitle());
-                }
-            }
-        });
+        // ViewModel の取得
+        scheduleViewModel = new ViewModelProvider(this).get(ScheduleViewModel.class);
+        dateViewModel = new ViewModelProvider(this).get(DateViewModel.class);
 
         // Spinnerの設定
         String[] strongOptions = {"1", "2", "3", "4", "5"};
@@ -104,57 +100,76 @@ public class AddScheduleActivity extends AppCompatActivity {
             String repeatOption = repeatOptions[binding.answer.getValue()];
             String date = selectedYear + "/" + selectedMonth + "/" + selectedDay;
 
-            // Scheduleエンティティの作成
-            Schedule schedule = new Schedule();
-            schedule.setTitle(title);
-            schedule.setMemo(memo);
-            schedule.setStartTime(startTime);
-            schedule.setEndTime(endTime);
-            schedule.setColor(color);
-            schedule.setRepeat(repeatOption);
+            // 非同期でデータを保存
+            new Thread(() -> {
+                // Dateエンティティの保存
+                Date date1 = new Date();
+                date1.setYear(selectedYear);
+                date1.setMonth(selectedMonth);
+                date1.setDay(selectedDay);
+                Log.d("AddScheduleActivity", "Date 作成: " + date1.toString());
 
-            // ViewModelを使って非同期で保存
-            viewModel.insert(schedule);
+                // Date保存
+                long dateId = dateViewModel.insert(date1);
+                Log.d("AddScheduleActivity", "Date 保存成功, ID: " + dateId);
 
+                // Scheduleエンティティの作成
+                Schedule schedule = new Schedule();
+                schedule.setTitle(title);
+                schedule.setMemo(memo);
+                schedule.setStartTime(startTime);
+                schedule.setEndTime(endTime);
+                schedule.setColor(color);
+                schedule.setStrong(intensity);
+                schedule.setRepeat(repeatOption);
+                schedule.setDateId((int) dateId); // DateのIDを外部キーとして設定
 
-            // 保存後にメッセージを表示
-            viewModel.getInsertSuccess().observe(this, success -> {
-                if (success != null && success) {
-                    // 保存成功メッセージ
-                    Toast.makeText(AddScheduleActivity.this, "スケジュールが保存されました！", Toast.LENGTH_SHORT).show();
-                }
-            });
+                Log.d("AddScheduleActivity", "Schedule 作成: " + schedule.toString());
 
-            // ダイアログを表示
-            String message = "タイトル: " + title + "\n日付: " + date + "\n開始時間: " + startTime + "\n終了時間: " + endTime +
-                    "\n強度: " + intensity + "\nメモ: " + memo + "\n繰り返し: " + repeatOption;
-            showConfirmationDialog(message);
+                // Schedule保存
+                scheduleViewModel.insert(schedule);
+                Log.d("AddScheduleActivity", "Schedule 保存成功");
+
+                // UIスレッドでの処理
+                runOnUiThread(() -> {
+                    // ダイアログとトースト表示の前にログを追加
+                    Log.d("AddScheduleActivity", "UIスレッドにてダイアログ表示");
+                    Toast.makeText(this, "スケジュールが保存されました！", Toast.LENGTH_SHORT).show();
+
+                    // ダイアログを表示
+                    String message = "タイトル: " + title + "\n日付: " + date + "\n開始時間: " + startTime + "\n終了時間: " + endTime +
+                            "\n強度: " + intensity + "\nメモ: " + memo + "\n繰り返し: " + repeatOption;
+                    showConfirmationDialog(message);
+                    finish();
+                });
+
+            }).start();
+
         });
-    }
-
-    // 確認ダイアログを表示
-    private void showConfirmationDialog(String message) {
-        if (!isFinishing() && !isDestroyed()) {  // アクティビティが終了していない場合のみ表示
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle("確認")
-                    .setMessage(message)
-                    .setPositiveButton("OK", (dialog, which) -> {
-                        dialog.dismiss();
-                        finish();
-                    })
-                    .setCancelable(true);
-
-            AlertDialog dialog = builder.create();
-            dialog.show();
-
-            dialog.getWindow().setLayout(
-                    (int) (getResources().getDisplayMetrics().widthPixels * 0.9),
-                    WindowManager.LayoutParams.WRAP_CONTENT
-            );
         }
-    }
+// 確認ダイアログを表示
+        private void showConfirmationDialog (String message) {
+            if (!isFinishing() && !isDestroyed()) { // アクティビティが終了していない場合のみ表示
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle("確認")
+                        .setMessage(message)
+                        .setPositiveButton("OK", (dialog, which) -> {
+                            dialog.dismiss();
+                        })
+                        .setCancelable(false);
 
-    // 日付ピッカー
+                AlertDialog dialog = builder.create();
+                dialog.show();
+
+                dialog.getWindow().setLayout(
+                        (int) (getResources().getDisplayMetrics().widthPixels * 0.9),
+                        WindowManager.LayoutParams.WRAP_CONTENT
+                );
+            }
+        }
+
+
+        // 日付ピッカー
     private void showDatePickerDialog() {
         Calendar calendar = Calendar.getInstance();
         int year = calendar.get(Calendar.YEAR);

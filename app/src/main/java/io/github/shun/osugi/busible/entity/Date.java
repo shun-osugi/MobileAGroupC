@@ -7,7 +7,6 @@ import androidx.room.PrimaryKey;
 public class Date {
     @PrimaryKey(autoGenerate = true)
     private int id;
-
     private int year;
     private int month;
     private int day;

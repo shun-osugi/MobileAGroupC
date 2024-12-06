@@ -3,21 +3,32 @@ package io.github.shun.osugi.busible.entity;
 // 必要なインポート文
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
+import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
 
-@Entity(tableName = "schedule")
+@Entity(
+        tableName = "schedule",
+        foreignKeys = @ForeignKey(
+                entity = Date.class,
+                parentColumns = "id",
+                childColumns = "dateId",
+                onDelete = ForeignKey.CASCADE
+        ),
+        indices = @Index(value = "dateId") // インデックスを追加
+)
+
 public class Schedule {
     @PrimaryKey(autoGenerate = true) // 主キーを自動生成
     private int id;
-
     private String title; // 予定のタイトル
     private String memo; // 詳細な説明
-    private int strong; //強度
+    private String strong; //強度
     private String startTime; // 開始時間
     private String endTime; // 終了時間
     private String color; // 色
     private String repeat; //繰り返し
+    private int dateId; // Dateの主キーを参照
 
 
 
@@ -30,11 +41,11 @@ public class Schedule {
         this.id = id;
     }
 
-    public int getStrong() { // ここで強度の getter を追加
+    public String getStrong() { // ここで強度の getter を追加
         return strong;
     }
 
-    public void setStrong(int strong) { // 強度の setter
+    public void setStrong(String strong) { // 強度の setter
         this.strong = strong;
     }
 
@@ -84,6 +95,14 @@ public class Schedule {
 
     public void setRepeat(String repeat) {
         this.repeat = repeat;
+    }
+
+    public int getDateId() {
+        return dateId;
+    }
+
+    public void setDateId(int dateId) {
+        this.dateId = dateId;
     }
 
 }
