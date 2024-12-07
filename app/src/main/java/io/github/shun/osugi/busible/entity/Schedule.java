@@ -3,14 +3,21 @@ package io.github.shun.osugi.busible.entity;
 // 必要なインポート文
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
+import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
 
-@Entity(tableName = "schedule",
-        foreignKeys = @ForeignKey(entity = Date.class,
+@Entity(
+        tableName = "schedule",
+        foreignKeys = @ForeignKey(
+                entity = Date.class,
                 parentColumns = "id",
                 childColumns = "dateId",
-                onDelete = ForeignKey.CASCADE))public class Schedule {
+                onDelete = ForeignKey.CASCADE
+        ),
+        indices = @Index(value = "dateId") // インデックスを追加
+)
+public class Schedule {
     @PrimaryKey(autoGenerate = true) // 主キーを自動生成
     private int id; // 一意のID
 
