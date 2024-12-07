@@ -34,6 +34,11 @@ public class DateViewModel extends AndroidViewModel {
         return dateDao.getDateBySpecificDay(year, month, day);
     }
 
+    // IDで日付を取得
+    public LiveData<Date> getDateById(int id) {
+        return dateDao.getDateById(id);
+    }
+
     // 日付を挿入
     public void insert(Date date) {
         new Thread(() -> {

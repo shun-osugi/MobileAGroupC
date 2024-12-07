@@ -8,26 +8,27 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.WindowManager;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProvider;
 
 import java.util.Calendar;
-import java.util.List;
 
 import io.github.shun.osugi.busible.databinding.ActivityAddScheduleBinding;
+import io.github.shun.osugi.busible.entity.Date;
 import io.github.shun.osugi.busible.entity.Schedule;
-import io.github.shun.osugi.busible.viewmodel.AddScheduleViewModel;
+import io.github.shun.osugi.busible.viewmodel.DateViewModel;
+import io.github.shun.osugi.busible.viewmodel.ScheduleViewModel;
 
 public class AddScheduleActivity extends AppCompatActivity {
 
+    private static final String TAG = "AddScheduleActivity";
     private ActivityAddScheduleBinding binding;
-    private AddScheduleViewModel viewModel;
 
     private int selectedYear = Calendar.getInstance().get(Calendar.YEAR);
-    private int selectedMonth = Calendar.getInstance().get(Calendar.MONTH) + 1; // 1-based
+    private int selectedMonth = Calendar.getInstance().get(Calendar.MONTH); // 1-based
     private int selectedDay = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
 
     private String color = "#FFFFFF";  // 色の初期値(とりあえず白)
@@ -39,16 +40,18 @@ public class AddScheduleActivity extends AppCompatActivity {
         binding = ActivityAddScheduleBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        viewModel = new ViewModelProvider(this).get(AddScheduleViewModel.class);
+        ScheduleViewModel scheduleViewModel = new ViewModelProvider(this).get(ScheduleViewModel.class);
+        DateViewModel dateViewModel = new ViewModelProvider(this).get(DateViewModel.class);
+        // viewModel = new ViewModelProvider(this).get(AddScheduleViewModel.class);
 
         // LiveDataの監視
-        viewModel.getAllSchedules().observe(this, schedules -> {
+        /*viewModel.getAllSchedules().observe(this, schedules -> {
             if (schedules != null && !schedules.isEmpty()) {
                 for (Schedule schedule : schedules) {
                     Log.d("AddScheduleActivity", "Saved schedule: " + schedule.getTitle());
                 }
             }
-        });
+        });*/
 
         // Spinnerの設定
         String[] strongOptions = {"1", "2", "3", "4", "5"};
@@ -100,37 +103,50 @@ public class AddScheduleActivity extends AppCompatActivity {
             String startTime = binding.TimeFirst.getText().toString();
             String endTime = binding.TimeFinal.getText().toString();
             String memo = binding.memo.getText().toString();
-            String intensity = strongOptions[binding.spinnerNumber.getValue()];
+            String strong = strongOptions[binding.spinnerNumber.getValue()];
             String repeatOption = repeatOptions[binding.answer.getValue()];
-            String date = selectedYear + "/" + selectedMonth + "/" + selectedDay;
+            String selectedDate = selectedYear + "/" + (selectedMonth + 1) + "/" + selectedDay;
 
-            // Scheduleエンティティの作成
-            Schedule schedule = new Schedule();
-            schedule.setTitle(title);
-            schedule.setMemo(memo);
-            schedule.setStartTime(startTime);
-            schedule.setEndTime(endTime);
-            schedule.setColor(color);
-            schedule.setRepeat(repeatOption);
+            LiveData<Date> dateLiveData = dateViewModel.getDateBySpecificDay(selectedYear, selectedMonth, selectedDay);
+            dateLiveData.observe(this, date -> {
+                int dateId = getOrMakeDateId(dateViewModel, date);
+                saveSchedule(scheduleViewModel, dateId, title, memo, strong, startTime, endTime, color, repeatOption);
 
-            // ViewModelを使って非同期で保存
-            viewModel.insert(schedule);
-
+            });
 
             // 保存後にメッセージを表示
-            viewModel.getInsertSuccess().observe(this, success -> {
+            /*viewModel.getInsertSuccess().observe(this, success -> {
                 if (success != null && success) {
                     // 保存成功メッセージ
                     Toast.makeText(AddScheduleActivity.this, "スケジュールが保存されました！", Toast.LENGTH_SHORT).show();
                 }
-            });
+            });*/
 
             // ダイアログを表示
-            String message = "タイトル: " + title + "\n日付: " + date + "\n開始時間: " + startTime + "\n終了時間: " + endTime +
-                    "\n強度: " + intensity + "\nメモ: " + memo + "\n繰り返し: " + repeatOption;
+            String message = "タイトル: " + title + "\n日付: " + selectedDate + "\n開始時間: " + startTime + "\n終了時間: " + endTime +
+                    "\n強度: " + strong + "\nメモ: " + memo + "\n繰り返し: " + repeatOption;
             showConfirmationDialog(message);
         });
     }
+
+    // データベースに保存
+    private void saveSchedule(ScheduleViewModel scheduleViewModel,int dateId, String title, String memo, String strong,
+                              String startTime, String endTime, String color, String repeatOption) {
+        Schedule schedule = new Schedule();
+        schedule.setDateId(dateId);
+        schedule.setTitle(title);
+        schedule.setMemo(memo);
+        schedule.setStrong(Integer.parseInt(strong));
+        schedule.setStartTime(startTime);
+        schedule.setEndTime(endTime);
+        schedule.setColor(color);
+        schedule.setRepeat(repeatOption);
+
+        // スケジュールを非同期で保存
+        scheduleViewModel.insert(schedule);
+        Log.d(TAG, "Schedule By ID: " + schedule.getTitle());
+    }
+
 
     // 確認ダイアログを表示
     private void showConfirmationDialog(String message) {
@@ -163,11 +179,11 @@ public class AddScheduleActivity extends AppCompatActivity {
 
         DatePickerDialog datePickerDialog = new DatePickerDialog(this, (view, selectedYear, selectedMonth, selectedDay) -> {
             this.selectedYear = selectedYear;
-            this.selectedMonth = selectedMonth + 1; // 月は0-basedなので1を足す
+            this.selectedMonth = selectedMonth;
             this.selectedDay = selectedDay;
 
             // データ更新
-            String dateText = selectedYear + "/" + this.selectedMonth + "/" + this.selectedDay;
+            String dateText = selectedYear + "/" + (this.selectedMonth + 1) + "/" + this.selectedDay;
             binding.inputDate.setText(dateText);
             binding.inputDate2.setText(dateText); // 2つ目の日付フィールドも更新
         }, year, month, day);
@@ -188,5 +204,20 @@ public class AddScheduleActivity extends AppCompatActivity {
                 }, hour, minute, true);
 
         timePickerDialog.show();
+    }
+
+    // dateId取得
+    private int getOrMakeDateId(DateViewModel dateViewModel, Date date) {
+        if (date != null) {
+            return date.getId();
+        }else{
+            Date newdate = new Date();
+            newdate.setYear(selectedYear);
+            newdate.setMonth(selectedMonth);
+            newdate.setDay(selectedDay);
+            dateViewModel.insert(newdate);
+
+            return newdate.getId();
+        }
     }
 }

@@ -25,9 +25,13 @@ public interface ScheduleDao {
     @Delete
     void delete(Schedule schedule);
 
-    // IDでスケジュールを取得
+    // idでスケジュールを取得
     @Query("SELECT * FROM schedule WHERE id = :id")
     LiveData<Schedule> getScheduleById(int id);
+
+    // dateIdでスケジュールを取得
+    @Query("SELECT * FROM schedule WHERE Dateid = :dateId")
+    LiveData<List<Schedule>> getSchedulesByDateId(int dateId);
 
     // 全スケジュールを取得
     @Query("SELECT * FROM schedule")
