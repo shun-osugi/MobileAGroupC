@@ -1,98 +1,112 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:padding="32dp"
-    tools:context=".ui.CalendarActivity">
+    android:layout_height="wrap_content"
+    android:background="#F4F3F3"
+    >
 
+    <!-- ストロング -->
     <TextView
         android:id="@+id/strong"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="①"
         android:textSize="20dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="15dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
+        app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        android:id="@+id/title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="8dp"
-        android:hint="タイトルを追加"
-        android:textSize="20dp"
-        app:layout_constraintStart_toEndOf="@id/strong"
-        app:layout_constraintTop_toTopOf="@+id/strong" />
 
     <TextView
         android:id="@+id/date"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="18dp"
+        android:layout_marginStart="30dp"
         android:hint="YYYY/MM/DD"
-        app:layout_constraintBottom_toTopOf="@+id/memo"
-        app:layout_constraintEnd_toStartOf="@id/time"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/title" />
+        app:layout_constraintBottom_toBottomOf="@id/strong"
+        app:layout_constraintStart_toEndOf="@id/strong" />
 
-    <TextView
-        android:id="@+id/time"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:hint="XX:XX ~ XX:XX"
-        app:layout_constraintEnd_toStartOf="@id/repeat"
-        app:layout_constraintStart_toEndOf="@id/date"
-        app:layout_constraintTop_toTopOf="@+id/date" />
 
-    <TextView
-        android:id="@+id/repeat"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:hint="繰り返し：なし"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/time"
-        app:layout_constraintTop_toTopOf="@+id/date" />
-
-    <TextView
-        android:id="@+id/memo"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginTop="16dp"
-        android:hint="説明を追加"
-        app:layout_constraintBottom_toBottomOf="parent"
+    <LinearLayout
+        android:id="@+id/title_row"
+        android:layout_width="0dp"
+        android:layout_height="70dp"
+        android:layout_marginTop="50dp"
+        android:background="#FFFFFF"
+        android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/date" />
+        app:layout_constraintTop_toTopOf="parent"
+        >
 
-    <ImageButton
-        android:id="@+id/buttonEdit"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
-        android:src="@drawable/ic_edit"
-        android:background="@color/white"
-        app:layout_constraintEnd_toStartOf="@id/buttonDelete"
-        app:layout_constraintTop_toTopOf="parent" />
+        <TextView
+            android:id="@+id/time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:hint="XX:XX ~ XX:XX"
+            android:layout_gravity="center_vertical"
+            app:layout_constraintStart_toStartOf="@+id/strong"
+            app:layout_constraintTop_toBottomOf="@id/strong" />
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="30dp"
+            android:hint="タイトルを追加"
+            android:textSize="20dp"
+            app:layout_constraintBottom_toBottomOf="@id/time"
+            app:layout_constraintStart_toEndOf="@id/time" />
+
+
+        <ImageButton
+            android:id="@+id/buttonEdit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:src="@drawable/ic_arrow_forward"
+            android:layout_marginStart="90dp"
+            android:layout_gravity="center_vertical"
+            app:layout_constraintBottom_toBottomOf="@id/title"
+            app:layout_constraintEnd_toEndOf="@+id/title_row" />
+
+    </LinearLayout>
 
     <ImageButton
         android:id="@+id/buttonDelete"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
+        android:layout_gravity="center_vertical"
+        android:background="@android:color/transparent"
         android:src="@drawable/ic_delete"
-        android:background="@color/white"
-        app:layout_constraintEnd_toStartOf="@id/buttonCancel"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_marginEnd="30dp"
+        app:layout_constraintBottom_toBottomOf="@id/buttonCancel"
+        app:layout_constraintEnd_toStartOf="@id/buttonCancel" />
 
     <ImageButton
         android:id="@+id/buttonCancel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:src="@drawable/ic_cancel"
-        android:background="@color/white"
+        android:layout_marginEnd="20dp"
+        android:layout_marginTop="15dp"
+        android:background="@android:color/transparent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/end_time_row"
+        android:layout_width="0dp"
+        android:layout_height="150dp"
+        android:background="#F4F3F3"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/title_row"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

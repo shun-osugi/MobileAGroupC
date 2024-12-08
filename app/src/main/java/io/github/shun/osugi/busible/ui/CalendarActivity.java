@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -411,18 +412,18 @@ public class CalendarActivity extends AppCompatActivity {
 
                             // 詳細ダイアログを表示
                             button.setOnClickListener(viewDialog -> {
-                                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                                BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this);
                                 LayoutInflater inflater = this.getLayoutInflater();
                                 View dialogView = inflater.inflate(R.layout.dialog_detail_layout, null);
 
-                                builder.setView(dialogView);
+                                bottomSheetDialog.setContentView(dialogView);
 
                                 TextView dialogStrong = dialogView.findViewById(R.id.strong);
                                 TextView dialogTitle = dialogView.findViewById(R.id.title);
                                 TextView dialogDate = dialogView.findViewById(R.id.date);
                                 TextView dialogTime = dialogView.findViewById(R.id.time);
-                                TextView dialogRepeat = dialogView.findViewById(R.id.repeat);
-                                TextView dialogMemo = dialogView.findViewById(R.id.memo);
+                                //TextView dialogRepeat = dialogView.findViewById(R.id.repeat);
+                                //TextView dialogMemo = dialogView.findViewById(R.id.memo);
                                 ImageButton buttonEdit = dialogView.findViewById(R.id.buttonEdit);
                                 ImageButton buttonDelete = dialogView.findViewById(R.id.buttonDelete);
                                 ImageButton buttonCancel = dialogView.findViewById(R.id.buttonCancel);
@@ -431,11 +432,11 @@ public class CalendarActivity extends AppCompatActivity {
                                 dialogTitle.setText(title);
                                 dialogDate.setText(year + "/" + (month+1) + "/" + day);
                                 dialogTime.setText(startTime + " ~ " + endTime);
-                                dialogRepeat.setText(repeat);
-                                dialogMemo.setText(memo);
+                                //dialogRepeat.setText(repeat);
+                                //dialogMemo.setText(memo);
 
-                                AlertDialog dialog = builder.create();
-                                dialog.show();
+                                bottomSheetDialog.show();
+
 
                                 buttonEdit.setOnClickListener(edit -> {
                                     // Intent を作成して EditSchedule へ遷移
@@ -450,12 +451,12 @@ public class CalendarActivity extends AppCompatActivity {
                                             .setPositiveButton("削除", (dialog2, which) -> {
                                                 // 削除し、ダイアログを閉じる
                                                 scheduleViewModel.delete(schedule);
-                                                dialog.dismiss();
+                                                bottomSheetDialog.dismiss();
                                                 refreshCalendarData(year, month+1);
                                             })
                                             .setNegativeButton("キャンセル", (dialog2, which) -> {
                                                 // ダイアログを閉じる
-                                                dialog.dismiss();
+                                                bottomSheetDialog.dismiss();
                                             })
                                             .show();
 
@@ -463,7 +464,7 @@ public class CalendarActivity extends AppCompatActivity {
 
                                 buttonCancel.setOnClickListener(cancel -> {
                                     // ダイアログを閉じる
-                                    dialog.dismiss();
+                                    bottomSheetDialog.dismiss();
                                 });
                             });
 
@@ -471,8 +472,6 @@ public class CalendarActivity extends AppCompatActivity {
                         }
                     }
                 });
-            }else{
-                Log.d(TAG, "Date NotFound: " + date);
             }
         });
 
