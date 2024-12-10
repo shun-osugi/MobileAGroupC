@@ -239,7 +239,7 @@ public class CalendarActivity extends AppCompatActivity {
         for (int h = 0; h < 43; h++) {
             busys[h] = new BusyData();
         }
-        // Firestoreの呼び出しが完了した回数
+        // 完了した回数
         AtomicInteger calls = new AtomicInteger(0);
 
         // 未取得の年なら祝日を新たに取得
@@ -485,123 +485,6 @@ public class CalendarActivity extends AppCompatActivity {
         binding.progressBar.setVisibility(View.GONE);  // ローディング表示終了
         binding.lastMonthButton.setEnabled(true);      // ボタン再有効化
         binding.nextMonthButton.setEnabled(true);
-
-        /*FirebaseFirestore db = FirebaseFirestore.getInstance();
-        String collectionPath = year + "/" + (month + 1) + "/" + date;
-        CollectionReference calendarRef = db.collection(collectionPath);
-
-        calendarRef.get().addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                for (QueryDocumentSnapshot document : task.getResult()) {
-                    // ここでドキュメントIDを取得し、その中のフィールドを取得する
-                    String documentID = document.getId();  // 一意のdocumentID
-
-                    // 予定の各フィールドを取得
-                    String title = document.getString("タイトル");
-                    String startTime = document.getString("開始時間");
-                    String endTime = document.getString("終了時間");
-                    String strong = document.getString("強度");
-                    String memo = document.getString("メモ");
-                    String repeat = document.getString("繰り返し");
-
-                    //忙しさの保存
-                    busys[cell].setBusy(Integer.valueOf(strong));
-
-                    Button button = new Button(this);
-                    button.setText(title);
-                    button.setTextSize(9);
-                    button.setEllipsize(TextUtils.TruncateAt.END);
-                    button.setMaxLines(1);
-
-                    // Buttonの高さを固定
-                    LinearLayout.LayoutParams buttonParams = new LinearLayout.LayoutParams(
-                            LinearLayout.LayoutParams.MATCH_PARENT,
-                            100  // 固定の高さ
-                    );
-                    button.setLayoutParams(buttonParams);
-
-                    // 詳細ダイアログを表示
-                    button.setOnClickListener(viewDialog -> {
-                        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                        LayoutInflater inflater = this.getLayoutInflater();
-                        View dialogView = inflater.inflate(R.layout.dialog_detail_layout, null);
-
-                        builder.setView(dialogView);
-
-                        TextView dialogStrong = dialogView.findViewById(R.id.strong);
-                        TextView dialogTitle = dialogView.findViewById(R.id.title);
-                        TextView dialogDate = dialogView.findViewById(R.id.date);
-                        TextView dialogTime = dialogView.findViewById(R.id.time);
-                        TextView dialogRepeat = dialogView.findViewById(R.id.repeat);
-                        TextView dialogMemo = dialogView.findViewById(R.id.memo);
-                        ImageButton buttonEdit = dialogView.findViewById(R.id.buttonEdit);
-                        ImageButton buttonDelete = dialogView.findViewById(R.id.buttonDelete);
-                        ImageButton buttonCancel = dialogView.findViewById(R.id.buttonCancel);
-
-                        dialogStrong.setText(stringBusy(Integer.valueOf(strong)));
-                        dialogTitle.setText(title + "");
-                        dialogDate.setText(year + "/" + (month+1) + "/" + date);
-                        dialogTime.setText(startTime + " ~ " + endTime);
-                        dialogRepeat.setText(repeat + "");
-                        dialogMemo.setText(memo + "");
-
-                        AlertDialog dialog = builder.create();
-                        dialog.show();
-
-                        buttonEdit.setOnClickListener(edit -> {
-                            // Intent を作成して EditSchedule へ遷移
-                            Intent intent = new Intent(CalendarActivity.this, EditScheduleActivity.class);
-                            intent.putExtra("collectionPath", documentID);
-                            startActivity(intent);
-                        });
-
-                        buttonDelete.setOnClickListener(delete -> {
-                            AlertDialog.Builder builder2 = new AlertDialog.Builder(this);
-                            builder2.setTitle("予定を削除しますか？")
-                                    .setPositiveButton("削除", (dialog2, which) -> {
-                                        // 削除し、ダイアログを閉じる
-                                        db.collection(collectionPath).document(documentID).delete();
-                                        dialog.dismiss();
-                                        refreshCalendarData(year, month+1);
-                                    })
-                                    .setNegativeButton("キャンセル", (dialog2, which) -> {
-                                        // ダイアログを閉じる
-                                        dialog.dismiss();
-                                    })
-                                    .show();
-
-                        });
-
-                        buttonCancel.setOnClickListener(cancel -> {
-                            // ダイアログを閉じる
-                            dialog.dismiss();
-                        });
-                    });
-
-                    linearLayout.addView(button);
-                }
-
-                // 読み込み終了後、ロック解除
-                binding.progressBar.setVisibility(View.GONE);  // ローディング表示終了
-                binding.lastMonthButton.setEnabled(true);      // ボタン再有効化
-                binding.nextMonthButton.setEnabled(true);
-
-            } else {
-                System.err.println("Error getting document: " + task.getException());
-
-                // 読み込み終了後、ロック解除
-                binding.progressBar.setVisibility(View.GONE);  // ローディング表示終了
-                binding.lastMonthButton.setEnabled(true);      // ボタン再有効化
-                binding.nextMonthButton.setEnabled(true);
-            }
-
-
-            //データ取得のカウンタ(忙しさ設定用)
-            int calledcount = calls.incrementAndGet();
-            if (calledcount == 42) {
-                viewBusy(busys);
-            }
-        });*/
     }
 
 

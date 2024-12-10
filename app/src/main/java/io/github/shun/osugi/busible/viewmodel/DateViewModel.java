@@ -15,7 +15,6 @@ public class DateViewModel extends AndroidViewModel {
 
     private DateDao dateDao;
     private LiveData<List<Date>> allDates;
-    private LiveData<Date> dateBySpecificDay;
 
     public DateViewModel(Application application) {
         super(application);
