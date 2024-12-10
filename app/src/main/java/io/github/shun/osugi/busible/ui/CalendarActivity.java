@@ -236,11 +236,9 @@ public class CalendarActivity extends AppCompatActivity {
         calendar.set(year, month, 1);
         int firstDay = 0;
         BusyData[] busys = new BusyData[43];
-        for (int h = 0; h < 43; h++) {
+        for (int h = 0; h < 42; h++) {
             busys[h] = new BusyData();
         }
-        // 完了した回数
-        AtomicInteger calls = new AtomicInteger(0);
 
         // 未取得の年なら祝日を新たに取得
         if (!fetchedYears.contains(year)) {setHolidays(year);}
@@ -274,19 +272,19 @@ public class CalendarActivity extends AppCompatActivity {
                 addCircle(frameLayout,year,month,date, true);
                 addDate(frameLayout,linearLayout,year,month,date,true);
                 calendar.add(Calendar.MONTH, 1);
-                addSchedule(frameLayout,linearLayout,year,month-1,date,busys,i,calls);
+                addSchedule(frameLayout,linearLayout,year,month-1,date,busys,i);
                 busys[i].setGray(true);
             } else if (date > calendar.getActualMaximum(Calendar.DAY_OF_MONTH)) {
                 date -= calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
                 addCircle(frameLayout,year,month,date, true);
                 addDate(frameLayout,linearLayout,year,month,date,true);
-                addSchedule(frameLayout,linearLayout,year,month+1,date,busys,i,calls);
+                addSchedule(frameLayout,linearLayout,year,month+1,date,busys,i);
                 busys[i].setGray(true);
             } else {
                 addCircle(frameLayout,year,month,date, false);
                 addDate(frameLayout,linearLayout,year,month,date,false);
                 setDefaultBusy(year,month, date,busys,i);
-                addSchedule(frameLayout,linearLayout,year,month,date,busys,i,calls);
+                addSchedule(frameLayout,linearLayout,year,month,date,busys,i);
                 busys[i].setGray(false);
             }
         }
@@ -373,7 +371,7 @@ public class CalendarActivity extends AppCompatActivity {
     }
 
     // 予定の表示
-    private void addSchedule(FrameLayout frameLayout, LinearLayout linearLayout, int year, int month, int day, BusyData busys[], int cell, AtomicInteger calls) {
+    private void addSchedule(FrameLayout frameLayout, LinearLayout linearLayout, int year, int month, int day, BusyData busys[], int cell) {
         LiveData<Date> dateLiveData = dateViewModel.getDateBySpecificDay(year, month, day);
         dateLiveData.observe(this, date -> {
             if (date != null) {
@@ -393,8 +391,9 @@ public class CalendarActivity extends AppCompatActivity {
 
                             Log.d(TAG, "Schedule By ID: " + title + schedule.getId());
 
-                            //忙しさの保存
+                            //忙しさの表示
                             busys[cell].setBusy(strong);
+                            viewBusy(busys);
 
                             // ボタンの生成
                             Button button = new Button(this);
@@ -475,16 +474,11 @@ public class CalendarActivity extends AppCompatActivity {
             }
         });
 
-        //データ取得のカウンタ(忙しさ設定用)
-        int calledcount = calls.incrementAndGet();
-        if (calledcount == 42) {
-            viewBusy(busys);
-        }
-
         // 読み込み終了後、ロック解除
         binding.progressBar.setVisibility(View.GONE);  // ローディング表示終了
         binding.lastMonthButton.setEnabled(true);      // ボタン再有効化
         binding.nextMonthButton.setEnabled(true);
+        viewBusy(busys);
     }
 
 
@@ -528,7 +522,7 @@ public class CalendarActivity extends AppCompatActivity {
             } else if (i == 41) {
                 busy = busydata[i].getBusy() + busydata[i-1].getBusy()/3;
             } else {
-                busy = busydata[i].getBusy() + (busydata[i+1].getBusy()+busydata[i+1].getBusy())/2;
+                busy = busydata[i].getBusy() + (busydata[i-1].getBusy()+busydata[i+1].getBusy())/2;
             }
             busy += busydata[i].getDefaultBusy();
             if(busy > 7){busy = 7;}
