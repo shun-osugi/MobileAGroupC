@@ -10,23 +10,17 @@ import java.util.List;
 import io.github.shun.osugi.busible.dao.ScheduleDao;
 import io.github.shun.osugi.busible.database.AppDatabase;
 import io.github.shun.osugi.busible.entity.Schedule;
-import io.github.shun.osugi.busible.repository.ScheduleRepository;
 
 public class ScheduleViewModel extends AndroidViewModel {
     private ScheduleDao scheduleDao;
     private LiveData<List<Schedule>> allSchedules;
-    private LiveData<Schedule> scheduleById;
-    private LiveData<List<Schedule>> schedulesByRepeat;
-    private LiveData<List<Schedule>> schedulesByStartTime;
-    private LiveData<List<Schedule>> schedulesByEndTime;
-    private ScheduleRepository repository;
+
 
     public ScheduleViewModel(Application application) {
         super(application);
         AppDatabase db = AppDatabase.getDatabase(application);
         scheduleDao = db.scheduleDao();
         allSchedules = scheduleDao.getAllSchedules();
-        repository = new ScheduleRepository(application);
     }
 
     // スケジュールの挿入
@@ -46,12 +40,12 @@ public class ScheduleViewModel extends AndroidViewModel {
 
     // idでスケジュールを取得
     public LiveData<Schedule> getScheduleById(int id) {
-        return repository.scheduleDao.getScheduleById(id);
+        return scheduleDao.getScheduleById(id);
     }
 
     // dateIdでスケジュールを取得
     public LiveData<List<Schedule>> getSchedulesByDateId(int id) {
-        return repository.scheduleDao.getSchedulesByDateId(id);
+        return scheduleDao.getSchedulesByDateId(id);
     }
 
     // 全スケジュールを取得

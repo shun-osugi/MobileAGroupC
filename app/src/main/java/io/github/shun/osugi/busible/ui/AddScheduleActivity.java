@@ -42,16 +42,6 @@ public class AddScheduleActivity extends AppCompatActivity {
 
         ScheduleViewModel scheduleViewModel = new ViewModelProvider(this).get(ScheduleViewModel.class);
         DateViewModel dateViewModel = new ViewModelProvider(this).get(DateViewModel.class);
-        // viewModel = new ViewModelProvider(this).get(AddScheduleViewModel.class);
-
-        // LiveDataの監視
-        /*viewModel.getAllSchedules().observe(this, schedules -> {
-            if (schedules != null && !schedules.isEmpty()) {
-                for (Schedule schedule : schedules) {
-                    Log.d("AddScheduleActivity", "Saved schedule: " + schedule.getTitle());
-                }
-            }
-        });*/
 
         // Spinnerの設定
         String[] strongOptions = {"1", "2", "3", "4", "5"};
@@ -113,14 +103,6 @@ public class AddScheduleActivity extends AppCompatActivity {
                 saveSchedule(scheduleViewModel, dateId, title, memo, strong, startTime, endTime, color, repeatOption);
 
             });
-
-            // 保存後にメッセージを表示
-            /*viewModel.getInsertSuccess().observe(this, success -> {
-                if (success != null && success) {
-                    // 保存成功メッセージ
-                    Toast.makeText(AddScheduleActivity.this, "スケジュールが保存されました！", Toast.LENGTH_SHORT).show();
-                }
-            });*/
 
             // ダイアログを表示
             String message = "タイトル: " + title + "\n日付: " + selectedDate + "\n開始時間: " + startTime + "\n終了時間: " + endTime +
