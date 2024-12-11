@@ -27,12 +27,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -40,7 +36,6 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.util.Log;
@@ -381,25 +376,47 @@ public class CalendarActivity extends AppCompatActivity {
             }
         });
 
-        // 毎月のスケジュール
-        LiveData<List<Schedule>> repeatScheduleLiveData = scheduleViewModel.getSchedulesByRepeat("毎月");
-        repeatScheduleLiveData.observe(this, repeatSchedules -> {
-            if (repeatSchedules != null) {
-                for (Schedule repeatSchedule : repeatSchedules) {
-                    int repeatDataId = repeatSchedule.getDateId();
-                    LiveData<Date> repeatDateLiveData = dateViewModel.getDateById(repeatDataId);
-                    repeatDateLiveData.observe(this, repeatDates -> {
-                        int dataYear = repeatDates.getYear();
-                        int dataMonth = repeatDates.getMonth();
-                        int dataDate = repeatDates.getDay();
+        //繰り返しの予定
+        String[] repeatOptions = {"毎週", "隔週", "毎月"};
+        for (String repeatOption : repeatOptions) {
+            LiveData<List<Schedule>> repeatScheduleLiveData = scheduleViewModel.getSchedulesByRepeat(repeatOption);
+            repeatScheduleLiveData.observe(this, repeatSchedules -> {
+                if (repeatSchedules != null) {
+                    for (Schedule repeatSchedule : repeatSchedules) {
+                        int repeatDataId = repeatSchedule.getDateId();
+                        LiveData<Date> repeatDateLiveData = dateViewModel.getDateById(repeatDataId);
+                        repeatDateLiveData.observe(this, repeatDates -> {
+                            int dataYear = repeatDates.getYear();
+                            int dataMonth = repeatDates.getMonth();
+                            int dataDay = repeatDates.getDay();
 
-                        if((year > dataYear || (year == dataYear && month > dataMonth )) && day == dataDate ){
-                            addScheduleById(repeatDataId, frameLayout, linearLayout, year, month, day, busys, cell);
-                        }
-                    });
+                            Calendar calendar0 = Calendar.getInstance();
+                            calendar0.set(year, month, day);
+                            int dayOfWeek0 = calendar0.get(Calendar.DAY_OF_WEEK);
+                            Calendar calendar1 = Calendar.getInstance();
+                            calendar1.set(dataYear, dataMonth, dataDay);
+                            int dayOfWeek1 = calendar1.get(Calendar.DAY_OF_WEEK);
+
+                            switch (repeatOption){
+                                case "毎週":
+                                    if((year > dataYear || (year == dataYear && month > dataMonth ) || (year == dataYear && month == dataMonth && day > dataDay )) && dayOfWeek0 == dayOfWeek1){
+                                        addScheduleById(repeatDataId, frameLayout, linearLayout, year, month, day, busys, cell);
+                                    }
+                                    break;
+                                case "隔週":
+                                    break;
+                                case "毎月":
+                                    if((year > dataYear || (year == dataYear && month > dataMonth )) && day == dataDay){
+                                        addScheduleById(repeatDataId, frameLayout, linearLayout, year, month, day, busys, cell);
+                                    }
+                                    break;
+                            }
+                        });
+                    }
                 }
-            }
-        });
+            });
+        }
+
 
         // 読み込み終了後、ロック解除
         binding.progressBar.setVisibility(View.GONE);  // ローディング表示終了
@@ -508,9 +525,9 @@ public class CalendarActivity extends AppCompatActivity {
     }
 
     //デフォルトの忙しさ反映(当月の曜日走査)
-    private void setDefaultBusy(int year, int month, int date, BusyData busys[], int cell) {
+    private void setDefaultBusy(int year, int month, int day, BusyData busys[], int cell) {
         Calendar calendar = Calendar.getInstance();
-        calendar.set(year, month, date);
+        calendar.set(year, month, day);
         int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
         switch(dayOfWeek){
             case Calendar.SUNDAY :
