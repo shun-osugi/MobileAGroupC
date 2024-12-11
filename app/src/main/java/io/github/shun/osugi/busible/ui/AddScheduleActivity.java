@@ -31,7 +31,8 @@ public class AddScheduleActivity extends AppCompatActivity {
     private int selectedMonth = Calendar.getInstance().get(Calendar.MONTH); // 1-based
     private int selectedDay = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
 
-    private String color = "#FFFFFF";  // 色の初期値(とりあえず白)
+    private String selectedColor = "#FFFFFF"; // デフォルトは白
+
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -87,6 +88,11 @@ public class AddScheduleActivity extends AppCompatActivity {
             return false;
         });
 
+        binding.colorRed.setOnClickListener(v -> setColor("#FF0000"));
+        binding.colorGreen.setOnClickListener(v -> setColor("#00FF00"));
+        binding.colorBlue.setOnClickListener(v -> setColor("#0000FF"));
+
+
         // 保存ボタンのクリックイベント
         binding.save.setOnClickListener(view -> {
             String title = binding.inputText.getText().toString();
@@ -100,7 +106,7 @@ public class AddScheduleActivity extends AppCompatActivity {
             LiveData<Date> dateLiveData = dateViewModel.getDateBySpecificDay(selectedYear, selectedMonth, selectedDay);
             dateLiveData.observe(this, date -> {
                 int dateId = getOrMakeDateId(dateViewModel, date);
-                saveSchedule(scheduleViewModel, dateId, title, memo, strong, startTime, endTime, color, repeatOption);
+                saveSchedule(scheduleViewModel, dateId, title, memo, strong, startTime, endTime, selectedColor, repeatOption);
 
             });
 
@@ -113,7 +119,7 @@ public class AddScheduleActivity extends AppCompatActivity {
 
     // データベースに保存
     private void saveSchedule(ScheduleViewModel scheduleViewModel,int dateId, String title, String memo, String strong,
-                              String startTime, String endTime, String color, String repeatOption) {
+                              String startTime, String endTime, String selectedColor, String repeatOption) {
         Schedule schedule = new Schedule();
         schedule.setDateId(dateId);
         schedule.setTitle(title);
@@ -121,7 +127,7 @@ public class AddScheduleActivity extends AppCompatActivity {
         schedule.setStrong(Integer.parseInt(strong));
         schedule.setStartTime(startTime);
         schedule.setEndTime(endTime);
-        schedule.setColor(color);
+        schedule.setColor(selectedColor);
         schedule.setRepeat(repeatOption);
 
         // スケジュールを非同期で保存
@@ -202,4 +208,12 @@ public class AddScheduleActivity extends AppCompatActivity {
             return newdate.getId();
         }
     }
+
+    private void setColor(String color) {
+        selectedColor = color;
+        binding.colorRed.setAlpha(color.equals("#FF0000") ? 1.0f : 0.5f);
+        binding.colorGreen.setAlpha(color.equals("#00FF00") ? 1.0f : 0.5f);
+        binding.colorBlue.setAlpha(color.equals("#0000FF") ? 1.0f : 0.5f);
+    }
+
 }
