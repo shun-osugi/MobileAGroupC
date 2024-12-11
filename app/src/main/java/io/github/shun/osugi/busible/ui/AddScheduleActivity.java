@@ -166,11 +166,17 @@ public class AddScheduleActivity extends AppCompatActivity {
 
     // 時間ピッカー
     private void showTimePickerDialog(final EditText editText) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.HOUR_OF_DAY, 9); // 初期値: 9時
-        calendar.set(Calendar.MINUTE, 0);      // 初期値: 00分
-        int hour = calendar.get(Calendar.HOUR_OF_DAY);
-        int minute = calendar.get(Calendar.MINUTE);
+        // 現在のテキストフィールドに表示されている時刻を取得
+        String currentText = editText.getText().toString();
+        int hour = 9; // デフォルト値
+        int minute = 0;
+
+        // 時刻フォーマットが正しい場合、初期値を解析
+        if (currentText.matches("\\d{2}:\\d{2}")) {
+            String[] parts = currentText.split(":");
+            hour = Integer.parseInt(parts[0]);
+            minute = Integer.parseInt(parts[1]);
+        }
 
         TimePickerDialog timePickerDialog = new TimePickerDialog(this,
                 (view, selectedHour, selectedMinute) -> {
@@ -193,11 +199,17 @@ public class AddScheduleActivity extends AppCompatActivity {
         String dateText = year + "/" + (month + 1) + "/" + day;
         binding.inputDate.setText(dateText);
 
-        // 時刻フィールドの初期化
+        // 開始時刻フィールドの初期化
         calendar.set(Calendar.HOUR_OF_DAY, 9);
         calendar.set(Calendar.MINUTE, 0);
-        String timeText = String.format("%2d:%02d", 9, 0);
-        binding.TimeFirst.setText(timeText);
+        String startTimeText = String.format("%2d:%02d", 9, 0);
+        binding.TimeFirst.setText(startTimeText);
+
+        // 終了時刻フィールドの初期化
+        calendar.set(Calendar.HOUR_OF_DAY, 10);
+        calendar.set(Calendar.MINUTE, 0);
+        String endTimeText = String.format("%2d:%02d", 10, 0);
+        binding.TimeFinal.setText(endTimeText);
     }
 
     // dateId取得

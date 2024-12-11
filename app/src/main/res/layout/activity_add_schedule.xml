@@ -12,7 +12,7 @@
     <LinearLayout
         android:id="@+id/title_row"
         android:layout_width="0dp"
-        android:layout_height="100dp"
+        android:layout_height="70dp"
         android:layout_marginTop="100dp"
         android:background="#FFFFFF"
         android:orientation="vertical"
@@ -92,31 +92,20 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
-            android:text="開始時刻 :"
+            android:text="日付 :"
             android:textSize="16sp" />
 
         <EditText
             android:id="@+id/input_date"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
+            android:layout_marginStart="110dp"
             android:background="#FFFFFF"
             android:clickable="true"
             android:focusable="false"
             android:hint="日付を選択"
             android:padding="8dp" />
 
-        <EditText
-            android:id="@+id/TimeFirst"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="16dp"
-            android:background="#FFFFFF"
-            android:clickable="true"
-            android:focusable="false"
-            android:hint="開始時刻の入力"
-            android:inputType="time"
-            android:padding="8dp" />
     </LinearLayout>
 
     <!-- 終了時刻行 -->
@@ -140,27 +129,38 @@
             android:textSize="16sp" />
 
         <EditText
-            android:id="@+id/input_date2"
+            android:id="@+id/TimeFirst"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
             android:background="#FFFFFF"
             android:clickable="true"
             android:focusable="false"
-            android:hint="日付を選択"
+            android:hint="開始時刻"
+            android:inputType="time"
             android:padding="8dp" />
+
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=" ~ "
+            />
+
 
         <EditText
             android:id="@+id/TimeFinal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="16dp"
+            android:layout_marginStart="20dp"
             android:background="#FFFFFF"
             android:clickable="true"
             android:focusable="false"
-            android:hint="終了時刻の入力"
+            android:hint="終了時刻"
             android:inputType="time"
             android:padding="8dp" />
+
     </LinearLayout>
 
     <!-- 強度行 -->
@@ -242,7 +242,7 @@
         <EditText
             android:id="@+id/memo"
             android:layout_width="match_parent"
-            android:layout_height="100dp"
+            android:layout_height="80dp"
             android:background="#FFFFFF"
             android:inputType="textMultiLine"
             android:padding="8dp" />
@@ -251,7 +251,7 @@
     <LinearLayout
         android:id="@+id/Button_row"
         android:layout_width="0dp"
-        android:layout_height="70dp"
+        android:layout_height="100dp"
         android:background="#FFFFFF"
         android:orientation="vertical"
         app:layout_constraintEnd_toEndOf="parent"
