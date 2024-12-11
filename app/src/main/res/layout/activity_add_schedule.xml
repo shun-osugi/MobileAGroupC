@@ -29,18 +29,63 @@
             android:inputType="text" />
     </LinearLayout>
 
+    <LinearLayout
+        android:id="@+id/color_picker_row"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:orientation="horizontal"
+        app:layout_constraintTop_toBottomOf="@id/title_row"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <TextView
+            android:id="@+id/color_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:text="色を選択:"
+            android:textSize="16sp" />
+
+        <!-- カラー選択ボタン -->
+        <Button
+            android:id="@+id/color_red"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="10dp"
+            android:backgroundTint="#FF0000"
+            android:tag="#FF0000" />
+
+        <Button
+            android:id="@+id/color_green"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="10dp"
+            android:backgroundTint="#00FF00"
+            android:tag="#00FF00" />
+
+        <Button
+            android:id="@+id/color_blue"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="10dp"
+            android:backgroundTint="#0000FF"
+            android:tag="#0000FF" />
+    </LinearLayout>
+
+
     <!-- 開始時刻行 -->
     <LinearLayout
         android:id="@+id/start_time_row"
         android:layout_width="0dp"
         android:layout_height="60dp"
-        android:layout_marginTop="30dp"
+        android:layout_marginTop="20dp"
         android:background="#FFFFFF"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/title_row">
+        app:layout_constraintTop_toBottomOf="@id/color_picker_row">
 
         <TextView
             android:id="@+id/first_time"
@@ -123,7 +168,7 @@
         android:id="@+id/strength_row"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
+        android:layout_marginTop="20dp"
         android:background="#FFFFFF"
         android:gravity="center_vertical"
         android:orientation="horizontal"
@@ -178,7 +223,7 @@
         android:id="@+id/memo_row"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
+        android:layout_marginTop="20dp"
         android:background="#FFFFFF"
         android:orientation="vertical"
         app:layout_constraintEnd_toEndOf="parent"
