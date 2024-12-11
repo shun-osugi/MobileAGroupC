@@ -370,107 +370,34 @@ public class CalendarActivity extends AppCompatActivity {
         linearLayout.addView(frameLayout);
     }
 
-    // 予定の表示
+    // 予定の表示(id判定)
     private void addSchedule(FrameLayout frameLayout, LinearLayout linearLayout, int year, int month, int day, BusyData busys[], int cell) {
+        // 日付からスケジュールを取得
         LiveData<Date> dateLiveData = dateViewModel.getDateBySpecificDay(year, month, day);
         dateLiveData.observe(this, date -> {
             if (date != null) {
                 int dateId = date.getId();
-                LiveData<List<Schedule>> scheduleLiveData = scheduleViewModel.getSchedulesByDateId(dateId);
-                scheduleLiveData.observe(this, schedules -> {
-                    if (schedules != null) {
-                        for (Schedule schedule : schedules) {
+                addScheduleById(dateId, frameLayout, linearLayout, year, month, day, busys, cell);
+            }
+        });
 
-                            // 予定の各フィールドを取得
-                            String title = schedule.getTitle();
-                            String startTime = schedule.getStartTime();
-                            String endTime = schedule.getEndTime();
-                            int strong = schedule.getStrong();
-                            String memo = schedule.getMemo();
-                            String repeat = schedule.getRepeat();
+        // 毎月のスケジュール
+        LiveData<List<Schedule>> repeatScheduleLiveData = scheduleViewModel.getSchedulesByRepeat("毎月");
+        repeatScheduleLiveData.observe(this, repeatSchedules -> {
+            if (repeatSchedules != null) {
+                for (Schedule repeatSchedule : repeatSchedules) {
+                    int repeatDataId = repeatSchedule.getDateId();
+                    LiveData<Date> repeatDateLiveData = dateViewModel.getDateById(repeatDataId);
+                    repeatDateLiveData.observe(this, repeatDates -> {
+                        int dataYear = repeatDates.getYear();
+                        int dataMonth = repeatDates.getMonth();
+                        int dataDate = repeatDates.getDay();
 
-                            Log.d(TAG, "Schedule By ID: " + title + schedule.getId());
-
-                            //忙しさの表示
-                            busys[cell].setBusy(strong);
-                            viewBusy(busys);
-
-                            // ボタンの生成
-                            Button button = new Button(this);
-                            button.setText(title);
-                            button.setTextSize(9);
-                            button.setEllipsize(TextUtils.TruncateAt.END);
-                            button.setMaxLines(1);
-
-                            // Buttonの高さを固定
-                            LinearLayout.LayoutParams buttonParams = new LinearLayout.LayoutParams(
-                                    LinearLayout.LayoutParams.MATCH_PARENT,
-                                    100  // 固定の高さ
-                            );
-                            button.setLayoutParams(buttonParams);
-
-                            // 詳細ダイアログを表示
-                            button.setOnClickListener(viewDialog -> {
-                                BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this);
-                                LayoutInflater inflater = this.getLayoutInflater();
-                                View dialogView = inflater.inflate(R.layout.dialog_detail_layout, null);
-
-                                bottomSheetDialog.setContentView(dialogView);
-
-                                TextView dialogStrong = dialogView.findViewById(R.id.strong);
-                                TextView dialogTitle = dialogView.findViewById(R.id.title);
-                                TextView dialogDate = dialogView.findViewById(R.id.date);
-                                TextView dialogTime = dialogView.findViewById(R.id.time);
-                                //TextView dialogRepeat = dialogView.findViewById(R.id.repeat);
-                                //TextView dialogMemo = dialogView.findViewById(R.id.memo);
-                                ImageButton buttonEdit = dialogView.findViewById(R.id.buttonEdit);
-                                ImageButton buttonDelete = dialogView.findViewById(R.id.buttonDelete);
-                                ImageButton buttonCancel = dialogView.findViewById(R.id.buttonCancel);
-
-                                dialogStrong.setText(stringBusy(Integer.valueOf(strong)));
-                                dialogTitle.setText(title);
-                                dialogDate.setText(year + "/" + (month+1) + "/" + day);
-                                dialogTime.setText(startTime + " ~ " + endTime);
-                                //dialogRepeat.setText(repeat);
-                                //dialogMemo.setText(memo);
-
-                                bottomSheetDialog.show();
-
-
-                                buttonEdit.setOnClickListener(edit -> {
-                                    // Intent を作成して EditSchedule へ遷移
-                                    Intent intent = new Intent(CalendarActivity.this, EditScheduleActivity.class);
-                                    intent.putExtra("scheduleId", schedule.getId());
-                                    startActivity(intent);
-                                });
-
-                                buttonDelete.setOnClickListener(delete -> {
-                                    AlertDialog.Builder builder2 = new AlertDialog.Builder(this);
-                                    builder2.setTitle("予定を削除しますか？")
-                                            .setPositiveButton("削除", (dialog2, which) -> {
-                                                // 削除し、ダイアログを閉じる
-                                                scheduleViewModel.delete(schedule);
-                                                bottomSheetDialog.dismiss();
-                                                refreshCalendarData(year, month+1);
-                                            })
-                                            .setNegativeButton("キャンセル", (dialog2, which) -> {
-                                                // ダイアログを閉じる
-                                                bottomSheetDialog.dismiss();
-                                            })
-                                            .show();
-
-                                });
-
-                                buttonCancel.setOnClickListener(cancel -> {
-                                    // ダイアログを閉じる
-                                    bottomSheetDialog.dismiss();
-                                });
-                            });
-
-                            linearLayout.addView(button);
+                        if((year > dataYear || (year == dataYear && month > dataMonth )) && day == dataDate ){
+                            addScheduleById(repeatDataId, frameLayout, linearLayout, year, month, day, busys, cell);
                         }
-                    }
-                });
+                    });
+                }
             }
         });
 
@@ -481,6 +408,104 @@ public class CalendarActivity extends AppCompatActivity {
         viewBusy(busys);
     }
 
+    // 予定の表示(idで実行)
+    private void addScheduleById(int id, FrameLayout frameLayout, LinearLayout linearLayout, int year, int month, int day, BusyData busys[], int cell) {
+        LiveData<List<Schedule>> scheduleLiveData = scheduleViewModel.getSchedulesByDateId(id);
+        scheduleLiveData.observe(this, schedules -> {
+            if (schedules != null) {
+                for (Schedule schedule : schedules) {
+
+                    // 予定の各フィールドを取得
+                    String title = schedule.getTitle();
+                    String startTime = schedule.getStartTime();
+                    String endTime = schedule.getEndTime();
+                    int strong = schedule.getStrong();
+                    String memo = schedule.getMemo();
+                    String repeat = schedule.getRepeat();
+
+                    Log.d(TAG, "Schedule By ID: " + title + schedule.getId());
+
+                    //忙しさの表示
+                    busys[cell].setBusy(strong);
+                    viewBusy(busys);
+
+                    // ボタンの生成
+                    Button button = new Button(this);
+                    button.setText(title);
+                    button.setTextSize(9);
+                    button.setEllipsize(TextUtils.TruncateAt.END);
+                    button.setMaxLines(1);
+
+                    // Buttonの高さを固定
+                    LinearLayout.LayoutParams buttonParams = new LinearLayout.LayoutParams(
+                            LinearLayout.LayoutParams.MATCH_PARENT,
+                            100  // 固定の高さ
+                    );
+                    button.setLayoutParams(buttonParams);
+
+                    // 詳細ダイアログを表示
+                    button.setOnClickListener(viewDialog -> {
+                        BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this);
+                        LayoutInflater inflater = this.getLayoutInflater();
+                        View dialogView = inflater.inflate(R.layout.dialog_detail_layout, null);
+
+                        bottomSheetDialog.setContentView(dialogView);
+
+                        TextView dialogStrong = dialogView.findViewById(R.id.strong);
+                        TextView dialogTitle = dialogView.findViewById(R.id.title);
+                        TextView dialogDate = dialogView.findViewById(R.id.date);
+                        TextView dialogTime = dialogView.findViewById(R.id.time);
+                        //TextView dialogRepeat = dialogView.findViewById(R.id.repeat);
+                        //TextView dialogMemo = dialogView.findViewById(R.id.memo);
+                        ImageButton buttonEdit = dialogView.findViewById(R.id.buttonEdit);
+                        ImageButton buttonDelete = dialogView.findViewById(R.id.buttonDelete);
+                        ImageButton buttonCancel = dialogView.findViewById(R.id.buttonCancel);
+
+                        dialogStrong.setText(stringBusy(Integer.valueOf(strong)));
+                        dialogTitle.setText(title);
+                        dialogDate.setText(year + "/" + (month+1) + "/" + day);
+                        dialogTime.setText(startTime + " ~ " + endTime);
+                        //dialogRepeat.setText(repeat);
+                        //dialogMemo.setText(memo);
+
+                        bottomSheetDialog.show();
+
+
+                        buttonEdit.setOnClickListener(edit -> {
+                            // Intent を作成して EditSchedule へ遷移
+                            Intent intent = new Intent(CalendarActivity.this, EditScheduleActivity.class);
+                            intent.putExtra("scheduleId", schedule.getId());
+                            startActivity(intent);
+                        });
+
+                        buttonDelete.setOnClickListener(delete -> {
+                            AlertDialog.Builder builder2 = new AlertDialog.Builder(this);
+                            builder2.setTitle("予定を削除しますか？")
+                                    .setPositiveButton("削除", (dialog2, which) -> {
+                                        // 削除し、ダイアログを閉じる
+                                        scheduleViewModel.delete(schedule);
+                                        bottomSheetDialog.dismiss();
+                                        refreshCalendarData(year, month+1);
+                                    })
+                                    .setNegativeButton("キャンセル", (dialog2, which) -> {
+                                        // ダイアログを閉じる
+                                        bottomSheetDialog.dismiss();
+                                    })
+                                    .show();
+
+                        });
+
+                        buttonCancel.setOnClickListener(cancel -> {
+                            // ダイアログを閉じる
+                            bottomSheetDialog.dismiss();
+                        });
+                    });
+
+                    linearLayout.addView(button);
+                }
+            }
+        });
+    }
 
     //デフォルトの忙しさ反映(当月の曜日走査)
     private void setDefaultBusy(int year, int month, int date, BusyData busys[], int cell) {
