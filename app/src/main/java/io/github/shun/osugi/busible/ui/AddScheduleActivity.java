@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.WindowManager;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -39,6 +40,10 @@ public class AddScheduleActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityAddScheduleBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        // 初期値設定
+        initializeFields();
+
 
         ScheduleViewModel scheduleViewModel = new ViewModelProvider(this).get(ScheduleViewModel.class);
         DateViewModel dateViewModel = new ViewModelProvider(this).get(DateViewModel.class);
@@ -90,6 +95,10 @@ public class AddScheduleActivity extends AppCompatActivity {
         // 保存ボタンのクリックイベント
         binding.save.setOnClickListener(view -> {
             String title = binding.inputText.getText().toString();
+            if (title.isEmpty()) {
+                Toast.makeText(this, "タイトルを入力してください", Toast.LENGTH_SHORT).show();
+                return;
+            }
             String startTime = binding.TimeFirst.getText().toString();
             String endTime = binding.TimeFinal.getText().toString();
             String memo = binding.memo.getText().toString();
@@ -97,17 +106,17 @@ public class AddScheduleActivity extends AppCompatActivity {
             String repeatOption = repeatOptions[binding.answer.getValue()];
             String selectedDate = selectedYear + "/" + (selectedMonth + 1) + "/" + selectedDay;
 
+            // 必須項目のバリデーション
+            if (title.isEmpty()) {
+                binding.inputText.setError("タイトルを入力してください");
+                return;
+            }
             LiveData<Date> dateLiveData = dateViewModel.getDateBySpecificDay(selectedYear, selectedMonth, selectedDay);
             dateLiveData.observe(this, date -> {
                 int dateId = getOrMakeDateId(dateViewModel, date);
                 saveSchedule(scheduleViewModel, dateId, title, memo, strong, startTime, endTime, color, repeatOption);
 
             });
-
-            // ダイアログを表示
-            String message = "タイトル: " + title + "\n日付: " + selectedDate + "\n開始時間: " + startTime + "\n終了時間: " + endTime +
-                    "\n強度: " + strong + "\nメモ: " + memo + "\n繰り返し: " + repeatOption;
-            showConfirmationDialog(message);
         });
     }
 
@@ -129,29 +138,6 @@ public class AddScheduleActivity extends AppCompatActivity {
         Log.d(TAG, "Schedule By ID: " + schedule.getTitle());
     }
 
-
-    // 確認ダイアログを表示
-    private void showConfirmationDialog(String message) {
-        if (!isFinishing() && !isDestroyed()) {  // アクティビティが終了していない場合のみ表示
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle("確認")
-                    .setMessage(message)
-                    .setPositiveButton("OK", (dialog, which) -> {
-                        dialog.dismiss();
-                        finish();
-                    })
-                    .setCancelable(true);
-
-            AlertDialog dialog = builder.create();
-            dialog.show();
-
-            dialog.getWindow().setLayout(
-                    (int) (getResources().getDisplayMetrics().widthPixels * 0.9),
-                    WindowManager.LayoutParams.WRAP_CONTENT
-            );
-        }
-    }
-
     // 日付ピッカー
     private void showDatePickerDialog() {
         Calendar calendar = Calendar.getInstance();
@@ -165,9 +151,8 @@ public class AddScheduleActivity extends AppCompatActivity {
             this.selectedDay = selectedDay;
 
             // データ更新
-            String dateText = selectedYear + "/" + (this.selectedMonth + 1) + "/" + this.selectedDay;
+            String dateText = selectedYear + "/" + (selectedMonth + 1) + "/" + selectedDay;
             binding.inputDate.setText(dateText);
-            binding.inputDate2.setText(dateText); // 2つ目の日付フィールドも更新
         }, year, month, day);
 
         datePickerDialog.show();
@@ -176,6 +161,8 @@ public class AddScheduleActivity extends AppCompatActivity {
     // 時間ピッカー
     private void showTimePickerDialog(final EditText editText) {
         Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, 9); // 初期値: 9時
+        calendar.set(Calendar.MINUTE, 0);      // 初期値: 00分
         int hour = calendar.get(Calendar.HOUR_OF_DAY);
         int minute = calendar.get(Calendar.MINUTE);
 
@@ -186,6 +173,25 @@ public class AddScheduleActivity extends AppCompatActivity {
                 }, hour, minute, true);
 
         timePickerDialog.show();
+    }
+
+    // フィールドを初期化するメソッド
+    private void initializeFields() {
+        Calendar calendar = Calendar.getInstance();
+
+        // 日付フィールドの初期化
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+
+        String dateText = year + "/" + (month + 1) + "/" + day;
+        binding.inputDate.setText(dateText);
+
+        // 時刻フィールドの初期化
+        calendar.set(Calendar.HOUR_OF_DAY, 9);
+        calendar.set(Calendar.MINUTE, 0);
+        String timeText = String.format("%2d:%02d", 9, 0);
+        binding.TimeFirst.setText(timeText);
     }
 
     // dateId取得
