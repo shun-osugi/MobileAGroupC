@@ -264,29 +264,34 @@ public class CalendarActivity extends AppCompatActivity {
             if (date <= 0) {
                 calendar.add(Calendar.MONTH, -1);
                 date += calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
-                addCircle(frameLayout,year,month,date, true);
-                addDate(frameLayout,linearLayout,year,month,date,true);
+                calendar.set(year, month, date);
+                addCircle(frameLayout, calendar, true);
+                addDate(frameLayout,linearLayout,calendar.get(calendar.YEAR),calendar.get(calendar.MONTH),calendar.get(calendar.DATE),true);
+                addSchedule(frameLayout,linearLayout,calendar.get(calendar.YEAR),calendar.get(calendar.MONTH),calendar.get(calendar.DATE),busys,i);
+                busys[i].setGray(true);
                 calendar.add(Calendar.MONTH, 1);
-                addSchedule(frameLayout,linearLayout,year,month-1,date,busys,i);
-                busys[i].setGray(true);
             } else if (date > calendar.getActualMaximum(Calendar.DAY_OF_MONTH)) {
+                calendar.add(Calendar.MONTH, 1);
                 date -= calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
-                addCircle(frameLayout,year,month,date, true);
-                addDate(frameLayout,linearLayout,year,month,date,true);
-                addSchedule(frameLayout,linearLayout,year,month+1,date,busys,i);
+                calendar.set(year, month, date);
+                addCircle(frameLayout, calendar,true);
+                addDate(frameLayout,linearLayout,calendar.get(calendar.YEAR),calendar.get(calendar.MONTH),calendar.get(calendar.DATE),true);
+                addSchedule(frameLayout,linearLayout,calendar.get(calendar.YEAR),calendar.get(calendar.MONTH),calendar.get(calendar.DATE),busys,i);
                 busys[i].setGray(true);
+                calendar.add(Calendar.MONTH, -1);
             } else {
-                addCircle(frameLayout,year,month,date, false);
-                addDate(frameLayout,linearLayout,year,month,date,false);
-                setDefaultBusy(year,month, date,busys,i);
-                addSchedule(frameLayout,linearLayout,year,month,date,busys,i);
+                calendar.set(year, month, date);
+                addCircle(frameLayout, calendar, false);
+                addDate(frameLayout,linearLayout,calendar.get(calendar.YEAR),calendar.get(calendar.MONTH),calendar.get(calendar.DATE),false);
+                setDefaultBusy(calendar.get(calendar.YEAR),calendar.get(calendar.MONTH),calendar.get(calendar.DATE),busys,i);
+                addSchedule(frameLayout,linearLayout,calendar.get(calendar.YEAR),calendar.get(calendar.MONTH),calendar.get(calendar.DATE),busys,i);
                 busys[i].setGray(false);
             }
         }
     }
 
     // 日付の円の表示
-    private void addCircle(FrameLayout frameLayout, int year, int month, int date, boolean grey) {
+    private void addCircle(FrameLayout frameLayout, Calendar calendar, boolean grey) {
         ImageView imageView = new ImageView(this);
         FrameLayout.LayoutParams imageParams = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.WRAP_CONTENT,
@@ -296,13 +301,11 @@ public class CalendarActivity extends AppCompatActivity {
         imageView.setLayoutParams(imageParams);
         imageView.setImageDrawable(getResources().getDrawable(R.drawable.ic_circle));
         Calendar today = Calendar.getInstance();
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(year, month, date);
 
         // 今日を判定
         boolean isToday = today.get(Calendar.YEAR) == calendar.get(Calendar.YEAR)
                 && today.get(Calendar.MONTH) == calendar.get(Calendar.MONTH)
-                && today.get(Calendar.DAY_OF_MONTH) == date
+                && today.get(Calendar.DAY_OF_MONTH) == calendar.get(calendar.DATE)
                 && !grey;
 
         // 今日なら色を変更
