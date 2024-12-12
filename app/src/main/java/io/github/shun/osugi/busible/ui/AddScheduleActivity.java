@@ -3,7 +3,10 @@ package io.github.shun.osugi.busible.ui;
 import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.WindowManager;
@@ -17,6 +20,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import java.util.Calendar;
 
+import io.github.shun.osugi.busible.R;
 import io.github.shun.osugi.busible.databinding.ActivityAddScheduleBinding;
 import io.github.shun.osugi.busible.entity.Date;
 import io.github.shun.osugi.busible.entity.Schedule;
@@ -97,31 +101,47 @@ public class AddScheduleActivity extends AppCompatActivity {
         binding.colorGreen.setOnClickListener(v -> setColor("#00FF00"));
         binding.colorBlue.setOnClickListener(v -> setColor("#0000FF"));
 
+        // 初期状態で保存ボタンを無効化し、色を薄くする
+        binding.save.setEnabled(false);
+        binding.save.setTextColor(Color.parseColor("#B0B0B0")); // 無効化時の色
+
+        // 入力されたタイトルに応じて保存ボタンを有効化
+        binding.inputText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int start, int before, int after) {
+                String title = binding.inputText.getText().toString();
+                // タイトルが空でない場合に保存ボタンを有効化
+                if (!title.isEmpty()) {
+                    // タイトルが入力されている場合、ボタンの色を元に戻す
+                    binding.save.setTextColor(Color.parseColor("#034AFF")); // 元の色に変更
+                    binding.save.setEnabled(true); // ボタンを有効にする
+                } else {
+                    // タイトルが空の場合、ボタンを無効にして色を薄くする
+                    binding.save.setTextColor(Color.parseColor("#A0A0A0")); // 薄い色に変更
+                    binding.save.setEnabled(false); // ボタンを無効にする
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {}
+        });
 
         // 保存ボタンのクリックイベント
         binding.save.setOnClickListener(view -> {
             String title = binding.inputText.getText().toString();
-            if (title.isEmpty()) {
-                Toast.makeText(this, "タイトルを入力してください", Toast.LENGTH_SHORT).show();
-                return;
-            }
             String startTime = binding.TimeFirst.getText().toString();
             String endTime = binding.TimeFinal.getText().toString();
             String memo = binding.memo.getText().toString();
             String strong = strongOptions[binding.spinnerNumber.getValue()];
             String repeatOption = repeatOptions[binding.answer.getValue()];
-            String selectedDate = selectedYear + "/" + (selectedMonth + 1) + "/" + selectedDay;
-
-            // 必須項目のバリデーション
-            if (title.isEmpty()) {
-                binding.inputText.setError("タイトルを入力してください");
-                return;
-            }
             LiveData<Date> dateLiveData = dateViewModel.getDateBySpecificDay(selectedYear, selectedMonth, selectedDay);
             dateLiveData.observe(this, date -> {
                 int dateId = getOrMakeDateId(dateViewModel, date);
                 saveSchedule(scheduleViewModel, dateId, title, memo, strong, startTime, endTime, selectedColor, repeatOption);
-
+                finish();  // 画面を閉じて前の画面に戻る
             });
         });
     }
