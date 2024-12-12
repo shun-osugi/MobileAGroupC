@@ -10,6 +10,7 @@ import android.util.TypedValue;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -18,6 +19,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -27,12 +29,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -40,7 +38,6 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.util.Log;
@@ -262,29 +259,29 @@ public class CalendarActivity extends AppCompatActivity {
             linearLayout.setOrientation(LinearLayout.VERTICAL);
             linearLayout.setBackgroundColor(Color.rgb(188, 188, 188));   // 背景色をリセット
 
-            FrameLayout frameLayout = new FrameLayout(this);
+            FrameLayout dateFrame = new FrameLayout(this);
 
             // 日付を計算
             int date = i + 1 - firstDay;
             if (date <= 0) {
                 calendar.add(Calendar.MONTH, -1);
                 date += calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
-                addCircle(frameLayout,year,month,date, true);
-                addDate(frameLayout,linearLayout,year,month,date,true);
+                addCircle(dateFrame,year,month,date, true);
+                addDate(dateFrame,linearLayout,year,month,date,true);
                 calendar.add(Calendar.MONTH, 1);
-                addSchedule(frameLayout,linearLayout,year,month-1,date,busys,i);
+                addSchedule(linearLayout,year,month-1,date,busys,i);
                 busys[i].setGray(true);
             } else if (date > calendar.getActualMaximum(Calendar.DAY_OF_MONTH)) {
                 date -= calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
-                addCircle(frameLayout,year,month,date, true);
-                addDate(frameLayout,linearLayout,year,month,date,true);
-                addSchedule(frameLayout,linearLayout,year,month+1,date,busys,i);
+                addCircle(dateFrame,year,month,date, true);
+                addDate(dateFrame,linearLayout,year,month,date,true);
+                addSchedule(linearLayout,year,month+1,date,busys,i);
                 busys[i].setGray(true);
             } else {
-                addCircle(frameLayout,year,month,date, false);
-                addDate(frameLayout,linearLayout,year,month,date,false);
+                addCircle(dateFrame,year,month,date, false);
+                addDate(dateFrame,linearLayout,year,month,date,false);
                 setDefaultBusy(year,month, date,busys,i);
-                addSchedule(frameLayout,linearLayout,year,month,date,busys,i);
+                addSchedule(linearLayout,year,month,date,busys,i);
                 busys[i].setGray(false);
             }
         }
@@ -371,14 +368,54 @@ public class CalendarActivity extends AppCompatActivity {
     }
 
     // 予定の表示
-    private void addSchedule(FrameLayout frameLayout, LinearLayout linearLayout, int year, int month, int day, BusyData busys[], int cell) {
+    private void addSchedule(LinearLayout linearLayout, int year, int month, int day, BusyData busys[], int cell) {
         LiveData<Date> dateLiveData = dateViewModel.getDateBySpecificDay(year, month, day);
         dateLiveData.observe(this, date -> {
             if (date != null) {
+
+                // 日付ごとに1つのボタンを生成
+                Button dateButton = new Button(this);
+                dateButton.setTextSize(9);
+                dateButton.setEllipsize(TextUtils.TruncateAt.END);
+                dateButton.setMaxLines(1);
+                dateButton.setBackgroundColor(Color.TRANSPARENT);
+
+                LinearLayout.LayoutParams dateButtonParams = new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.MATCH_PARENT
+                );
+                dateButton.setLayoutParams(dateButtonParams);
+
+                LinearLayout scheduleLayout = new LinearLayout(this);
+                scheduleLayout.setLayoutParams( new ViewGroup.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.MATCH_PARENT
+                ));
+                scheduleLayout.setOrientation(LinearLayout.VERTICAL);
+
                 int dateId = date.getId();
                 LiveData<List<Schedule>> scheduleLiveData = scheduleViewModel.getSchedulesByDateId(dateId);
                 scheduleLiveData.observe(this, schedules -> {
                     if (schedules != null) {
+
+                        BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this);
+                        LayoutInflater inflater = this.getLayoutInflater();
+                        View dialogView = inflater.inflate(R.layout.dialog_detail_layout, null);
+                        bottomSheetDialog.setContentView(dialogView);
+                        LinearLayout scheduleContainer = dialogView.findViewById(R.id.schedule_container);
+
+                        TextView dialogDate = dialogView.findViewById(R.id.date);
+                        dialogDate.setText(year + "/" + (month+1) + "/" + day);
+
+                        ImageButton buttonCancel = dialogView.findViewById(R.id.buttonCancel);
+                        buttonCancel.setOnClickListener(cancel -> {
+                            // ダイアログを閉じる
+                            bottomSheetDialog.dismiss();
+                        });
+
+                        scheduleLayout.removeAllViews();
+                        scheduleContainer.removeAllViews();
+
                         for (Schedule schedule : schedules) {
 
                             // 予定の各フィールドを取得
@@ -386,8 +423,6 @@ public class CalendarActivity extends AppCompatActivity {
                             String startTime = schedule.getStartTime();
                             String endTime = schedule.getEndTime();
                             int strong = schedule.getStrong();
-                            String memo = schedule.getMemo();
-                            String repeat = schedule.getRepeat();
 
                             Log.d(TAG, "Schedule By ID: " + title + schedule.getId());
 
@@ -395,80 +430,143 @@ public class CalendarActivity extends AppCompatActivity {
                             busys[cell].setBusy(strong);
                             viewBusy(busys);
 
-                            // ボタンの生成
-                            Button button = new Button(this);
-                            button.setText(title);
-                            button.setTextSize(9);
-                            button.setEllipsize(TextUtils.TruncateAt.END);
-                            button.setMaxLines(1);
-
-                            // Buttonの高さを固定
-                            LinearLayout.LayoutParams buttonParams = new LinearLayout.LayoutParams(
+                            // カレンダー表示用テキストビューを生成
+                            TextView indexTextView = new TextView(this);
+                            indexTextView.setText(title);
+                            indexTextView.setTextColor(Color.WHITE);
+                            indexTextView.setTextSize(16);
+                            indexTextView.setSingleLine(true);
+                            indexTextView.setBackgroundColor(Color.parseColor("#000000"));
+                            indexTextView.setGravity(Gravity.CENTER_VERTICAL);
+                            LinearLayout.LayoutParams indexLayoutParams = (new LinearLayout.LayoutParams(
                                     LinearLayout.LayoutParams.MATCH_PARENT,
-                                    100  // 固定の高さ
+                                    LinearLayout.LayoutParams.WRAP_CONTENT
+                            ));
+                            indexLayoutParams.setMargins(5, 0, 5, 5);
+                            indexTextView.setLayoutParams(indexLayoutParams);
+                            scheduleLayout.addView(indexTextView);
+
+                            // ダイアログ用のレイアウトを生成
+                            LinearLayout detailDialog = new LinearLayout(this);
+                            detailDialog.setOrientation(LinearLayout.HORIZONTAL);
+                            detailDialog.setBackgroundColor(Color.WHITE);
+                            LinearLayout.LayoutParams detailDialogParams = new LinearLayout.LayoutParams(
+                                    LinearLayout.LayoutParams.MATCH_PARENT,
+                                    150
                             );
-                            button.setLayoutParams(buttonParams);
+                            detailDialogParams.topMargin = 10;
+                            detailDialog.setLayoutParams(detailDialogParams);
+                            detailDialog.setGravity(Gravity.CENTER_VERTICAL);
 
-                            // 詳細ダイアログを表示
-                            button.setOnClickListener(viewDialog -> {
-                                BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this);
-                                LayoutInflater inflater = this.getLayoutInflater();
-                                View dialogView = inflater.inflate(R.layout.dialog_detail_layout, null);
+                            // TextView（時間）
+                            TextView timeTextView = new TextView(this);
+                            timeTextView.setText(startTime + " ~ " + endTime);
+                            timeTextView.setPadding(20, 0, 0, 0);
+                            timeTextView.setGravity(Gravity.CENTER_VERTICAL);
+                            timeTextView.setLayoutParams(new LinearLayout.LayoutParams(
+                                    0,
+                                    LinearLayout.LayoutParams.WRAP_CONTENT, 1
+                            ));
+                            detailDialog.addView(timeTextView);
 
-                                bottomSheetDialog.setContentView(dialogView);
+                            // TextView (タイトル)
+                            TextView titleTextView = new TextView(this);
+                            titleTextView.setText(schedule.getTitle());
+                            titleTextView.setTextSize(20);
+                            LinearLayout.LayoutParams titleTextParams = new LinearLayout.LayoutParams(
+                                    0,
+                                    LinearLayout.LayoutParams.WRAP_CONTENT, 3
+                            );
+                            titleTextParams.leftMargin = 30;
+                            titleTextView.setLayoutParams(titleTextParams);
+                            titleTextView.setGravity(Gravity.CENTER_VERTICAL);
+                            detailDialog.addView(titleTextView);
 
-                                TextView dialogStrong = dialogView.findViewById(R.id.strong);
-                                TextView dialogTitle = dialogView.findViewById(R.id.title);
-                                TextView dialogDate = dialogView.findViewById(R.id.date);
-                                TextView dialogTime = dialogView.findViewById(R.id.time);
-                                //TextView dialogRepeat = dialogView.findViewById(R.id.repeat);
-                                //TextView dialogMemo = dialogView.findViewById(R.id.memo);
-                                ImageButton buttonEdit = dialogView.findViewById(R.id.buttonEdit);
-                                ImageButton buttonDelete = dialogView.findViewById(R.id.buttonDelete);
-                                ImageButton buttonCancel = dialogView.findViewById(R.id.buttonCancel);
+                            // ボタン用LinearLayout
+                            LinearLayout buttonContainer = new LinearLayout(this);
+                            buttonContainer.setOrientation(LinearLayout.HORIZONTAL);
+                            LinearLayout.LayoutParams buttonContainerParams = new LinearLayout.LayoutParams(
+                                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                                    LinearLayout.LayoutParams.MATCH_PARENT
+                            );
+                            buttonContainer.setGravity(Gravity.END);
+                            buttonContainer.setLayoutParams(buttonContainerParams);
 
-                                dialogStrong.setText(stringBusy(Integer.valueOf(strong)));
-                                dialogTitle.setText(title);
-                                dialogDate.setText(year + "/" + (month+1) + "/" + day);
-                                dialogTime.setText(startTime + " ~ " + endTime);
-                                //dialogRepeat.setText(repeat);
-                                //dialogMemo.setText(memo);
+                            // ImageButton (削除ボタン)
+                            ImageButton deleteButton = new ImageButton(this);
+                            deleteButton.setBackgroundColor(Color.TRANSPARENT);
+                            deleteButton.setImageResource(R.drawable.ic_delete);
+                            deleteButton.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+                            LinearLayout.LayoutParams buttonParams = new LinearLayout.LayoutParams(
+                                    ViewGroup.LayoutParams.MATCH_PARENT,
+                                    ViewGroup.LayoutParams.MATCH_PARENT
+                            );
+                            buttonParams.rightMargin = 50;
+                            deleteButton.setLayoutParams(buttonParams);
+                            buttonContainer.addView(deleteButton);
 
-                                bottomSheetDialog.show();
-
-
-                                buttonEdit.setOnClickListener(edit -> {
-                                    // Intent を作成して EditSchedule へ遷移
-                                    Intent intent = new Intent(CalendarActivity.this, EditScheduleActivity.class);
-                                    intent.putExtra("scheduleId", schedule.getId());
-                                    startActivity(intent);
-                                });
-
-                                buttonDelete.setOnClickListener(delete -> {
-                                    AlertDialog.Builder builder2 = new AlertDialog.Builder(this);
-                                    builder2.setTitle("予定を削除しますか？")
-                                            .setPositiveButton("削除", (dialog2, which) -> {
-                                                // 削除し、ダイアログを閉じる
-                                                scheduleViewModel.delete(schedule);
-                                                bottomSheetDialog.dismiss();
-                                                refreshCalendarData(year, month+1);
-                                            })
-                                            .setNegativeButton("キャンセル", (dialog2, which) -> {
-                                                // ダイアログを閉じる
-                                                bottomSheetDialog.dismiss();
-                                            })
-                                            .show();
-
-                                });
-
-                                buttonCancel.setOnClickListener(cancel -> {
-                                    // ダイアログを閉じる
-                                    bottomSheetDialog.dismiss();
-                                });
+                            deleteButton.setOnClickListener(edit -> {
+                                AlertDialog.Builder builder2 = new AlertDialog.Builder(this);
+                                builder2.setTitle("予定を削除しますか？")
+                                        .setPositiveButton("削除", (dialog2, which) -> {
+                                            // 削除し、ダイアログを閉じる
+                                            scheduleViewModel.delete(schedule);
+                                            bottomSheetDialog.dismiss();
+                                            LiveData<List<Schedule>> newScheduleLiveData = scheduleViewModel.getSchedulesByDateId(dateId);
+                                            newScheduleLiveData.observe(this, newSchedules -> {
+                                                if (newSchedules == null || newSchedules.isEmpty()) {
+                                                    dateViewModel.delete(date);
+                                                }
+                                            });
+                                            refreshCalendarData(year, month+1);
+                                        })
+                                        .setNegativeButton("キャンセル", (dialog2, which) -> {
+                                            // ダイアログを閉じる
+                                            bottomSheetDialog.dismiss();
+                                        })
+                                        .show();
                             });
 
-                            linearLayout.addView(button);
+                            // ImageButton (編集ボタン)
+                            ImageButton editButton = new ImageButton(this);
+                            editButton.setBackgroundColor(Color.TRANSPARENT);
+                            editButton.setImageResource(R.drawable.ic_arrow_forward);
+                            editButton.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+                            editButton.setLayoutParams(buttonParams);
+                            buttonContainer.addView(editButton);
+
+                            editButton.setOnClickListener(edit -> {
+                                // Intent を作成して EditSchedule へ遷移
+                                Intent intent = new Intent(CalendarActivity.this, EditScheduleActivity.class);
+                                intent.putExtra("scheduleId", schedule.getId());
+                                startActivity(intent);
+                            });
+
+                            detailDialog.addView(buttonContainer);
+
+                            scheduleContainer.addView(detailDialog);
                         }
+
+                        bottomSheetDialog.setCancelable(false);
+
+                        dateButton.setOnClickListener(showDialog -> {
+                            bottomSheetDialog.show();
+                        });
+                        dateButton.bringToFront();
+
+                        if (scheduleLayout.getParent() != null) {
+                            ((ViewGroup) scheduleLayout.getParent()).removeView(scheduleLayout);
+                        }
+
+                        if (dateButton.getParent() != null) {
+                            ((ViewGroup) dateButton.getParent()).removeView(dateButton);
+                        }
+
+                        FrameLayout frameLayout = new FrameLayout(this);
+                        frameLayout.addView(scheduleLayout);
+                        frameLayout.addView(dateButton);
+                        linearLayout.addView(frameLayout);
+
                     }
                 });
             }

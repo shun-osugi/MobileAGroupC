@@ -7,6 +7,7 @@ import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.WindowManager;
 import android.widget.EditText;
@@ -32,6 +33,7 @@ import io.github.shun.osugi.busible.viewmodel.ScheduleViewModel;
 public class EditScheduleActivity extends AppCompatActivity {
 
     private ActivityAddScheduleBinding binding;
+    private static final String TAG = "EditScheduleActivity";
 
     private int selectedYear, selectedMonth, selectedDay;
 
@@ -151,7 +153,6 @@ public class EditScheduleActivity extends AppCompatActivity {
                     dateLiveData.observe(this, date -> {
                         int dateId = getOrMakeDateId(dateViewModel, date);
                         schedule.setDateId(dateId);
-
                     });
 
                     // データを保存
@@ -168,6 +169,7 @@ public class EditScheduleActivity extends AppCompatActivity {
                     var message = "タイトル : " + title + "\n日付 : "+year + "/" + month + "/" + day + "\n開始時間 : " + startTime + "\n終了時間 : " + endTime +
                             "\n強度 : " + strong + "\nメモ : " + memo + "\n繰り返し : " + repeat;
                     showConfirmationDialog(message);
+                    Log.d(TAG, "message: " + message);
                 });
             }
         });
