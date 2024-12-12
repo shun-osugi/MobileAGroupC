@@ -369,31 +369,31 @@ public class CalendarActivity extends AppCompatActivity {
 
     // 予定の表示(id判定)
     private void addSchedule(LinearLayout linearLayout, int year, int month, int day, BusyData busys[], int cell) {
+
+        // 日付ごとに1つのボタンを生成
+        Button dateButton = new Button(this);
+        dateButton.setTextSize(9);
+        dateButton.setEllipsize(TextUtils.TruncateAt.END);
+        dateButton.setMaxLines(1);
+        dateButton.setBackgroundColor(Color.TRANSPARENT);
+
+        LinearLayout.LayoutParams dateButtonParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.MATCH_PARENT
+        );
+        dateButton.setLayoutParams(dateButtonParams);
+
+        LinearLayout scheduleLayout = new LinearLayout(this);
+        scheduleLayout.setLayoutParams( new ViewGroup.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.MATCH_PARENT
+        ));
+        scheduleLayout.setOrientation(LinearLayout.VERTICAL);
+
         // 日付からスケジュールを取得
         LiveData<Date> dateLiveData = dateViewModel.getDateBySpecificDay(year, month, day);
         dateLiveData.observe(this, date -> {
             if (date != null) {
-
-                // 日付ごとに1つのボタンを生成
-                Button dateButton = new Button(this);
-                dateButton.setTextSize(9);
-                dateButton.setEllipsize(TextUtils.TruncateAt.END);
-                dateButton.setMaxLines(1);
-                dateButton.setBackgroundColor(Color.TRANSPARENT);
-
-                LinearLayout.LayoutParams dateButtonParams = new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        LinearLayout.LayoutParams.MATCH_PARENT
-                );
-                dateButton.setLayoutParams(dateButtonParams);
-
-                LinearLayout scheduleLayout = new LinearLayout(this);
-                scheduleLayout.setLayoutParams( new ViewGroup.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        LinearLayout.LayoutParams.MATCH_PARENT
-                ));
-                scheduleLayout.setOrientation(LinearLayout.VERTICAL);
-
                 int dateId = date.getId();
                 addScheduleById(dateId, linearLayout, dateButton, scheduleLayout, year, month, day, busys, cell);
             }
@@ -423,14 +423,14 @@ public class CalendarActivity extends AppCompatActivity {
                             switch (repeatOption){
                                 case "毎週":
                                     if((year > dataYear || (year == dataYear && month > dataMonth ) || (year == dataYear && month == dataMonth && day > dataDay )) && dayOfWeek0 == dayOfWeek1){
-                                        addScheduleById(repeatDataId, linearLayout, year, month, day, busys, cell);
+                                        addScheduleById(repeatDataId, linearLayout, dateButton, scheduleLayout, year, month, day, busys, cell);
                                     }
                                     break;
                                 case "隔週":
                                     break;
                                 case "毎月":
                                     if((year > dataYear || (year == dataYear && month > dataMonth )) && day == dataDay){
-                                        addScheduleById(repeatDataId, linearLayout, year, month, day, busys, cell);
+                                        addScheduleById(repeatDataId, linearLayout, dateButton, scheduleLayout, year, month, day, busys, cell);
                                     }
                                     break;
                             }
@@ -449,7 +449,7 @@ public class CalendarActivity extends AppCompatActivity {
     }
 
     // 予定の表示(idで実行)
-    private void addScheduleById(int id, LinearLayout linearLayout, int year, int month, int day, BusyData busys[], int cell) {
+    private void addScheduleById(int id, LinearLayout linearLayout, Button dateButton, LinearLayout scheduleLayout, int year, int month, int day, BusyData busys[], int cell) {
         LiveData<List<Schedule>> scheduleLiveData = scheduleViewModel.getSchedulesByDateId(id);
         scheduleLiveData.observe(this, schedules -> {
                     if (schedules != null) {
@@ -568,12 +568,7 @@ public class CalendarActivity extends AppCompatActivity {
                                             // 削除し、ダイアログを閉じる
                                             scheduleViewModel.delete(schedule);
                                             bottomSheetDialog.dismiss();
-                                            LiveData<List<Schedule>> newScheduleLiveData = scheduleViewModel.getSchedulesByDateId(dateId);
-                                            newScheduleLiveData.observe(this, newSchedules -> {
-                                                if (newSchedules == null || newSchedules.isEmpty()) {
-                                                    dateViewModel.delete(date);
-                                                }
-                                            });
+                                            LiveData<List<Schedule>> newScheduleLiveData = scheduleViewModel.getSchedulesByDateId(id);
                                             refreshCalendarData(year, month+1);
                                         })
                                         .setNegativeButton("キャンセル", (dialog2, which) -> {
