@@ -479,6 +479,8 @@ public class CalendarActivity extends AppCompatActivity {
                             String startTime = schedule.getStartTime();
                             String endTime = schedule.getEndTime();
                             int strong = schedule.getStrong();
+                            String eventColor = schedule.getColor();
+
 
                             Log.d(TAG, "Schedule By ID: " + title + schedule.getId());
 
@@ -492,7 +494,7 @@ public class CalendarActivity extends AppCompatActivity {
                             indexTextView.setTextColor(Color.WHITE);
                             indexTextView.setTextSize(16);
                             indexTextView.setSingleLine(true);
-                            indexTextView.setBackgroundColor(Color.parseColor("#000000"));
+                            indexTextView.setBackgroundColor(Color.parseColor(eventColor));
                             indexTextView.setGravity(Gravity.CENTER_VERTICAL);
                             LinearLayout.LayoutParams indexLayoutParams = (new LinearLayout.LayoutParams(
                                     LinearLayout.LayoutParams.MATCH_PARENT,

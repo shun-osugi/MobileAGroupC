@@ -36,7 +36,7 @@ public class AddScheduleActivity extends AppCompatActivity {
     private int selectedMonth = Calendar.getInstance().get(Calendar.MONTH); // 1-based
     private int selectedDay = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
 
-    private String selectedColor = "#FFFFFF"; // デフォルトは白
+    private String selectedColor = "#00FF00";
 
 
     @SuppressLint("ClickableViewAccessibility")
