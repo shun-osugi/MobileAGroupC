@@ -7,6 +7,7 @@ import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.WindowManager;
 import android.widget.EditText;
@@ -32,6 +33,7 @@ import io.github.shun.osugi.busible.viewmodel.ScheduleViewModel;
 public class EditScheduleActivity extends AppCompatActivity {
 
     private ActivityAddScheduleBinding binding;
+    private static final String TAG = "EditScheduleActivity";
 
     private int selectedYear, selectedMonth, selectedDay;
 
