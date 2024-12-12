@@ -116,7 +116,6 @@ public class EditScheduleActivity extends AppCompatActivity {
                     if (date != null) {
                         // Dateデータが取得できたら、UIに反映
                         binding.inputDate.setText(date.getYear() + "/" + (date.getMonth() + 1) + "/" + date.getDay());
-                        binding.inputDate2.setText(date.getYear() + "/" + (date.getMonth() + 1) + "/" + date.getDay());
                     }
                 });
                 binding.inputText.setText(initialTitle);
@@ -152,49 +151,20 @@ public class EditScheduleActivity extends AppCompatActivity {
                     LiveData<Date> dateLiveData = dateViewModel.getDateBySpecificDay(selectedYear, selectedMonth, selectedDay);
                     dateLiveData.observe(this, date -> {
                         int dateId = getOrMakeDateId(dateViewModel, date);
+                        // データを保存
+                        schedule.setTitle(title);
                         schedule.setDateId(dateId);
+                        schedule.setStartTime(startTime);
+                        schedule.setEndTime(endTime);
+                        schedule.setStrong(Integer.parseInt(strong));
+                        schedule.setMemo(memo);
+                        schedule.setRepeat(repeat);
+                        scheduleViewModel.update(schedule);
+                        finish();
                     });
-
-                    // データを保存
-                    schedule.setTitle(title);
-                    schedule.setStartTime(startTime);
-                    schedule.setEndTime(endTime);
-                    schedule.setStrong(Integer.parseInt(strong));
-                    schedule.setMemo(memo);
-                    schedule.setRepeat(repeat);
-
-                    scheduleViewModel.update(schedule);
-
-                    // メッセージの表示
-                    var message = "タイトル : " + title + "\n日付 : "+year + "/" + month + "/" + day + "\n開始時間 : " + startTime + "\n終了時間 : " + endTime +
-                            "\n強度 : " + strong + "\nメモ : " + memo + "\n繰り返し : " + repeat;
-                    showConfirmationDialog(message);
-                    Log.d(TAG, "message: " + message);
                 });
             }
         });
-    }
-
-    // 確認ダイアログを表示
-    private void showConfirmationDialog(String message) {
-        if (!isFinishing() && !isDestroyed()) {  // アクティビティが終了していない場合のみ表示
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle("確認")
-                    .setMessage(message)
-                    .setPositiveButton("OK", (dialog, which) -> {
-                        dialog.dismiss();
-                        finish();
-                    })
-                    .setCancelable(true);
-
-            AlertDialog dialog = builder.create();
-            dialog.show();
-
-            dialog.getWindow().setLayout(
-                    (int) (getResources().getDisplayMetrics().widthPixels * 0.9),
-                    WindowManager.LayoutParams.WRAP_CONTENT
-            );
-        }
     }
 
     private void showDatePickerDialog() {
@@ -213,7 +183,6 @@ public class EditScheduleActivity extends AppCompatActivity {
             // データ更新
             String dateText = selectedYear + "/" + (this.selectedMonth + 1)+ "/" + this.selectedDay;
             binding.inputDate.setText(dateText);
-            binding.inputDate2.setText(dateText); // 2つ目の日付フィールドも更新
         }, year, month, day);
 
         datePickerDialog.show();
