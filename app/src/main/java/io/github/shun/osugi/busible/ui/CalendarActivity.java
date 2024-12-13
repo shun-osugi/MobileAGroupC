@@ -570,7 +570,6 @@ public class CalendarActivity extends AppCompatActivity {
                                             // 削除し、ダイアログを閉じる
                                             scheduleViewModel.delete(schedule);
                                             bottomSheetDialog.dismiss();
-                                            LiveData<List<Schedule>> newScheduleLiveData = scheduleViewModel.getSchedulesByDateId(id);
                                             refreshCalendarData(year, month+1);
                                         })
                                         .setNegativeButton("キャンセル", (dialog2, which) -> {
@@ -620,6 +619,11 @@ public class CalendarActivity extends AppCompatActivity {
                         frameLayout.addView(dateButton);
                         linearLayout.addView(frameLayout);
 
+                    }else{
+                        LiveData<Date> livedate = dateViewModel.getDateById(id);
+                        livedate.observe(this, date -> {
+                            dateViewModel.delete(date);
+                        });
                     }
                 });
     }
