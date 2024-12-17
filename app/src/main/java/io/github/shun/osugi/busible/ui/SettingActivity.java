@@ -1,13 +1,24 @@
 package io.github.shun.osugi.busible.ui;
 
 import android.os.Bundle;
+
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.ImageButton;
 import android.widget.SeekBar;
+import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
+import androidx.core.text.HtmlCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+
+
+import java.util.Arrays;
+import java.util.List;
 
 import io.github.shun.osugi.busible.model.PrefDataStore;
 import io.github.shun.osugi.busible.R;
@@ -123,6 +134,59 @@ public class SettingActivity extends AppCompatActivity {
             public void onStopTrackingTouch(SeekBar seekBar) {}
         });
 
+        // 「？」ボタンのクリックイベントを設定
+        ImageButton helpButton = findViewById(R.id.help_button);
+        helpButton.setOnClickListener(view -> {
+            showHelpDialog(0);
+        });
     }
+
+    // ヘルプ情報を表示するメソッド
+    private void showHelpDialog(int pageIndex) {
+        // ヘルプ情報をリストで定義
+        List<String> helpPages = Arrays.asList(
+                "<b>デフォルト強度</b><br><br>各曜日にあらかじめ設定しておける強度の値のことです。" +
+                        "\n強度の値を設定することで、カレンダーの背景色が次のルールに基づいて変化します。",
+                "<b>1. 設定できる範囲</b><br><br>強度は各曜日に対して <font color='blue'>-3 から +3</font> の範囲で設定可能です。",
+                "<b>2. 背景色のルール</b><br><br>" +
+                        "強度7 :<font color='purple'> 紫色</font><br>" +
+                        "強度6 :<font color='red'> 赤色</font><br>" +
+                        "強度5 :<font color='#FFA500'> オレンジ色</font><br>" +
+                        "強度4 :<font color='#FFD700'> 黄色</font><br>" +
+                        "強度3 :<font color='green'> 黄緑色</font><br>" +
+                        "強度2 :<font color='#006400'> 緑色</font><br>" +
+                        "強度1 :<font color='#1E90FF'> 水色</font><br>" +
+                        "強度その他 :<font color='gray'> 灰色</font>",
+                "<b>3. 具体例</b><br><br>" +
+                        "例えば、前後日の強度を0と仮定し、月曜日のデフォルト強度を<b><font color='blue'>+3</font></b> と設定して" +
+                        "月曜日に強度<b>4</b>の予定を入れると、<b>強度が7</b> となり背景色が<b><font color='purple'>紫色</font></b>に変化します。<br><br>" +
+                        "逆に、同じ条件で月曜日のデフォルト強度を<b><font color='blue'>-3</font></b> と設定して" +
+                        "月曜日に強度<b>4</b>の予定を入れると、<b>強度が1</b> となり背景色が<b><font color='#1E90FF'>水色</font></b>となります。"
+        );
+
+        // ダイアログのビューをカスタマイズ
+        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_help, null);
+        TextView textView = dialogView.findViewById(R.id.textView);
+        textView.setText(HtmlCompat.fromHtml(helpPages.get(pageIndex), HtmlCompat.FROM_HTML_MODE_LEGACY));
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setView(dialogView)
+                .setPositiveButton(pageIndex < helpPages.size() - 1 ? "次へ" : "閉じる", (dialog, which) -> {
+                    if (pageIndex < helpPages.size() - 1) {
+                        showHelpDialog(pageIndex + 1); // 次のページへ
+                    }
+                });
+
+        // 2ページ目以降の場合、前のページに戻るボタンを追加
+        if (pageIndex > 0) {
+            builder.setNegativeButton("前へ", (dialog, which) -> {
+                showHelpDialog(pageIndex - 1); // 前のページへ
+            });
+        }
+
+        builder.setCancelable(true); // 外をタップして閉じられるようにする
+        builder.create().show();
+    }
+
 
 }
