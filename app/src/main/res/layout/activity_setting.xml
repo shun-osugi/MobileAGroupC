@@ -13,9 +13,10 @@
         android:layout_width="match_parent"
         android:layout_height="64dp"
         android:background="#bbbbbb"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/headerText"
@@ -52,14 +53,32 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <TextView
-            android:id="@+id/titleText"
+        <LinearLayout
+            android:id="@+id/titleLayout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="デフォルト強度( -3 ～ +3 )"
-            android:textSize="20dp"
-            android:layout_marginBottom="24dp"
-            />
+            android:orientation="horizontal"
+            android:layout_marginBottom="24dp">
+
+
+            <TextView
+                android:id="@+id/titleText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="15dp"
+                android:layout_marginBottom="24dp"
+                android:text="デフォルト強度( -3 ～ +3 )"
+                android:textSize="20dp" />
+
+            <ImageButton
+                android:id="@+id/help_button"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="28dp"
+                android:layout_marginTop="13dp"
+                android:layout_marginEnd="10dp"
+                android:background="@drawable/ic_circle_transparent" />
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
