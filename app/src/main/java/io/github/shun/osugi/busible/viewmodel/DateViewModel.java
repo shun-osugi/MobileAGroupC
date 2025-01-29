@@ -6,6 +6,11 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import io.github.shun.osugi.busible.dao.DateDao;
 import io.github.shun.osugi.busible.database.AppDatabase;
@@ -39,11 +44,26 @@ public class DateViewModel extends AndroidViewModel {
     }
 
     // 日付を挿入
-    public void insert(Date date) {
-        new Thread(() -> {
+    public long insert(Date date) {
+        // ExecutorService を使ってスレッドを管理し、非同期処理の完了を future.get() で待つ
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Callable<Long> callable = () -> {
             long newId = dateDao.insert(date);
-            date.setId((int) newId); // 自動生成されたIDをセット
-        }).start();
+            date.setId((int) newId);
+            return newId;
+        };
+
+        Future<Long> future = executor.submit(callable);
+        long newId = 0;
+        try {
+            newId = future.get();  // `get()` で実行完了を待って ID を取得
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        } finally {
+            executor.shutdown();
+        }
+
+        return newId;
     }
 
     // 日付を複数挿入

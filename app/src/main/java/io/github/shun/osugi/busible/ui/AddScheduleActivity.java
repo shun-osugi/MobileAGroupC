@@ -49,7 +49,6 @@ public class AddScheduleActivity extends AppCompatActivity {
         // 初期値設定
         initializeFields();
 
-
         ScheduleViewModel scheduleViewModel = new ViewModelProvider(this).get(ScheduleViewModel.class);
         DateViewModel dateViewModel = new ViewModelProvider(this).get(DateViewModel.class);
 
@@ -137,7 +136,9 @@ public class AddScheduleActivity extends AppCompatActivity {
             String memo = binding.memo.getText().toString();
             String strong = strongOptions[binding.spinnerNumber.getValue()];
             String repeatOption = repeatOptions[binding.answer.getValue()];
+
             LiveData<Date> dateLiveData = dateViewModel.getDateBySpecificDay(selectedYear, selectedMonth, selectedDay);
+
             dateLiveData.observe(this, date -> {
                 int dateId = getOrMakeDateId(dateViewModel, date);
                 saveSchedule(scheduleViewModel, dateId, title, memo, strong, startTime, endTime, selectedColor, repeatOption);
@@ -241,9 +242,9 @@ public class AddScheduleActivity extends AppCompatActivity {
             newdate.setYear(selectedYear);
             newdate.setMonth(selectedMonth);
             newdate.setDay(selectedDay);
-            dateViewModel.insert(newdate);
+            long newId = dateViewModel.insert(newdate);
 
-            return newdate.getId();
+            return (int)newId;
         }
     }
 
