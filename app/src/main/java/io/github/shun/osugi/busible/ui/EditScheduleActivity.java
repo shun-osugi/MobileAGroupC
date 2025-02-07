@@ -1,29 +1,27 @@
 package io.github.shun.osugi.busible.ui;
 
-import static java.lang.Integer.parseInt;
-
 import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.WindowManager;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-
 import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Map;
+
+import io.github.shun.osugi.busible.R;
 import io.github.shun.osugi.busible.databinding.ActivityAddScheduleBinding;
 import io.github.shun.osugi.busible.entity.Date;
 import io.github.shun.osugi.busible.entity.Schedule;
@@ -32,10 +30,15 @@ import io.github.shun.osugi.busible.viewmodel.ScheduleViewModel;
 
 public class EditScheduleActivity extends AppCompatActivity {
 
-    private ActivityAddScheduleBinding binding;
     private static final String TAG = "EditScheduleActivity";
+    private ActivityAddScheduleBinding binding;
 
-    private int selectedYear, selectedMonth, selectedDay;
+    private int selectedYear = Calendar.getInstance().get(Calendar.YEAR);
+    private int selectedMonth = Calendar.getInstance().get(Calendar.MONTH); // 1-based
+    private int selectedDay = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
+
+    private String selectedColor = "#00FF00";
+
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -47,159 +50,212 @@ public class EditScheduleActivity extends AppCompatActivity {
         ScheduleViewModel scheduleViewModel = new ViewModelProvider(this).get(ScheduleViewModel.class);
         DateViewModel dateViewModel = new ViewModelProvider(this).get(DateViewModel.class);
 
-        // Button名を変更
-        binding.save.setText("変更を適用");
-        binding.back.setText("キャンセル");
-
-        // Spinner の設定
-        String[] strongOptions = {"1","2", "3", "4", "5"};
-        binding.spinnerNumber.setMinValue(0);
-        binding.spinnerNumber.setMaxValue(strongOptions.length - 1);
-        binding.spinnerNumber.setDisplayedValues(strongOptions);
-        binding.spinnerNumber.setWrapSelectorWheel(true);
-
-        String[] repeatOptions = {"なし", "毎週", "隔週", "毎月"};
-        binding.answer.setMinValue(0);
-        binding.answer.setMaxValue(repeatOptions.length - 1);
-        binding.answer.setDisplayedValues(repeatOptions);
-        binding.answer.setWrapSelectorWheel(true);
-
-        binding.inputDate.setOnClickListener(view -> showDatePickerDialog());
-        binding.TimeFirst.setOnClickListener(view -> showTimePickerDialog(binding.TimeFirst));
-        binding.TimeFinal.setOnClickListener(view -> showTimePickerDialog(binding.TimeFinal));
-
-        binding.back.setOnClickListener(view -> {
-            finish(); // 現在のアクティビティを終了して前の画面に戻る
-        });
-
-        binding.TimeFirst.setOnTouchListener((v, event) -> {
-            if (event.getAction() == MotionEvent.ACTION_UP) {
-                showTimePickerDialog(binding.TimeFirst);
-                return true;
-            }
-            return false;
-        });
-
-        binding.TimeFinal.setOnTouchListener((v, event) -> {
-            if (event.getAction() == MotionEvent.ACTION_UP) {
-                showTimePickerDialog(binding.TimeFinal);
-                return true;
-            }
-            return false;
-        });
-
-        binding.inputDate.setOnTouchListener((v, event) -> {
-            if (event.getAction() == MotionEvent.ACTION_UP) {
-                showDatePickerDialog();
-                return true;
-            }
-            return false;
-        });
-
-        // CalendarActivityからscheduleIDを取得
+        // CalendarActivityから取得したscheduleIDを基にscheduleを取得
         Intent intent = getIntent();
         int scheduleId = intent.getIntExtra("scheduleId", -1);
-
         scheduleViewModel.getScheduleById(scheduleId).observe(this, schedule -> {
             if(schedule != null) {
-                // 予定の各フィールドを取得
-                int initialdateId = schedule.getDateId();
-                String initialTitle = schedule.getTitle();
-                String initialStartTime = schedule.getStartTime();
-                String initialEndTime = schedule.getEndTime();
-                int initialStrong = schedule.getStrong();
-                String initialMemo = schedule.getMemo();
-                String initialRepeat = schedule.getRepeat();
+                // Button名を変更
+                binding.save.setText("変更を適用");
+                binding.back.setText("キャンセル");
 
-                // UIに反映
-                dateViewModel.getDateById(initialdateId).observe(this, date -> {
-                    if (date != null) {
-                        // Dateデータが取得できたら、UIに反映
-                        binding.inputDate.setText(date.getYear() + "/" + (date.getMonth() + 1) + "/" + date.getDay());
+                // Spinnerの設定
+                String[] strongOptions = {"1", "2", "3", "4", "5"};
+                binding.spinnerNumber.setMinValue(0);
+                binding.spinnerNumber.setMaxValue(strongOptions.length - 1);
+                binding.spinnerNumber.setDisplayedValues(strongOptions);
+                binding.spinnerNumber.setWrapSelectorWheel(true);
+
+                String[] repeatOptions = {"なし", "毎週", "隔週", "毎月"};
+                binding.answer.setMinValue(0);
+                binding.answer.setMaxValue(repeatOptions.length - 1);
+                binding.answer.setDisplayedValues(repeatOptions);
+                binding.answer.setWrapSelectorWheel(true);
+
+                // 初期値設定
+                initializeFields(scheduleViewModel, dateViewModel, schedule);
+
+                // 日付選択ダイアログ
+                binding.inputDate.setOnClickListener(view -> showDatePickerDialog());
+                binding.TimeFirst.setOnClickListener(view -> showTimePickerDialog(binding.TimeFirst));
+                binding.TimeFinal.setOnClickListener(view -> showTimePickerDialog(binding.TimeFinal));
+
+                binding.back.setOnClickListener(view -> finish()); // アクティビティ終了
+
+                binding.TimeFirst.setOnTouchListener((v, event) -> {
+                    if (event.getAction() == MotionEvent.ACTION_UP) {
+                        showTimePickerDialog(binding.TimeFirst);
+                        return true;
                     }
+                    return false;
                 });
-                binding.inputText.setText(initialTitle);
-                binding.TimeFirst.setText(initialStartTime);
-                binding.TimeFinal.setText(initialEndTime);
-                binding.memo.setText(initialMemo);
 
-                binding.spinnerNumber.setValue(
-                        java.util.Arrays.asList(strongOptions).indexOf(initialStrong + "")
-                );
+                binding.TimeFinal.setOnTouchListener((v, event) -> {
+                    if (event.getAction() == MotionEvent.ACTION_UP) {
+                        showTimePickerDialog(binding.TimeFinal);
+                        return true;
+                    }
+                    return false;
+                });
 
-                binding.answer.setValue(
-                        java.util.Arrays.asList(repeatOptions).indexOf(initialRepeat)
-                );
+                binding.inputDate.setOnTouchListener((v, event) -> {
+                    if (event.getAction() == MotionEvent.ACTION_UP) {
+                        showDatePickerDialog();
+                        return true;
+                    }
+                    return false;
+                });
 
-                binding.inputDate.setText(selectedYear + "/" + selectedMonth + "/" + selectedDay);
+                binding.colorRed.setOnClickListener(v -> setColor("#FF0000"));
+                binding.colorGreen.setOnClickListener(v -> setColor("#00FF00"));
+                binding.colorBlue.setOnClickListener(v -> setColor("#0000FF"));
+
+                // 入力されたタイトルに応じて保存ボタンを有効化
+                binding.inputText.addTextChangedListener(new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(CharSequence charSequence, int start, int count, int after) {}
+
+                    @Override
+                    public void onTextChanged(CharSequence charSequence, int start, int before, int after) {
+                        String title = binding.inputText.getText().toString();
+                        // タイトルが空でない場合に保存ボタンを有効化
+                        if (!title.isEmpty()) {
+                            // タイトルが入力されている場合、ボタンの色を元に戻す
+                            binding.save.setTextColor(Color.parseColor("#034AFF")); // 元の色に変更
+                            binding.save.setEnabled(true); // ボタンを有効にする
+                        } else {
+                            // タイトルが空の場合、ボタンを無効にして色を薄くする
+                            binding.save.setTextColor(Color.parseColor("#A0A0A0")); // 薄い色に変更
+                            binding.save.setEnabled(false); // ボタンを無効にする
+                        }
+                    }
+
+                    @Override
+                    public void afterTextChanged(Editable editable) {}
+                });
 
                 // 保存ボタンのクリックイベント
                 binding.save.setOnClickListener(view -> {
-                    var title = binding.inputText.getText().toString();
-                    var startTime = binding.TimeFirst.getText().toString();
-                    var endTime = binding.TimeFinal.getText().toString();
-                    var memo = binding.memo.getText().toString();
-                    var strong = strongOptions[binding.spinnerNumber.getValue()];
-                    var repeat = repeatOptions[binding.answer.getValue()];
+                    String title = binding.inputText.getText().toString();
+                    String startTime = binding.TimeFirst.getText().toString();
+                    String endTime = binding.TimeFinal.getText().toString();
+                    String memo = binding.memo.getText().toString();
+                    String strong = strongOptions[binding.spinnerNumber.getValue()];
+                    String repeatOption = repeatOptions[binding.answer.getValue()];
 
-                    // 日付データを追加 (後で変数化)
-                    String year = String.valueOf(selectedYear);
-                    String month = String.valueOf(selectedMonth);
-                    String day = String.valueOf(selectedDay);  // ここに日付の変数を追加
-
-                    // DateIdを取得または作成
                     LiveData<Date> dateLiveData = dateViewModel.getDateBySpecificDay(selectedYear, selectedMonth, selectedDay);
+
                     dateLiveData.observe(this, date -> {
                         int dateId = getOrMakeDateId(dateViewModel, date);
-                        // データを保存
-                        schedule.setTitle(title);
-                        schedule.setDateId(dateId);
-                        schedule.setStartTime(startTime);
-                        schedule.setEndTime(endTime);
-                        schedule.setStrong(Integer.parseInt(strong));
-                        schedule.setMemo(memo);
-                        schedule.setRepeat(repeat);
-                        scheduleViewModel.update(schedule);
-                        finish();
+                        saveSchedule(scheduleViewModel, dateId, title, memo, strong, startTime, endTime, selectedColor, repeatOption);
+                        scheduleViewModel.delete(schedule);
+                        finish();  // 画面を閉じて前の画面に戻る
                     });
                 });
+
+            }else{
+                finish();
             }
         });
     }
 
-    private void showDatePickerDialog() {
+    // データベースに保存
+    private void saveSchedule(ScheduleViewModel scheduleViewModel,int dateId, String title, String memo, String strong,
+                              String startTime, String endTime, String selectedColor, String repeatOption) {
+        Schedule schedule = new Schedule();
+        schedule.setDateId(dateId);
+        schedule.setTitle(title);
+        schedule.setMemo(memo);
+        schedule.setStrong(Integer.parseInt(strong));
+        schedule.setStartTime(startTime);
+        schedule.setEndTime(endTime);
+        schedule.setColor(selectedColor);
+        schedule.setRepeat(repeatOption);
 
+        // スケジュールを非同期で保存
+        scheduleViewModel.insert(schedule);
+        Log.d(TAG, "Schedule By ID: " + schedule.getTitle());
+    }
+
+    // 日付ピッカー
+    private void showDatePickerDialog() {
         Calendar calendar = Calendar.getInstance();
         int year = calendar.get(Calendar.YEAR);
         int month = calendar.get(Calendar.MONTH);
         int day = calendar.get(Calendar.DAY_OF_MONTH);
 
         DatePickerDialog datePickerDialog = new DatePickerDialog(this, (view, selectedYear, selectedMonth, selectedDay) -> {
-
             this.selectedYear = selectedYear;
             this.selectedMonth = selectedMonth;
             this.selectedDay = selectedDay;
 
             // データ更新
-            String dateText = selectedYear + "/" + (this.selectedMonth + 1)+ "/" + this.selectedDay;
+            String dateText = selectedYear + "/" + (selectedMonth + 1) + "/" + selectedDay;
             binding.inputDate.setText(dateText);
         }, year, month, day);
 
         datePickerDialog.show();
     }
 
+    // 時間ピッカー
     private void showTimePickerDialog(final EditText editText) {
-        Calendar calendar = Calendar.getInstance();
-        int hour = calendar.get(Calendar.HOUR_OF_DAY);
-        int minute = calendar.get(Calendar.MINUTE);
+        // 現在のテキストフィールドに表示されている時刻を取得
+        String currentText = editText.getText().toString();
+        int hour = 9; // デフォルト値
+        int minute = 0;
+
+        // 時刻フォーマットが正しい場合、初期値を解析
+        if (currentText.matches("\\d{2}:\\d{2}")) {
+            String[] parts = currentText.split(":");
+            hour = Integer.parseInt(parts[0]);
+            minute = Integer.parseInt(parts[1]);
+        }
 
         TimePickerDialog timePickerDialog = new TimePickerDialog(this,
                 (view, selectedHour, selectedMinute) -> {
                     String time = String.format("%2d:%02d", selectedHour, selectedMinute);
                     editText.setText(time);
-                }, hour, minute, true); // 'true' for 24-hour format
+                }, hour, minute, true);
 
         timePickerDialog.show();
+    }
+
+    // フィールドを初期化するメソッド
+    private void initializeFields(ScheduleViewModel scheduleViewModel, DateViewModel dateViewModel, Schedule schedule) {
+        // 予定の各フィールドを取得
+        int initialdateId = schedule.getDateId();
+        String initialTitle = schedule.getTitle();
+        String initialStartTime = schedule.getStartTime();
+        String initialEndTime = schedule.getEndTime();
+        int initialStrong = schedule.getStrong();
+        String initialMemo = schedule.getMemo();
+        String initialRepeat = schedule.getRepeat();
+        String initialColor = schedule.getColor();
+
+        dateViewModel.getDateById(initialdateId).observe(this, date -> {
+            if(date != null) {
+                // 日付フィールドの初期化
+                int year = date.getYear();
+                int month = date.getMonth();
+                int day = date.getDay();
+
+                String dateText = year + "/" + (month + 1) + "/" + day;
+                binding.inputDate.setText(dateText);
+
+                selectedYear = date.getYear();
+                selectedMonth = date.getMonth();
+                selectedDay = date.getDay();
+            }
+        });
+
+        // 各フィールドの初期化
+        binding.inputText.setText(initialTitle);
+        binding.TimeFirst.setText(initialStartTime);
+        binding.TimeFinal.setText(initialEndTime);
+        binding.spinnerNumber.setValue(initialStrong);
+        binding.memo.setText(initialMemo);
+        binding.repeat.setText(initialRepeat);
+        setColor(initialColor);
     }
 
     // dateId取得
@@ -211,9 +267,17 @@ public class EditScheduleActivity extends AppCompatActivity {
             newdate.setYear(selectedYear);
             newdate.setMonth(selectedMonth);
             newdate.setDay(selectedDay);
-            dateViewModel.insert(newdate);
+            long newId = dateViewModel.insert(newdate);
 
-            return newdate.getId();
+            return (int)newId;
         }
     }
+
+    private void setColor(String color) {
+        selectedColor = color;
+        binding.colorRed.setAlpha(color.equals("#FF0000") ? 1.0f : 0.5f);
+        binding.colorGreen.setAlpha(color.equals("#00FF00") ? 1.0f : 0.5f);
+        binding.colorBlue.setAlpha(color.equals("#0000FF") ? 1.0f : 0.5f);
+    }
+
 }

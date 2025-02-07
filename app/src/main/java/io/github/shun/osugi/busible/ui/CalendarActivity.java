@@ -588,6 +588,7 @@ public class CalendarActivity extends AppCompatActivity {
                             buttonContainer.addView(editButton);
 
                             editButton.setOnClickListener(edit -> {
+                                bottomSheetDialog.dismiss();
                                 // Intent を作成して EditSchedule へ遷移
                                 Intent intent = new Intent(CalendarActivity.this, EditScheduleActivity.class);
                                 intent.putExtra("scheduleId", schedule.getId());
