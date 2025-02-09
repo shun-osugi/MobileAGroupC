@@ -147,8 +147,7 @@ public class EditScheduleActivity extends AppCompatActivity {
 
                     dateLiveData.observe(this, date -> {
                         int dateId = getOrMakeDateId(dateViewModel, date);
-                        saveSchedule(scheduleViewModel, dateId, title, memo, strong, startTime, endTime, selectedColor, repeatOption);
-                        scheduleViewModel.delete(schedule);
+                        updateSchedule(scheduleViewModel, schedule, dateId, title, memo, strong, startTime, endTime, selectedColor, repeatOption);
                         finish();  // 画面を閉じて前の画面に戻る
                     });
                 });
@@ -159,10 +158,9 @@ public class EditScheduleActivity extends AppCompatActivity {
         });
     }
 
-    // データベースに保存
-    private void saveSchedule(ScheduleViewModel scheduleViewModel,int dateId, String title, String memo, String strong,
+    // データベースを更新
+    private void updateSchedule(ScheduleViewModel scheduleViewModel, Schedule schedule,int dateId, String title, String memo, String strong,
                               String startTime, String endTime, String selectedColor, String repeatOption) {
-        Schedule schedule = new Schedule();
         schedule.setDateId(dateId);
         schedule.setTitle(title);
         schedule.setMemo(memo);
@@ -172,8 +170,7 @@ public class EditScheduleActivity extends AppCompatActivity {
         schedule.setColor(selectedColor);
         schedule.setRepeat(repeatOption);
 
-        // スケジュールを非同期で保存
-        scheduleViewModel.insert(schedule);
+        scheduleViewModel.update(schedule);
         Log.d(TAG, "Schedule By ID: " + schedule.getTitle());
     }
 
