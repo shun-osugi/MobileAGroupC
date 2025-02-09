@@ -19,6 +19,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProvider;
 
 import java.util.Calendar;
+import java.util.Locale;
 
 import io.github.shun.osugi.busible.R;
 import io.github.shun.osugi.busible.databinding.ActivityAddScheduleBinding;
@@ -104,28 +105,19 @@ public class AddScheduleActivity extends AppCompatActivity {
         binding.save.setEnabled(false);
         binding.save.setTextColor(Color.parseColor("#B0B0B0")); // 無効化時の色
 
-        // 入力されたタイトルに応じて保存ボタンを有効化
+
+        // タイトルの入力チェック
         binding.inputText.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence charSequence, int start, int count, int after) {}
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
             @Override
-            public void onTextChanged(CharSequence charSequence, int start, int before, int after) {
-                String title = binding.inputText.getText().toString();
-                // タイトルが空でない場合に保存ボタンを有効化
-                if (!title.isEmpty()) {
-                    // タイトルが入力されている場合、ボタンの色を元に戻す
-                    binding.save.setTextColor(Color.parseColor("#034AFF")); // 元の色に変更
-                    binding.save.setEnabled(true); // ボタンを有効にする
-                } else {
-                    // タイトルが空の場合、ボタンを無効にして色を薄くする
-                    binding.save.setTextColor(Color.parseColor("#A0A0A0")); // 薄い色に変更
-                    binding.save.setEnabled(false); // ボタンを無効にする
-                }
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                checkSaveButtonState();
             }
 
             @Override
-            public void afterTextChanged(Editable editable) {}
+            public void afterTextChanged(Editable s) {}
         });
 
         // 保存ボタンのクリックイベント
@@ -187,12 +179,9 @@ public class AddScheduleActivity extends AppCompatActivity {
 
     // 時間ピッカー
     private void showTimePickerDialog(final EditText editText) {
-        // 現在のテキストフィールドに表示されている時刻を取得
         String currentText = editText.getText().toString();
-        int hour = 9; // デフォルト値
-        int minute = 0;
+        int hour = 9, minute = 0;
 
-        // 時刻フォーマットが正しい場合、初期値を解析
         if (currentText.matches("\\d{2}:\\d{2}")) {
             String[] parts = currentText.split(":");
             hour = Integer.parseInt(parts[0]);
@@ -201,11 +190,51 @@ public class AddScheduleActivity extends AppCompatActivity {
 
         TimePickerDialog timePickerDialog = new TimePickerDialog(this,
                 (view, selectedHour, selectedMinute) -> {
-                    String time = String.format("%2d:%02d", selectedHour, selectedMinute);
+                    String time = String.format(Locale.getDefault(), "%02d:%02d", selectedHour, selectedMinute);
                     editText.setText(time);
+                    checkSaveButtonState();
                 }, hour, minute, true);
 
         timePickerDialog.show();
+    }
+
+    private void checkSaveButtonState() {
+        String title = binding.inputText.getText().toString();
+        String startTime = binding.TimeFirst.getText().toString();
+        String endTime = binding.TimeFinal.getText().toString();
+
+        boolean isTitleNotEmpty = !title.isEmpty();
+        boolean isValidTime = isValidTimeRange(startTime, endTime);
+
+        if (isTitleNotEmpty && isValidTime) {
+            binding.save.setEnabled(true);
+            binding.save.setTextColor(Color.parseColor("#034AFF")); // 有効時の色
+
+        } else {
+            binding.save.setEnabled(false);
+            binding.save.setTextColor(Color.parseColor("#A0A0A0")); // 無効時の色
+
+            if (!isValidTime) {
+                Toast.makeText(binding.inputText.getContext(), "終了時間は開始時間よりも\n後にしてください", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    //タイトルと時間の両方をチェック
+    private boolean isValidTimeRange(String startTime, String endTime) {
+        if (!startTime.matches("\\d{2}:\\d{2}") || !endTime.matches("\\d{2}:\\d{2}")) {
+            return false;
+        }
+
+        String[] startParts = startTime.split(":");
+        String[] endParts = endTime.split(":");
+
+        int startHour = Integer.parseInt(startParts[0]);
+        int startMinute = Integer.parseInt(startParts[1]);
+        int endHour = Integer.parseInt(endParts[0]);
+        int endMinute = Integer.parseInt(endParts[1]);
+
+        return (endHour > startHour) || (endHour == startHour && endMinute > startMinute);
     }
 
     // フィールドを初期化するメソッド
@@ -223,13 +252,13 @@ public class AddScheduleActivity extends AppCompatActivity {
         // 開始時刻フィールドの初期化
         calendar.set(Calendar.HOUR_OF_DAY, 9);
         calendar.set(Calendar.MINUTE, 0);
-        String startTimeText = String.format("%2d:%02d", 9, 0);
+        String startTimeText = String.format("%02d:%02d", 9, 0);
         binding.TimeFirst.setText(startTimeText);
 
         // 終了時刻フィールドの初期化
         calendar.set(Calendar.HOUR_OF_DAY, 10);
         calendar.set(Calendar.MINUTE, 0);
-        String endTimeText = String.format("%2d:%02d", 10, 0);
+        String endTimeText = String.format("%02d:%02d", 10, 0);
         binding.TimeFinal.setText(endTimeText);
     }
 
