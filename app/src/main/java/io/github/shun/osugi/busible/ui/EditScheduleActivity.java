@@ -171,11 +171,12 @@ public class EditScheduleActivity extends AppCompatActivity {
 
     // 日付ピッカー
     private void showDatePickerDialog() {
-        Calendar calendar = Calendar.getInstance();
-        int year = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH);
-        int day = calendar.get(Calendar.DAY_OF_MONTH);
+        // 現在選択されている日付を取得（初期値として今日の日付）
+        int year = this.selectedYear != 0 ? this.selectedYear : Calendar.getInstance().get(Calendar.YEAR);
+        int month = this.selectedMonth != 0 ? this.selectedMonth : Calendar.getInstance().get(Calendar.MONTH);
+        int day = this.selectedDay != 0 ? this.selectedDay : Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
 
+        // DatePickerDialog の表示
         DatePickerDialog datePickerDialog = new DatePickerDialog(this, (view, selectedYear, selectedMonth, selectedDay) -> {
             this.selectedYear = selectedYear;
             this.selectedMonth = selectedMonth;
@@ -188,6 +189,7 @@ public class EditScheduleActivity extends AppCompatActivity {
 
         datePickerDialog.show();
     }
+
 
     // 時間ピッカー
     private void showTimePickerDialog(final EditText editText) {
