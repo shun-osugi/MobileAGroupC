@@ -19,6 +19,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProvider;
 
+import java.util.Arrays;
 import java.util.Calendar;
 
 import io.github.shun.osugi.busible.R;
@@ -56,6 +57,7 @@ public class EditScheduleActivity extends AppCompatActivity {
         scheduleViewModel.getScheduleById(scheduleId).observe(this, schedule -> {
             if(schedule != null) {
                 // Button名を変更
+                binding.incident.setText("イベントを編集");
                 binding.save.setText("変更を適用");
                 binding.back.setText("キャンセル");
 
@@ -73,7 +75,7 @@ public class EditScheduleActivity extends AppCompatActivity {
                 binding.answer.setWrapSelectorWheel(true);
 
                 // 初期値設定
-                initializeFields(scheduleViewModel, dateViewModel, schedule);
+                initializeFields(dateViewModel, schedule, repeatOptions);
 
                 // 日付選択ダイアログ
                 binding.inputDate.setOnClickListener(view -> showDatePickerDialog());
@@ -218,7 +220,7 @@ public class EditScheduleActivity extends AppCompatActivity {
     }
 
     // フィールドを初期化するメソッド
-    private void initializeFields(ScheduleViewModel scheduleViewModel, DateViewModel dateViewModel, Schedule schedule) {
+    private void initializeFields(DateViewModel dateViewModel, Schedule schedule, String[] repeatOptions) {
         // 予定の各フィールドを取得
         int initialdateId = schedule.getDateId();
         String initialTitle = schedule.getTitle();
@@ -249,9 +251,9 @@ public class EditScheduleActivity extends AppCompatActivity {
         binding.inputText.setText(initialTitle);
         binding.TimeFirst.setText(initialStartTime);
         binding.TimeFinal.setText(initialEndTime);
-        binding.spinnerNumber.setValue(initialStrong);
+        binding.spinnerNumber.setValue(initialStrong - 1);
         binding.memo.setText(initialMemo);
-        binding.repeat.setText(initialRepeat);
+        binding.answer.setValue(Arrays.asList(repeatOptions).indexOf(initialRepeat));
         setColor(initialColor);
     }
 
