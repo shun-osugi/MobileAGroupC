@@ -10,7 +10,6 @@ import android.util.TypedValue;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -19,7 +18,6 @@ import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -480,6 +478,7 @@ public class CalendarActivity extends AppCompatActivity {
                             String endTime = schedule.getEndTime();
                             int strong = schedule.getStrong();
                             String eventColor = schedule.getColor();
+                            String memo = schedule.getMemo();
 
 
                             Log.d(TAG, "Schedule By ID: " + title + schedule.getId());
@@ -527,18 +526,49 @@ public class CalendarActivity extends AppCompatActivity {
                             ));
                             detailDialog.addView(timeTextView);
 
-                            // TextView (タイトル)
-                            TextView titleTextView = new TextView(this);
-                            titleTextView.setText(schedule.getTitle());
-                            titleTextView.setTextSize(20);
-                            LinearLayout.LayoutParams titleTextParams = new LinearLayout.LayoutParams(
+                            // LinearLayout (タイトル + メモ)
+                            LinearLayout titleContainer = new LinearLayout(this);
+                            titleContainer.setOrientation(LinearLayout.VERTICAL);
+                            LinearLayout.LayoutParams titleContainerParams = new LinearLayout.LayoutParams(
                                     0,
                                     LinearLayout.LayoutParams.WRAP_CONTENT, 3
                             );
-                            titleTextParams.leftMargin = 30;
-                            titleTextView.setLayoutParams(titleTextParams);
+                            titleContainerParams.leftMargin = 30;
+                            titleContainer.setLayoutParams(titleContainerParams);
+
+                            // TextView (タイトル)
+                            TextView titleTextView = new TextView(this);
+                            titleTextView.setText(title);
+                            titleTextView.setTextSize(20);
                             titleTextView.setGravity(Gravity.CENTER_VERTICAL);
-                            detailDialog.addView(titleTextView);
+                            titleTextView.setEllipsize(TextUtils.TruncateAt.END);
+                            titleTextView.setSingleLine(true);
+                            LinearLayout.LayoutParams titleTextParams = new LinearLayout.LayoutParams(
+                                    ViewGroup.LayoutParams.MATCH_PARENT,
+                                    ViewGroup.LayoutParams.WRAP_CONTENT
+                            );
+                            titleTextParams.rightMargin = 30;
+                            titleTextView.setLayoutParams(titleTextParams);
+                            titleContainer.addView(titleTextView);
+
+                            // TextView (メモ)
+                            if(memo != null && !memo.isEmpty()) {
+                                TextView memoTextView = new TextView(this);
+                                memoTextView.setText(memo);
+                                memoTextView.setTextSize(14);
+                                memoTextView.setEllipsize(TextUtils.TruncateAt.END);
+                                memoTextView.setSingleLine(true);
+                                LinearLayout.LayoutParams memoTextParams = new LinearLayout.LayoutParams(
+                                        ViewGroup.LayoutParams.MATCH_PARENT,
+                                        ViewGroup.LayoutParams.WRAP_CONTENT
+                                );
+                                memoTextParams.leftMargin = 30;
+                                memoTextParams.rightMargin = 30;
+                                memoTextView.setLayoutParams(memoTextParams);
+                                titleContainer.addView(memoTextView);
+                            }
+
+                            detailDialog.addView(titleContainer);
 
                             // ボタン用LinearLayout
                             LinearLayout buttonContainer = new LinearLayout(this);
@@ -594,13 +624,14 @@ public class CalendarActivity extends AppCompatActivity {
                                 intent.putExtra("scheduleId", schedule.getId());
                                 startActivity(intent);
                             });
-
                             detailDialog.addView(buttonContainer);
 
                             scheduleContainer.addView(detailDialog);
+
                         }
 
                         bottomSheetDialog.setCancelable(false);
+                        bottomSheetDialog.setCanceledOnTouchOutside(true);
 
                         dateButton.setOnClickListener(showDialog -> {
                             bottomSheetDialog.show();
