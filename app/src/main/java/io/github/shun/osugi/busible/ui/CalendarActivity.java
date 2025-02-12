@@ -370,6 +370,9 @@ public class CalendarActivity extends AppCompatActivity {
     // 予定の表示(id判定)
     private void addSchedule(LinearLayout linearLayout, int year, int month, int day, BusyData busys[], int cell) {
 
+
+        Set<Integer> addedScheduleIds = new HashSet<>();
+
         // 日付ごとに1つのボタンを生成
         Button dateButton = new Button(this);
         dateButton.setTextSize(9);
@@ -396,6 +399,7 @@ public class CalendarActivity extends AppCompatActivity {
             if (date != null) {
                 int dateId = date.getId();
                 addScheduleById(dateId, linearLayout, dateButton, scheduleLayout, year, month, day, busys, cell);
+                addedScheduleIds.add(dateId);
             }
         });
 
@@ -409,30 +413,35 @@ public class CalendarActivity extends AppCompatActivity {
                         int repeatDataId = repeatSchedule.getDateId();
                         LiveData<Date> repeatDateLiveData = dateViewModel.getDateById(repeatDataId);
                         repeatDateLiveData.observe(this, repeatDates -> {
-                            int dataYear = repeatDates.getYear();
-                            int dataMonth = repeatDates.getMonth();
-                            int dataDay = repeatDates.getDay();
+                            if (!addedScheduleIds.contains(repeatDataId)) {    //既に実行されているか
+                                int dataYear = repeatDates.getYear();
+                                int dataMonth = repeatDates.getMonth();
+                                int dataDay = repeatDates.getDay();
 
-                            Calendar calendar0 = Calendar.getInstance();
-                            calendar0.set(year, month, day);
-                            int dayOfWeek0 = calendar0.get(Calendar.DAY_OF_WEEK);
-                            Calendar calendar1 = Calendar.getInstance();
-                            calendar1.set(dataYear, dataMonth, dataDay);
-                            int dayOfWeek1 = calendar1.get(Calendar.DAY_OF_WEEK);
+                                Calendar calendar0 = Calendar.getInstance();
+                                calendar0.set(year, month, day);
+                                int dayOfWeek0 = calendar0.get(Calendar.DAY_OF_WEEK);
+                                Calendar calendar1 = Calendar.getInstance();
+                                calendar1.set(dataYear, dataMonth, dataDay);
+                                int dayOfWeek1 = calendar1.get(Calendar.DAY_OF_WEEK);
 
-                            switch (repeatOption){
-                                case "毎週":
-                                    if((year > dataYear || (year == dataYear && month > dataMonth ) || (year == dataYear && month == dataMonth && day > dataDay )) && dayOfWeek0 == dayOfWeek1){
-                                        addScheduleById(repeatDataId, linearLayout, dateButton, scheduleLayout, year, month, day, busys, cell);
-                                    }
-                                    break;
-                                case "隔週":
-                                    break;
-                                case "毎月":
-                                    if((year > dataYear || (year == dataYear && month > dataMonth )) && day == dataDay){
-                                        addScheduleById(repeatDataId, linearLayout, dateButton, scheduleLayout, year, month, day, busys, cell);
-                                    }
-                                    break;
+                                switch (repeatOption){
+                                    case "毎週":
+                                        if((year > dataYear || (year == dataYear && month > dataMonth ) || (year == dataYear && month == dataMonth && day > dataDay )) && dayOfWeek0 == dayOfWeek1){
+                                            addScheduleById(repeatDataId, linearLayout, dateButton, scheduleLayout, year, month, day, busys, cell);
+                                            addedScheduleIds.add(repeatDataId);
+                                        }
+                                        break;
+                                    case "隔週":
+                                        break;
+                                    case "毎月":
+                                        if((year > dataYear || (year == dataYear && month > dataMonth )) && day == dataDay){
+                                            addScheduleById(repeatDataId, linearLayout, dateButton, scheduleLayout, year, month, day, busys, cell);
+                                            addedScheduleIds.add(repeatDataId);
+                                        }
+                                        break;
+                        }
+
                             }
                         });
                     }
