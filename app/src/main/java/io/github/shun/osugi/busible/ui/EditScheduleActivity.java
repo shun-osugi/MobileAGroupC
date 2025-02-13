@@ -130,21 +130,36 @@ public class EditScheduleActivity extends AppCompatActivity {
 
 
                 // 保存ボタンのクリックイベント
-                binding.save.setOnClickListener(view -> {
+                binding.save.setOnClickListener(v -> {
                     String title = binding.inputText.getText().toString();
                     String startTime = binding.TimeFirst.getText().toString();
                     String endTime = binding.TimeFinal.getText().toString();
-                    String memo = binding.memo.getText().toString();
-                    String strong = strongOptions[binding.spinnerNumber.getValue()];
-                    String repeatOption = repeatOptions[binding.answer.getValue()];
 
-                    LiveData<Date> dateLiveData = dateViewModel.getDateBySpecificDay(selectedYear, selectedMonth, selectedDay);
+                    boolean isTitleNotEmpty = !title.isEmpty();
+                    boolean isValidTime = isValidTimeRange(startTime, endTime);
 
-                    dateLiveData.observe(this, date -> {
-                        int dateId = getOrMakeDateId(dateViewModel, date);
-                        updateSchedule(scheduleViewModel, schedule, dateId, title, memo, strong, startTime, endTime, selectedColor, repeatOption);
-                        finish();  // 画面を閉じて前の画面に戻る
-                    });
+                    if (isTitleNotEmpty && isValidTime) {
+                        // **条件を満たしている場合のみデータを保存**
+                        String memo = binding.memo.getText().toString();
+                        String strong = strongOptions[binding.spinnerNumber.getValue()];
+                        String repeatOption = repeatOptions[binding.answer.getValue()];
+
+                        LiveData<Date> dateLiveData = dateViewModel.getDateBySpecificDay(selectedYear, selectedMonth, selectedDay);
+                        dateLiveData.observe(this, date -> {
+                            int dateId = getOrMakeDateId(dateViewModel, date);
+                            updateSchedule(scheduleViewModel, schedule, dateId, title, memo, strong, startTime, endTime, selectedColor, repeatOption);
+                            finish(); // 画面を閉じる
+                        });
+                    } else {
+                        // **条件を満たしていない場合、データは保存せずエラーメッセージを表示**
+                        if (!isTitleNotEmpty && !isValidTime) {
+                            Toast.makeText(binding.save.getContext(), "タイトルを入力し, 開始時間は\n終了時間より先にしてください", Toast.LENGTH_SHORT).show();
+                        } else if (!isTitleNotEmpty) {
+                            Toast.makeText(binding.save.getContext(), "タイトルを入力してください", Toast.LENGTH_SHORT).show();
+                        } else if (!isValidTime) {
+                            Toast.makeText(binding.save.getContext(), "開始時間は終了時間より\n先にしてください", Toast.LENGTH_SHORT).show();
+                        }
+                    }
                 });
 
             }else{
@@ -221,16 +236,11 @@ public class EditScheduleActivity extends AppCompatActivity {
         boolean isValidTime = isValidTimeRange(startTime, endTime);
 
         if (isTitleNotEmpty && isValidTime) {
-            binding.save.setEnabled(true);
-            binding.save.setTextColor(Color.parseColor("#034AFF")); // 有効時の色
-
+            // 条件を満たす場合（タイトルがあり、開始時間 < 終了時間）
+            binding.save.setTextColor(Color.parseColor("#034AFF")); // 青色
         } else {
-            binding.save.setEnabled(false);
-            binding.save.setTextColor(Color.parseColor("#A0A0A0")); // 無効時の色
-
-            if (!isValidTime) {
-                Toast.makeText(binding.inputText.getContext(), "終了時間は開始時間よりも\n後にしてください", Toast.LENGTH_SHORT).show();
-            }
+            // 条件を満たさない場合（タイトルがない or 開始時間 >= 終了時間）
+            binding.save.setTextColor(Color.parseColor("#A0A0A0")); // 灰色
         }
     }
 
