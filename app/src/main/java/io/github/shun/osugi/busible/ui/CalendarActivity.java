@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.TypedValue;
@@ -398,6 +399,7 @@ public class CalendarActivity extends AppCompatActivity {
         });
 
         //繰り返しの予定
+        /*
         String[] repeatOptions = {"毎週", "隔週", "毎月"};
         for (String repeatOption : repeatOptions) {
             LiveData<List<Schedule>> repeatScheduleLiveData = scheduleViewModel.getSchedulesByRepeat(repeatOption);
@@ -436,7 +438,7 @@ public class CalendarActivity extends AppCompatActivity {
                     }
                 }
             });
-        }
+        }*/
 
 
         // 読み込み終了後、ロック解除
@@ -470,6 +472,8 @@ public class CalendarActivity extends AppCompatActivity {
                         scheduleLayout.removeAllViews();
                         scheduleContainer.removeAllViews();
 
+                        int countSchedule = -3;
+
                         for (Schedule schedule : schedules) {
 
                             // 予定の各フィールドを取得
@@ -480,7 +484,6 @@ public class CalendarActivity extends AppCompatActivity {
                             String eventColor = schedule.getColor();
                             String memo = schedule.getMemo();
 
-
                             Log.d(TAG, "Schedule By ID: " + title + schedule.getId());
 
                             //忙しさの表示
@@ -488,20 +491,22 @@ public class CalendarActivity extends AppCompatActivity {
                             viewBusy(busys);
 
                             // カレンダー表示用テキストビューを生成
-                            TextView indexTextView = new TextView(this);
-                            indexTextView.setText(title);
-                            indexTextView.setTextColor(Color.WHITE);
-                            indexTextView.setTextSize(16);
-                            indexTextView.setSingleLine(true);
-                            indexTextView.setBackgroundColor(Color.parseColor(eventColor));
-                            indexTextView.setGravity(Gravity.CENTER_VERTICAL);
-                            LinearLayout.LayoutParams indexLayoutParams = (new LinearLayout.LayoutParams(
-                                    LinearLayout.LayoutParams.MATCH_PARENT,
-                                    LinearLayout.LayoutParams.WRAP_CONTENT
-                            ));
-                            indexLayoutParams.setMargins(5, 0, 5, 5);
-                            indexTextView.setLayoutParams(indexLayoutParams);
-                            scheduleLayout.addView(indexTextView);
+                            if (countSchedule < 0) {
+                                TextView indexTextView = new TextView(this);
+                                indexTextView.setText(title);
+                                indexTextView.setTextColor(Color.WHITE);
+                                indexTextView.setTextSize(16);
+                                indexTextView.setSingleLine(true);
+                                indexTextView.setBackgroundColor(Color.parseColor(eventColor));
+                                indexTextView.setGravity(Gravity.CENTER_VERTICAL);
+                                LinearLayout.LayoutParams indexLayoutParams = (new LinearLayout.LayoutParams(
+                                        LinearLayout.LayoutParams.MATCH_PARENT,
+                                        LinearLayout.LayoutParams.WRAP_CONTENT
+                                ));
+                                indexLayoutParams.setMargins(5, 0, 5, 5);
+                                indexTextView.setLayoutParams(indexLayoutParams);
+                                scheduleLayout.addView(indexTextView);
+                            }
 
                             // ダイアログ用のレイアウトを生成
                             LinearLayout detailDialog = new LinearLayout(this);
@@ -628,6 +633,29 @@ public class CalendarActivity extends AppCompatActivity {
 
                             scheduleContainer.addView(detailDialog);
 
+                            countSchedule++;
+
+                        }
+
+                        // 予定が多すぎる場合は「+○」を追加
+                        if (countSchedule > 0) {
+                            TextView moreTextView = new TextView(this);
+                            moreTextView.setText("+" + countSchedule);
+                            moreTextView.setTextColor(Color.WHITE);
+                            moreTextView.setTextSize(16);
+                            moreTextView.setTypeface(null, Typeface.BOLD);
+                            moreTextView.setSingleLine(true);
+                            moreTextView.setBackgroundColor(Color.TRANSPARENT);
+                            moreTextView.setGravity(Gravity.END);
+
+                            LinearLayout.LayoutParams moreLayoutParams = new LinearLayout.LayoutParams(
+                                    LinearLayout.LayoutParams.MATCH_PARENT,
+                                    LinearLayout.LayoutParams.WRAP_CONTENT
+                            );
+                            moreLayoutParams.setMargins(5, 0, 5, 5);
+                            moreTextView.setLayoutParams(moreLayoutParams);
+
+                            scheduleLayout.addView(moreTextView);
                         }
 
                         bottomSheetDialog.setCancelable(false);
