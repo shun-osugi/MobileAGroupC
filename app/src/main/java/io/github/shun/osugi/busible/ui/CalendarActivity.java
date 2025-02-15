@@ -604,8 +604,12 @@ public class CalendarActivity extends AppCompatActivity {
                                         .setPositiveButton("削除", (dialog2, which) -> {
                                             // 削除し、ダイアログを閉じる
                                             scheduleViewModel.delete(schedule);
+
+                                            // ダイアログを閉じる
                                             bottomSheetDialog.dismiss();
-                                            refreshCalendarData(year, month+1);
+
+                                            // UIを即時更新
+                                            refreshCalendarData(year, month);
                                         })
                                         .setNegativeButton("キャンセル", (dialog2, which) -> {
                                             // ダイアログを閉じる
