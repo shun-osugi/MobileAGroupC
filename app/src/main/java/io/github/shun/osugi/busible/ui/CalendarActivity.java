@@ -736,6 +736,7 @@ public class CalendarActivity extends AppCompatActivity {
             }
             busy += busydata[i].getDefaultBusy();
             if(busy > 7){busy = 7;}
+            if(busy < 0){busy = 0;}
             switch (busy) {
                 case 7 -> ll.setBackgroundResource(R.drawable.border7);
                 case 6 -> ll.setBackgroundResource(R.drawable.border6);
