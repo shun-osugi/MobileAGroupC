@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
-    <color name="gray">#7D7D7D</color>
-    <color name="busyColor7">#cc0000</color>
-    <color name="busyColor6">#d42525</color>
-    <color name="busyColor5">#db4949</color>
-    <color name="busyColor4">#e26e6e</color>
-    <color name="busyColor3">#ea9292</color>
-    <color name="busyColor2">#f1b7b7</color>
-    <color name="busyColor1">#f8dbdb</color>
-    <color name="busyColor0">#FaFFFe</color>
-    <color name="busyColorx">#adadad</color>
+    <color name="black_mono">#FF000000</color>
+    <color name="white_mono">#FFFFFFFF</color>
+    <color name="gray_mono">#7D7D7D</color>
+    <color name="busyColor7_mono">#cc0000</color>
+    <color name="busyColor6_mono">#d42525</color>
+    <color name="busyColor5_mono">#db4949</color>
+    <color name="busyColor4_mono">#e26e6e</color>
+    <color name="busyColor3_mono">#ea9292</color>
+    <color name="busyColor2_mono">#f1b7b7</color>
+    <color name="busyColor1_mono">#f8dbdb</color>
+    <color name="busyColor0_mono">#FaFFFe</color>
+    <color name="busyColorx_mono">#adadad</color>
 </resources>
