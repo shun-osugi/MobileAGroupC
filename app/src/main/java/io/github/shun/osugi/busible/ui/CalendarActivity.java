@@ -37,6 +37,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.util.Log;
@@ -76,11 +77,22 @@ public class CalendarActivity extends AppCompatActivity {
         dateViewModel = new ViewModelProvider(this).get(DateViewModel.class);
         scheduleViewModel = new ViewModelProvider(this).get(ScheduleViewModel.class);
 
-        // 現在の年と月を取得して headerText に設定
-        Calendar calendar = Calendar.getInstance();
-        updateHeaderText(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH));
+        Calendar calendar = Calendar.getInstance();  // 現在のカレンダーを取得
 
-        setHolidays(calendar.get(Calendar.YEAR));
+        // Intentの取得
+        Intent resultIntent = getIntent();
+        int year = resultIntent.getIntExtra("selectedYear", -1);
+        int month = resultIntent.getIntExtra("selectedMonth", -1);
+
+        if (year == -1 || month == -1) {
+            year = calendar.get(Calendar.YEAR);
+            month = calendar.get(Calendar.MONTH);
+        }else{
+            calendar.set(Calendar.YEAR, year);
+            calendar.set(Calendar.MONTH, month);
+        }
+
+        setHolidays(year);
 
         // 前月ボタンのクリックリスナーを設定
         binding.lastMonthButton.setOnClickListener(view -> {
@@ -170,11 +182,20 @@ public class CalendarActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        Calendar calendar = Calendar.getInstance();  // 現在のカレンダーを取得
-        TableLayout tableLayout = findViewById(R.id.calender);
+        Intent resultIntent = getIntent();
+        int year = resultIntent.getIntExtra("selectedYear", -1);
+        int month = resultIntent.getIntExtra("selectedMonth", -1);
 
-        // 現在の年と月を取得して headerText に設定
-        updateHeaderText(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH));
+        if (year == -1 || month == -1) {
+            Calendar calendar = Calendar.getInstance();  // 現在のカレンダーを取得
+            year = calendar.get(Calendar.YEAR);
+            month = calendar.get(Calendar.MONTH);
+        }
+
+        Log.d(TAG, "onResume: " + year + "/" + (month + 1));
+
+        TableLayout tableLayout = findViewById(R.id.calender);
+        updateHeaderText(year, month);
 
         // 重複してカレンダーが生成されないようにビューをクリア
         tableLayout.removeAllViews();
@@ -217,7 +238,7 @@ public class CalendarActivity extends AppCompatActivity {
             tableLayout.addView(tableRow);
         }
         // データの再描画
-        refreshCalendarData(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH));
+        refreshCalendarData(year, month);
     }
 
     private void refreshCalendarData(int year, int month) {
@@ -227,10 +248,13 @@ public class CalendarActivity extends AppCompatActivity {
         binding.lastMonthButton.setEnabled(false);        // ボタン無効化
         binding.nextMonthButton.setEnabled(false);
 
+        Log.d(TAG, "refresh calendar");
+
         // カレンダーの初期化
         Calendar calendar = Calendar.getInstance();
         calendar.set(year, month, 1);
         int firstDay = 0;
+
         BusyData[] busys = new BusyData[43];
         for (int h = 0; h < 42; h++) {
             busys[h] = new BusyData();
@@ -387,6 +411,8 @@ public class CalendarActivity extends AppCompatActivity {
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.MATCH_PARENT
         ));
+        scheduleLayout.removeAllViews();
+
         scheduleLayout.setOrientation(LinearLayout.VERTICAL);
 
         // 日付からスケジュールを取得
@@ -395,11 +421,13 @@ public class CalendarActivity extends AppCompatActivity {
             if (date != null) {
                 int dateId = date.getId();
                 addScheduleById(dateId, linearLayout, dateButton, scheduleLayout, year, month, day, busys, cell);
+            }else{
+                viewBusy(busys);
             }
         });
 
         //繰り返しの予定
-        /*
+
         String[] repeatOptions = {"毎週", "隔週", "毎月"};
         for (String repeatOption : repeatOptions) {
             LiveData<List<Schedule>> repeatScheduleLiveData = scheduleViewModel.getSchedulesByRepeat(repeatOption);
@@ -438,20 +466,19 @@ public class CalendarActivity extends AppCompatActivity {
                     }
                 }
             });
-        }*/
+        }
 
 
         // 読み込み終了後、ロック解除
         binding.progressBar.setVisibility(View.GONE);  // ローディング表示終了
         binding.lastMonthButton.setEnabled(true);      // ボタン再有効化
         binding.nextMonthButton.setEnabled(true);
-        viewBusy(busys);
+
     }
 
     // 予定の表示(idで実行)
     private void addScheduleById(int id, LinearLayout linearLayout, Button dateButton, LinearLayout scheduleLayout, int year, int month, int day, BusyData busys[], int cell) {
-        LiveData<List<Schedule>> scheduleLiveData = scheduleViewModel.getSchedulesByDateId(id);
-        scheduleLiveData.observe(this, schedules -> {
+        observeOnce(scheduleViewModel.getSchedulesByDateId(id), schedules -> {
                     if (schedules != null) {
 
                         BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this);
@@ -469,9 +496,6 @@ public class CalendarActivity extends AppCompatActivity {
                             bottomSheetDialog.dismiss();
                         });
 
-                        scheduleLayout.removeAllViews();
-                        scheduleContainer.removeAllViews();
-
                         int countSchedule = -3;
 
                         for (Schedule schedule : schedules) {
@@ -484,8 +508,7 @@ public class CalendarActivity extends AppCompatActivity {
                             String eventColor = schedule.getColor();
                             String memo = schedule.getMemo();
 
-                            Log.d(TAG, "Schedule By ID: " + title + schedule.getId());
-
+                            Log.d(TAG, "Schedule By ID[" + cell + "]: " + title + " id: " + schedule.getId());
                             //忙しさの表示
                             busys[cell].setBusy(strong);
                             viewBusy(busys);
@@ -602,14 +625,20 @@ public class CalendarActivity extends AppCompatActivity {
                                 AlertDialog.Builder builder2 = new AlertDialog.Builder(this);
                                 builder2.setTitle("予定を削除しますか？")
                                         .setPositiveButton("削除", (dialog2, which) -> {
-                                            // 削除し、ダイアログを閉じる
+
+                                            Log.d(TAG, "delete:" + schedule.getTitle());
+
                                             scheduleViewModel.delete(schedule);
 
                                             // ダイアログを閉じる
                                             bottomSheetDialog.dismiss();
 
-                                            // UIを即時更新
-                                            refreshCalendarData(year, month);
+                                            Intent resultIntent = new Intent(CalendarActivity.this, CalendarActivity.class);
+                                            resultIntent.putExtra("selectedYear", year);
+                                            resultIntent.putExtra("selectedMonth", month);
+                                            resultIntent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+                                            startActivity(resultIntent);
+                                            finish(); // 画面を閉じる
                                         })
                                         .setNegativeButton("キャンセル", (dialog2, which) -> {
                                             // ダイアログを閉じる
@@ -684,12 +713,14 @@ public class CalendarActivity extends AppCompatActivity {
                         linearLayout.addView(frameLayout);
 
                     }else{
-                        LiveData<Date> livedate = dateViewModel.getDateById(id);
-                        livedate.observe(this, date -> {
-                            dateViewModel.delete(date);
+                        observeOnce(dateViewModel.getDateById(id), date -> {
+                            if (date != null) {
+                                dateViewModel.delete(date);
+                            }
                         });
                     }
-                });
+            viewBusy(busys);
+        });
     }
 
     //デフォルトの忙しさ反映(当月の曜日走査)
@@ -735,6 +766,7 @@ public class CalendarActivity extends AppCompatActivity {
                 busy = busydata[i].getBusy() + (busydata[i-1].getBusy()+busydata[i+1].getBusy())/2;
             }
             busy += busydata[i].getDefaultBusy();
+            if(busy != 0){Log.d(TAG, "viewBusy[ " + i + "]:"+ busy);}
             if(busy > 7){busy = 7;}
             if(busy < 0){busy = 0;}
             switch (busy) {
@@ -750,6 +782,7 @@ public class CalendarActivity extends AppCompatActivity {
             }
             if(busydata[i].getGray() == true){
                 ll.setBackgroundResource(R.drawable.borderx);
+                if(busy != 0){Log.d(TAG, "viewBusy[ " + i + "]:grey");}
             }
         }
     }
@@ -764,5 +797,14 @@ public class CalendarActivity extends AppCompatActivity {
             case 1 : return "①";
         }
         return "";
+    }
+    private <T> void observeOnce(LiveData<T> liveData, Observer<T> observer) {
+        liveData.observe(this, new Observer<T>() {
+            @Override
+            public void onChanged(T t) {
+                observer.onChanged(t);
+                liveData.removeObserver(this);
+            }
+        });
     }
 }

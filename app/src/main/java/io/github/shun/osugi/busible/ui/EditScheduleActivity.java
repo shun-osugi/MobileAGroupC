@@ -148,6 +148,12 @@ public class EditScheduleActivity extends AppCompatActivity {
                         dateLiveData.observe(this, date -> {
                             int dateId = getOrMakeDateId(dateViewModel, date);
                             updateSchedule(scheduleViewModel, schedule, dateId, title, memo, strong, startTime, endTime, selectedColor, repeatOption);
+                            dateLiveData.removeObservers(this);
+                            // 保存処理の最後にカレンダー更新用のデータを渡す
+                            Intent resultIntent = new Intent(EditScheduleActivity.this, CalendarActivity.class);
+                            resultIntent.putExtra("selectedYear", selectedYear);
+                            resultIntent.putExtra("selectedMonth", selectedMonth);
+                            startActivity(resultIntent);
                             finish(); // 画面を閉じる
                         });
                     } else {
