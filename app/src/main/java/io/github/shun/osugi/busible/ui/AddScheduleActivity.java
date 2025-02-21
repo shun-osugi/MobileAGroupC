@@ -3,6 +3,7 @@ package io.github.shun.osugi.busible.ui;
 import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Editable;
@@ -139,6 +140,12 @@ public class AddScheduleActivity extends AppCompatActivity {
                 dateLiveData.observe(this, date -> {
                     int dateId = getOrMakeDateId(dateViewModel, date);
                     saveSchedule(scheduleViewModel, dateId, title, memo, strong, startTime, endTime, selectedColor, repeatOption);
+                    dateLiveData.removeObservers(this);
+                    // 保存処理の最後にカレンダー更新用のデータを渡す
+                    Intent resultIntent = new Intent(AddScheduleActivity.this, CalendarActivity.class);
+                    resultIntent.putExtra("selectedYear", selectedYear);
+                    resultIntent.putExtra("selectedMonth", selectedMonth);
+                    startActivity(resultIntent);
                     finish(); // 画面を閉じる
                 });
             } else {
