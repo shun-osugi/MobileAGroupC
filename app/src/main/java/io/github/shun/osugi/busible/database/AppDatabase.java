@@ -15,7 +15,7 @@ import io.github.shun.osugi.busible.entity.Schedule;
 import io.github.shun.osugi.busible.dao.DateDao;
 import io.github.shun.osugi.busible.entity.Date;
 
-@Database(entities = {Schedule.class, Date.class,RepeatExclusion.class,Repeat.class}, version = 2, exportSchema = false)
+@Database(entities = {Schedule.class, Date.class,RepeatExclusion.class,Repeat.class}, version = 3, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
 
     public abstract ScheduleDao scheduleDao();
