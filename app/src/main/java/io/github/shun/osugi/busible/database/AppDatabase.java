@@ -5,17 +5,26 @@ import android.content.Context;
 import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
+
+import io.github.shun.osugi.busible.dao.RepeatDao;
+import io.github.shun.osugi.busible.dao.RepeatExclusionDao;
 import io.github.shun.osugi.busible.dao.ScheduleDao;
+import io.github.shun.osugi.busible.entity.RepeatExclusion;
+import io.github.shun.osugi.busible.entity.Repeat;
 import io.github.shun.osugi.busible.entity.Schedule;
 import io.github.shun.osugi.busible.dao.DateDao;
 import io.github.shun.osugi.busible.entity.Date;
 
-@Database(entities = {Schedule.class, Date.class}, version = 2, exportSchema = false)
+@Database(entities = {Schedule.class, Date.class,RepeatExclusion.class,Repeat.class}, version = 2, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
 
     public abstract ScheduleDao scheduleDao();
     // DateDaoのインターフェースを提供
     public abstract DateDao dateDao();
+
+    public abstract RepeatExclusionDao repeatExclusionDao();
+
+    public abstract RepeatDao repeatDao();
 
     // Singletonパターンでインスタンスを一度だけ作成する
     private static volatile AppDatabase INSTANCE;
