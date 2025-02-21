@@ -42,11 +42,11 @@ public interface ScheduleDao {
     LiveData<List<Schedule>> getSchedulesByRepeat(String repeat);
 
     // 特定の開始時間を持つスケジュールを取得
-    @Query("SELECT * FROM schedule WHERE startTime = :startTime")
-    LiveData<List<Schedule>> getSchedulesByStartTime(String startTime);
+    //@Query("SELECT * FROM schedule WHERE startTime = :startTime")
+    //LiveData<List<Schedule>> getSchedulesByStartTime(String startTime);
 
     // 特定の終了時間を持つスケジュールを取得
-    @Query("SELECT * FROM schedule WHERE endTime = :endTime")
-    LiveData<List<Schedule>> getSchedulesByEndTime(String endTime);
+    //@Query("SELECT * FROM schedule WHERE endTime = :endTime")
+    //LiveData<List<Schedule>> getSchedulesByEndTime(String endTime);
 
 }

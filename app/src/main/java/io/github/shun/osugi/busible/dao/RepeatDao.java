@@ -31,12 +31,12 @@ public interface RepeatDao {
     LiveData<Repeat> getRepeatById(int id);
 
     // 特定の scheduleId を持つ繰り返しデータを取得
-    @Query("SELECT * FROM repeat WHERE scheduleId = :scheduleId")
-    LiveData<List<Repeat>> getRepeatsByScheduleId(int scheduleId);
+    //@Query("SELECT * FROM repeat WHERE scheduleId = :scheduleId")
+    //LiveData<List<Repeat>> getRepeatsByScheduleId(int scheduleId);
 
     // 特定の dateId を持つ繰り返しデータを取得
-    @Query("SELECT * FROM repeat WHERE dateId = :dateId")
-    LiveData<List<Repeat>> getRepeatsByDateId(int dateId);
+    //@Query("SELECT * FROM repeat WHERE dateId = :dateId")
+    //LiveData<List<Repeat>> getRepeatsByDateId(int dateId);
 
     // すべての繰り返しデータを取得
     @Query("SELECT * FROM repeat")

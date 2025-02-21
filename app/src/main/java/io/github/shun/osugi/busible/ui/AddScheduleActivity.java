@@ -23,11 +23,20 @@ import java.util.Calendar;
 import java.util.Locale;
 
 import io.github.shun.osugi.busible.R;
+import io.github.shun.osugi.busible.dao.RepeatDao;
+import io.github.shun.osugi.busible.dao.RepeatExclusionDao;
+import io.github.shun.osugi.busible.dao.ScheduleDao;
 import io.github.shun.osugi.busible.databinding.ActivityAddScheduleBinding;
 import io.github.shun.osugi.busible.entity.Date;
+import io.github.shun.osugi.busible.entity.Repeat;
+import io.github.shun.osugi.busible.entity.RepeatExclusion;
 import io.github.shun.osugi.busible.entity.Schedule;
 import io.github.shun.osugi.busible.viewmodel.DateViewModel;
 import io.github.shun.osugi.busible.viewmodel.ScheduleViewModel;
+import io.github.shun.osugi.busible.viewmodel.RepeatViewModel;
+import io.github.shun.osugi.busible.viewmodel.RepeatExclusionViewModel;
+
+
 
 public class AddScheduleActivity extends AppCompatActivity {
 
@@ -39,6 +48,9 @@ public class AddScheduleActivity extends AppCompatActivity {
     private int selectedDay = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
 
     private String selectedColor = "#00FF00";
+
+    private RepeatViewModel repeatViewModel;
+    private RepeatExclusionViewModel repeatExclusionViewModel;
 
 
     @SuppressLint("ClickableViewAccessibility")
@@ -53,6 +65,9 @@ public class AddScheduleActivity extends AppCompatActivity {
 
         ScheduleViewModel scheduleViewModel = new ViewModelProvider(this).get(ScheduleViewModel.class);
         DateViewModel dateViewModel = new ViewModelProvider(this).get(DateViewModel.class);
+        repeatViewModel = new ViewModelProvider(this).get(RepeatViewModel.class);
+        repeatExclusionViewModel = new ViewModelProvider(this).get(RepeatExclusionViewModel.class);
+
 
         // Spinnerの設定
         String[] strongOptions = {"1", "2", "3", "4", "5"};
@@ -139,6 +154,13 @@ public class AddScheduleActivity extends AppCompatActivity {
                 dateLiveData.observe(this, date -> {
                     int dateId = getOrMakeDateId(dateViewModel, date);
                     saveSchedule(scheduleViewModel, dateId, title, memo, strong, startTime, endTime, selectedColor, repeatOption);
+
+                    // 日付から週番号と曜日を計算
+                    int week = getWeekOfMonth(selectedYear, selectedMonth, selectedDay);
+                    int dayOfWeek = getDayOfWeek(selectedYear, selectedMonth, selectedDay);
+                    // リピートデータを保存
+                    saveScheduleWithRepeat(selectedYear, selectedMonth, selectedDay, week, dayOfWeek, repeatOption);
+
                     finish(); // 画面を閉じる
                 });
             } else {
@@ -157,20 +179,23 @@ public class AddScheduleActivity extends AppCompatActivity {
     // データベースに保存
     private void saveSchedule(ScheduleViewModel scheduleViewModel,int dateId, String title, String memo, String strong,
                               String startTime, String endTime, String selectedColor, String repeatOption) {
-        Schedule schedule = new Schedule();
-        schedule.setDateId(dateId);
-        schedule.setTitle(title);
-        schedule.setMemo(memo);
-        schedule.setStrong(Integer.parseInt(strong));
-        schedule.setStartTime(startTime);
-        schedule.setEndTime(endTime);
-        schedule.setColor(selectedColor);
-        schedule.setRepeat(repeatOption);
+            // スケジュール保存
+            Schedule schedule = new Schedule();
+            schedule.setDateId(dateId);
+            schedule.setTitle(title);
+            schedule.setMemo(memo);
+            schedule.setStrong(Integer.parseInt(strong));
+            schedule.setStartTime(startTime);
+            schedule.setEndTime(endTime);
+            schedule.setColor(selectedColor);
+            schedule.setRepeat(repeatOption);
+            scheduleViewModel.insert(schedule);  // 非同期実行
 
-        // スケジュールを非同期で保存
-        scheduleViewModel.insert(schedule);
-        Log.d(TAG, "Schedule By ID: " + schedule.getTitle());
+            // ログ出力
+            Log.d(TAG, "Schedule saved: " + schedule.getTitle());
+
     }
+
 
     // 日付ピッカー
     private void showDatePickerDialog() {
@@ -187,10 +212,63 @@ public class AddScheduleActivity extends AppCompatActivity {
             // データ更新
             String dateText = selectedYear + "/" + (selectedMonth + 1) + "/" + selectedDay;
             binding.inputDate.setText(dateText);
+
         }, year, month, day);
 
         datePickerDialog.show();
     }
+
+
+    // 週番号を取得
+    private int getWeekOfMonth(int year, int month, int day) {
+        Calendar calendar = Calendar.getInstance();
+
+        // 月初の日を設定
+        calendar.set(year, month - 1, 1);  // 月は0ベースなので、-1
+        int startDayOfWeek = calendar.get(Calendar.DAY_OF_WEEK); // 月初の曜日（1=日曜日, 2=月曜日, ..., 7=土曜日）
+
+        // 入力された日付を設定
+        calendar.set(year, month - 1, day);
+        int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);  // 月の日付
+
+        // 月初からの経過日数
+        int daysSinceStartOfMonth = dayOfMonth - 1;
+
+        // 月の最初の週を基準にして週番号を計算
+        int weekNumber = (daysSinceStartOfMonth + startDayOfWeek - 1) / 7 + 1;
+
+        return weekNumber;
+    }
+
+    // 曜日を取得 (1 = Sunday, 2 = Monday, ..., 7 = Saturday)
+    private int getDayOfWeek(int year, int month, int day) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(year, month, day);
+        return calendar.get(Calendar.DAY_OF_WEEK); // 1=Sunday, 2=Monday, ...
+    }
+
+    private void saveScheduleWithRepeat(int selectedYear, int selectedMonth, int selectedDay, int week, int dayOfWeek, String repeatOption) {
+
+            // リピートデータを保存
+            Repeat repeat = new Repeat();
+            repeat.setDateId(repeat.getDateId()); // 仮のdateId
+            repeat.setScheduleId(repeat.getScheduleId()); // ScheduleのIDを設定
+            repeat.setRepeat(repeatOption);
+            repeat.setWeek(week); // 週番号を設定
+            repeat.setDoW(dayOfWeek); // 曜日を設定
+            repeatViewModel.insert(repeat);
+
+            Log.d(TAG, "Repeat saved: Week " + repeat.getWeek() + ", Day of Week " + repeat.getDoW());
+
+            // リピート除外データを保存
+            RepeatExclusion exclusion = new RepeatExclusion();
+            exclusion.setRepeatId(exclusion.getRepeatId()); // RepeatのIDを設定
+            exclusion.setDate(selectedYear+ "/"+(selectedMonth+1)+ "/"+selectedDay);
+            repeatExclusionViewModel.insert(exclusion);
+
+            Log.d(TAG, "Repeat Exclusion saved: " + exclusion.getDate());
+    }
+
 
     // 時間ピッカー
     private void showTimePickerDialog(final EditText editText) {
