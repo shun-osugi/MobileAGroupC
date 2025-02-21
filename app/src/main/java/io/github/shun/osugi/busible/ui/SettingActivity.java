@@ -232,6 +232,11 @@ public class SettingActivity extends AppCompatActivity {
                     showHelpDialog(pageIndex+1); // 多色バージョンのページへ
                 });
             }
+            if(pageIndex==4){
+                builder.setNegativeButton("前へ", (dialog, which) -> {
+                    showHelpDialog(pageIndex-3); // 単色バージョンのページへ
+                });
+            }
             if(pageIndex==3){
                 builder.setPositiveButton("閉じる", (dialog, which) -> {
                     dialog.dismiss(); // ダイアログを閉じる
