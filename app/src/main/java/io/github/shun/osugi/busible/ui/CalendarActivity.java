@@ -160,7 +160,6 @@ public class CalendarActivity extends AppCompatActivity {
                 }
                 // ログに出力
                 Log.d("HolidayApiFetcher", "Received holiday data: " + holidayData.toString());
-
             }
 
             @Override
@@ -182,6 +181,7 @@ public class CalendarActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+
         Intent resultIntent = getIntent();
         int year = resultIntent.getIntExtra("selectedYear", -1);
         int month = resultIntent.getIntExtra("selectedMonth", -1);
@@ -412,7 +412,6 @@ public class CalendarActivity extends AppCompatActivity {
                 LinearLayout.LayoutParams.MATCH_PARENT
         ));
         scheduleLayout.removeAllViews();
-
         scheduleLayout.setOrientation(LinearLayout.VERTICAL);
 
         // 日付からスケジュールを取得
@@ -427,7 +426,6 @@ public class CalendarActivity extends AppCompatActivity {
         });
 
         //繰り返しの予定
-
         String[] repeatOptions = {"毎週", "隔週", "毎月"};
         for (String repeatOption : repeatOptions) {
             LiveData<List<Schedule>> repeatScheduleLiveData = scheduleViewModel.getSchedulesByRepeat(repeatOption);
@@ -468,12 +466,10 @@ public class CalendarActivity extends AppCompatActivity {
             });
         }
 
-
         // 読み込み終了後、ロック解除
         binding.progressBar.setVisibility(View.GONE);  // ローディング表示終了
         binding.lastMonthButton.setEnabled(true);      // ボタン再有効化
         binding.nextMonthButton.setEnabled(true);
-
     }
 
     // 予定の表示(idで実行)
@@ -509,9 +505,9 @@ public class CalendarActivity extends AppCompatActivity {
                             String memo = schedule.getMemo();
 
                             Log.d(TAG, "Schedule By ID[" + cell + "]: " + title + " id: " + schedule.getId());
+
                             //忙しさの表示
                             busys[cell].setBusy(strong);
-                            viewBusy(busys);
 
                             // カレンダー表示用テキストビューを生成
                             if (countSchedule < 0) {
@@ -630,7 +626,6 @@ public class CalendarActivity extends AppCompatActivity {
 
                                             scheduleViewModel.delete(schedule);
 
-                                            // ダイアログを閉じる
                                             bottomSheetDialog.dismiss();
 
                                             Intent resultIntent = new Intent(CalendarActivity.this, CalendarActivity.class);
@@ -639,6 +634,7 @@ public class CalendarActivity extends AppCompatActivity {
                                             resultIntent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
                                             startActivity(resultIntent);
                                             finish(); // 画面を閉じる
+
                                         })
                                         .setNegativeButton("キャンセル", (dialog2, which) -> {
                                             // ダイアログを閉じる
@@ -798,6 +794,7 @@ public class CalendarActivity extends AppCompatActivity {
         }
         return "";
     }
+
     private <T> void observeOnce(LiveData<T> liveData, Observer<T> observer) {
         liveData.observe(this, new Observer<T>() {
             @Override

@@ -162,11 +162,13 @@ public class AddScheduleActivity extends AppCompatActivity {
                     resultIntent.putExtra("selectedYear", selectedYear);
                     resultIntent.putExtra("selectedMonth", selectedMonth);
                     startActivity(resultIntent);
+
                     // 日付から週番号と曜日を計算
                     int week = getWeekOfMonth(selectedYear, selectedMonth, selectedDay);
                     int dayOfWeek = getDayOfWeek(selectedYear, selectedMonth, selectedDay);
                     // リピートデータを保存
                     saveScheduleWithRepeat(selectedYear, selectedMonth, selectedDay, week, dayOfWeek, repeatOption);
+
 
                     finish(); // 画面を閉じる
                 });
