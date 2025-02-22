@@ -41,4 +41,9 @@ public interface RepeatDao {
     // すべての繰り返しデータを取得
     @Query("SELECT * FROM repeat")
     LiveData<List<Repeat>> getAllRepeats();
+
+    // 特定の種類の繰り返しデータを取得
+    @Query("SELECT * FROM repeat WHERE repeat = :repeatType")
+    LiveData<List<Repeat>> getSpecificRepeats(String repeatType);
+
 }

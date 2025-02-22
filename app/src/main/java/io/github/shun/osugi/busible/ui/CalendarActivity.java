@@ -46,6 +46,7 @@ import android.util.Log;
 import org.json.JSONObject;
 
 import io.github.shun.osugi.busible.entity.Date;
+import io.github.shun.osugi.busible.entity.Repeat;
 import io.github.shun.osugi.busible.entity.Schedule;
 import io.github.shun.osugi.busible.model.BusyData;
 import io.github.shun.osugi.busible.model.HolidayApiFetcher;
@@ -54,6 +55,7 @@ import io.github.shun.osugi.busible.R;
 import io.github.shun.osugi.busible.databinding.ActivityCalendarBinding;
 import io.github.shun.osugi.busible.viewmodel.DateViewModel;
 import io.github.shun.osugi.busible.viewmodel.ScheduleViewModel;
+import io.github.shun.osugi.busible.viewmodel.RepeatViewModel;
 
 
 public class CalendarActivity extends AppCompatActivity {
@@ -64,6 +66,7 @@ public class CalendarActivity extends AppCompatActivity {
 
     private DateViewModel dateViewModel;
     private ScheduleViewModel scheduleViewModel;
+    private RepeatViewModel repeatViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,6 +79,7 @@ public class CalendarActivity extends AppCompatActivity {
         // ViewModelの初期化
         dateViewModel = new ViewModelProvider(this).get(DateViewModel.class);
         scheduleViewModel = new ViewModelProvider(this).get(ScheduleViewModel.class);
+        repeatViewModel = new ViewModelProvider(this).get(RepeatViewModel.class);
 
         Calendar calendar = Calendar.getInstance();  // 現在のカレンダーを取得
 
@@ -425,7 +429,54 @@ public class CalendarActivity extends AppCompatActivity {
             }
         });
 
-        //繰り返しの予定
+
+        // 読み込み終了後、ロック解除
+        binding.progressBar.setVisibility(View.GONE);  // ローディング表示終了
+        binding.lastMonthButton.setEnabled(true);      // ボタン再有効化
+        binding.nextMonthButton.setEnabled(true);
+
+
+        addRepeatSchedule( linearLayout, year, month, day, busys, cell, dateButton);
+    }
+
+    // 繰り返し予定の表示
+    private void addRepeatSchedule(LinearLayout linearLayout, int year, int month, int day, BusyData busys[], int cell, Button dateButton){
+        LiveData<List<Repeat>> repeatLiveData = repeatViewModel.getSpecificRepeats("毎週");
+        repeatLiveData.observe(this, repeats -> {    //毎週予定をループ
+            if (repeats != null) {
+            for(Repeat repeat : repeats){
+                    //repeatのDate情報
+                    LiveData<Date> repeatDateLiveData = dateViewModel.getDateById(repeat.getDateId());
+                    repeatDateLiveData.observe(this, repeatDate -> {
+                        int dataYear = repeatDate.getYear();
+                        int dataMonth = repeatDate.getMonth();
+                        int dataDay = repeatDate.getDay();
+
+                        // 週の情報(本当はRepeat内にあるint型の曜日を使いたい)
+                        Calendar calendar0 = Calendar.getInstance();
+                        calendar0.set(year, month, day);
+                        int dayOfWeek0 = calendar0.get(Calendar.DAY_OF_WEEK);
+                        Calendar calendar1 = Calendar.getInstance();
+                        calendar1.set(dataYear, dataMonth, dataDay);
+                        int dayOfWeek1 = calendar1.get(Calendar.DAY_OF_WEEK);
+
+                        //Scheduleの情報
+                        int dataId = repeat.getScheduleId();
+                        LinearLayout ll = findViewById(cell);
+
+                        //表示(dateButtonとScheduleLayoutを取得)
+                        if ((year > dataYear || (year == dataYear && month > dataMonth) || (year == dataYear && month == dataMonth && day > dataDay)) && dayOfWeek0 == dayOfWeek1) {
+                            addScheduleById(dataId, linearLayout, dateButton, ll, year, month, day, busys, cell);
+                        }
+                    });
+                }
+
+
+            }
+        });
+        viewBusy(busys);
+
+        /*//繰り返しの予定
         String[] repeatOptions = {"毎週", "隔週", "毎月"};
         for (String repeatOption : repeatOptions) {
             LiveData<List<Schedule>> repeatScheduleLiveData = scheduleViewModel.getSchedulesByRepeat(repeatOption);
@@ -465,11 +516,7 @@ public class CalendarActivity extends AppCompatActivity {
                 }
             });
         }
-
-        // 読み込み終了後、ロック解除
-        binding.progressBar.setVisibility(View.GONE);  // ローディング表示終了
-        binding.lastMonthButton.setEnabled(true);      // ボタン再有効化
-        binding.nextMonthButton.setEnabled(true);
+         */
     }
 
     // 予定の表示(idで実行)
