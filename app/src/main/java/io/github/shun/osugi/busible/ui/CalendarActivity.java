@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.ArrayList;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
@@ -423,11 +424,19 @@ public class CalendarActivity extends AppCompatActivity {
         dateLiveData.observe(this, date -> {
             if (date != null) {
                 int dateId = date.getId();
-                addScheduleById(dateId, linearLayout, dateButton, scheduleLayout, year, month, day, busys, cell);
-            }else{
+                addScheduleById(dateId, linearLayout, dateButton, scheduleLayout, year, month, day, busys, cell,
+                        () -> {
+                            // `addScheduleById` の処理が終わった後に実行
+                            // 繰り返しからスケジュールを取得
+                            addRepeatSchedule(linearLayout, year, month, day, busys, cell, dateButton);
+                        }
+                );
+            } else {
                 viewBusy(busys);
             }
         });
+
+        Log.d(TAG, "test" + day + "+" + cell); // log
 
 
         // 読み込み終了後、ロック解除
@@ -436,15 +445,15 @@ public class CalendarActivity extends AppCompatActivity {
         binding.nextMonthButton.setEnabled(true);
 
 
-        addRepeatSchedule( linearLayout, year, month, day, busys, cell, dateButton);
     }
 
     // 繰り返し予定の表示
     private void addRepeatSchedule(LinearLayout linearLayout, int year, int month, int day, BusyData busys[], int cell, Button dateButton){
+        Log.d(TAG, "testtt" + day + "+" + cell); // log
         LiveData<List<Repeat>> repeatLiveData = repeatViewModel.getSpecificRepeats("毎週");
         repeatLiveData.observe(this, repeats -> {    //毎週予定をループ
             if (repeats != null) {
-            for(Repeat repeat : repeats){
+                for(Repeat repeat : repeats){
                     //repeatのDate情報
                     LiveData<Date> repeatDateLiveData = dateViewModel.getDateById(repeat.getDateId());
                     repeatDateLiveData.observe(this, repeatDate -> {
@@ -466,15 +475,17 @@ public class CalendarActivity extends AppCompatActivity {
 
                         //表示(dateButtonとScheduleLayoutを取得)
                         if ((year > dataYear || (year == dataYear && month > dataMonth) || (year == dataYear && month == dataMonth && day > dataDay)) && dayOfWeek0 == dayOfWeek1) {
-                            addScheduleById(dataId, linearLayout, dateButton, ll, year, month, day, busys, cell);
+                            addScheduleById(dataId, linearLayout, dateButton, ll, year, month, day, busys, cell , new Runnable(){
+                                @Override
+                                public void run() { }
+                            });
                         }
                     });
                 }
-
-
             }
         });
-        viewBusy(busys);
+
+    viewBusy(busys);
 
         /*//繰り返しの予定
         String[] repeatOptions = {"毎週", "隔週", "毎月"};
@@ -520,7 +531,7 @@ public class CalendarActivity extends AppCompatActivity {
     }
 
     // 予定の表示(idで実行)
-    private void addScheduleById(int id, LinearLayout linearLayout, Button dateButton, LinearLayout scheduleLayout, int year, int month, int day, BusyData busys[], int cell) {
+    private void addScheduleById(int id, LinearLayout linearLayout, Button dateButton, LinearLayout scheduleLayout, int year, int month, int day, BusyData busys[], int cell, Runnable onComplete) {
         observeOnce(scheduleViewModel.getSchedulesByDateId(id), schedules -> {
                     if (schedules != null) {
 
@@ -755,10 +766,18 @@ public class CalendarActivity extends AppCompatActivity {
                         frameLayout.addView(dateButton);
                         linearLayout.addView(frameLayout);
 
-                    }else{
+                        //コールバック
+                        if (onComplete != null) {
+                            onComplete.run();
+                        }
+
+                    } else {
                         observeOnce(dateViewModel.getDateById(id), date -> {
                             if (date != null) {
                                 dateViewModel.delete(date);
+                            }
+                            if (onComplete != null) {
+                                onComplete.run();
                             }
                         });
                     }
