@@ -48,29 +48,131 @@
             android:textSize="16sp" />
 
         <!-- カラー選択ボタン -->
-        <Button
-            android:id="@+id/color_red"
+        <FrameLayout
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:layout_marginStart="10dp"
-            android:backgroundTint="#FF0000"
-            android:tag="#FF0000" />
+            android:layout_marginStart="10dp">
 
-        <Button
-            android:id="@+id/color_green"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginStart="10dp"
-            android:backgroundTint="#00FF00"
-            android:tag="#00FF00" />
+            <Button
+                android:id="@+id/color_red"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:backgroundTint="#FF0000"
+                android:tag="#FF0000" />
 
-        <Button
-            android:id="@+id/color_blue"
+            <ImageView
+                android:id="@+id/checkRed"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/check_icon"
+                android:visibility="gone"/> <!-- 初期状態は非表示 -->
+
+        </FrameLayout>
+
+        <FrameLayout
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:layout_marginStart="10dp"
-            android:backgroundTint="#0000FF"
-            android:tag="#0000FF" />
+            android:layout_marginStart="10dp">
+
+            <Button
+                android:id="@+id/color_purple"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:backgroundTint="#8F35B5"
+                android:tag="#8F35B5" />
+
+            <ImageView
+                android:id="@+id/checkPurple"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/check_icon"
+                android:visibility="gone"/> <!-- 初期状態は非表示 -->
+
+        </FrameLayout>
+
+        <FrameLayout
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="10dp">
+
+            <Button
+                android:id="@+id/color_blue"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:backgroundTint="#0000FF"
+                android:tag="#0000FF" />
+
+            <ImageView
+                android:id="@+id/checkBlue"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/check_icon"
+                android:visibility="gone"/> <!-- 初期状態は非表示 -->
+
+        </FrameLayout>
+
+        <FrameLayout
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="10dp">
+
+            <Button
+                android:id="@+id/color_green"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:backgroundTint="#008D00"
+                android:tag="#008D00" />
+
+            <ImageView
+                android:id="@+id/checkGreen"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/check_icon"
+                android:visibility="gone"/> <!-- 初期状態は非表示 -->
+
+        </FrameLayout>
+
+        <FrameLayout
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="10dp">
+
+            <Button
+                android:id="@+id/color_orange"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:backgroundTint="#FF6C00"
+                android:tag="#FF6C00" />
+
+            <ImageView
+                android:id="@+id/checkOrange"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/check_icon"
+                android:visibility="gone"/> <!-- 初期状態は非表示 -->
+
+        </FrameLayout>
+
+        <FrameLayout
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="10dp">
+
+            <Button
+                android:id="@+id/color_white"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:backgroundTint="#FFFFFF"
+                android:tag="#FFFFFF" />
+
+            <ImageView
+                android:id="@+id/checkWhite"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/check_icon"
+                android:visibility="gone"/> <!-- 初期状態は非表示 -->
+
+        </FrameLayout>
     </LinearLayout>
 
 

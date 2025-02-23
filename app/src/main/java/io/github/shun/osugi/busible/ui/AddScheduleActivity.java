@@ -11,8 +11,11 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
+import android.view.View;
 import android.view.WindowManager;
+import android.view.inputmethod.InputBinding;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
@@ -48,7 +51,7 @@ public class AddScheduleActivity extends AppCompatActivity {
     private int selectedMonth = Calendar.getInstance().get(Calendar.MONTH); // 1-based
     private int selectedDay = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
 
-    private String selectedColor = "#00FF00";
+    private String selectedColor = "#FF0000";
 
     private RepeatViewModel repeatViewModel;
     private RepeatExclusionViewModel repeatExclusionViewModel;
@@ -114,12 +117,19 @@ public class AddScheduleActivity extends AppCompatActivity {
             return false;
         });
 
-        binding.colorRed.setOnClickListener(v -> setColor("#FF0000"));
-        binding.colorGreen.setOnClickListener(v -> setColor("#00FF00"));
-        binding.colorBlue.setOnClickListener(v -> setColor("#0000FF"));
+
+        // 色ボタンのクリックリスナー設定
+        binding.colorRed.setOnClickListener(v -> setColorAndCheck("#FF0000", binding.checkRed));
+        binding.colorGreen.setOnClickListener(v -> setColorAndCheck("#008D00", binding.checkGreen));
+        binding.colorBlue.setOnClickListener(v -> setColorAndCheck("#0000FF", binding.checkBlue));
+        binding.colorPurple.setOnClickListener(v -> setColorAndCheck("#8F35B5", binding.checkPurple));
+        binding.colorOrange.setOnClickListener(v -> setColorAndCheck("#FF6C00", binding.checkOrange));
+        binding.colorWhite.setOnClickListener(v -> setColorAndCheck("#FFFFFF", binding.checkWhite));
 
         // 初期状態で保存ボタンの色を薄くする
         binding.save.setTextColor(Color.parseColor("#B0B0B0")); // 無効化時の色
+        // 最初に赤を選択された状態にする
+        setColorAndCheck("#FF0000", binding.checkRed);
 
 
         // タイトルの入力チェック
@@ -184,6 +194,7 @@ public class AddScheduleActivity extends AppCompatActivity {
             }
         });
     }
+
 
     // データベースに保存
     private void saveSchedule(ScheduleViewModel scheduleViewModel,int dateId, String title, String memo, String strong,
@@ -382,11 +393,30 @@ public class AddScheduleActivity extends AppCompatActivity {
         }
     }
 
+    private void setColorAndCheck(String selectedColor, ImageView selectedCheck) {
+        setColor(selectedColor); // 既存の色設定処理
+
+        // すべてのチェックを非表示にする
+        binding.checkRed.setVisibility(View.GONE);
+        binding.checkGreen.setVisibility(View.GONE);
+        binding.checkBlue.setVisibility(View.GONE);
+        binding.checkPurple.setVisibility(View.GONE);
+        binding.checkOrange.setVisibility(View.GONE);
+        binding.checkWhite.setVisibility(View.GONE);
+
+        // 選択した色のチェックマークを表示
+        selectedCheck.setVisibility(View.VISIBLE);
+    }
+
     private void setColor(String color) {
         selectedColor = color;
         binding.colorRed.setAlpha(color.equals("#FF0000") ? 1.0f : 0.5f);
-        binding.colorGreen.setAlpha(color.equals("#00FF00") ? 1.0f : 0.5f);
+        binding.colorGreen.setAlpha(color.equals("#008D00") ? 1.0f : 0.5f);
         binding.colorBlue.setAlpha(color.equals("#0000FF") ? 1.0f : 0.5f);
+        binding.colorPurple.setAlpha(color.equals("#8F35B5") ? 1.0f : 0.5f);
+        binding.colorOrange.setAlpha(color.equals("#FF6C00") ? 1.0f : 0.5f);
+        binding.colorWhite.setAlpha(color.equals("#FFFFFF") ? 1.0f : 0.5f);
     }
+
 
 }
