@@ -7,11 +7,15 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import io.github.shun.osugi.busible.database.AppDatabase;
 import io.github.shun.osugi.busible.dao.RepeatDao;
+import io.github.shun.osugi.busible.entity.Date;
 import io.github.shun.osugi.busible.entity.Repeat;
 
 public class RepeatViewModel extends AndroidViewModel {
@@ -29,6 +33,7 @@ public class RepeatViewModel extends AndroidViewModel {
     public void insert(Repeat repeat) {
         executorService.execute(() -> repeatDao.insert(repeat));
     }
+
 
     // 繰り返し予定を更新
     public void update(Repeat repeat) {

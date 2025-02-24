@@ -24,8 +24,9 @@ public class ScheduleViewModel extends AndroidViewModel {
     }
 
     // スケジュールの挿入
-    public void insert(Schedule schedule) {
+    public long insert(Schedule schedule) {
         new Thread(() -> scheduleDao.insert(schedule)).start();
+        return schedule.getId();
     }
 
     // スケジュールの更新

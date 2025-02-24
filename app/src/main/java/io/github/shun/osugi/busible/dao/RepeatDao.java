@@ -16,7 +16,7 @@ public interface RepeatDao {
 
     // 繰り返しデータの挿入
     @Insert
-    void insert(Repeat repeat);
+    long insert(Repeat repeat);
 
     // 繰り返しデータの更新
     @Update
@@ -27,7 +27,7 @@ public interface RepeatDao {
     void delete(Repeat repeat);
 
     // ID で繰り返しデータを取得
-    @Query("SELECT * FROM repeat WHERE id = :id")
+    @Query("SELECT * FROM `repeat` WHERE id = :id")
     LiveData<Repeat> getRepeatById(int id);
 
     // 特定の scheduleId を持つ繰り返しデータを取得
@@ -39,11 +39,11 @@ public interface RepeatDao {
     //LiveData<List<Repeat>> getRepeatsByDateId(int dateId);
 
     // すべての繰り返しデータを取得
-    @Query("SELECT * FROM repeat")
+    @Query("SELECT * FROM `repeat`")
     LiveData<List<Repeat>> getAllRepeats();
 
     // 特定の種類の繰り返しデータを取得
-    @Query("SELECT * FROM repeat WHERE repeat = :repeatType")
+    @Query("SELECT * FROM `repeat` WHERE `repeat` = :repeatType")
     LiveData<List<Repeat>> getSpecificRepeats(String repeatType);
 
 }

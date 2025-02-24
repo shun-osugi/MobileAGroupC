@@ -11,7 +11,7 @@ import io.github.shun.osugi.busible.entity.RepeatExclusion;
 @Dao
 public interface RepeatExclusionDao {
     @Insert
-    void insert(RepeatExclusion exclusion);
+    long insert(RepeatExclusion exclusion);
 
     @Delete
     void delete(RepeatExclusion exclusion);

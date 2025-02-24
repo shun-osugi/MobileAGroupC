@@ -7,6 +7,7 @@ import android.graphics.Point;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Pair;
 import android.util.TypedValue;
 import android.view.Display;
 import android.view.Gravity;
@@ -39,6 +40,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
+import androidx.lifecycle.Transformations;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.util.Log;
@@ -397,7 +399,7 @@ public class CalendarActivity extends AppCompatActivity {
 
     // 予定の表示(id判定)
     private void addSchedule(LinearLayout linearLayout, int year, int month, int day, BusyData busys[], int cell) {
-
+        Log.d(TAG, "test_" + day + "+" + cell); // log
         // 日付ごとに1つのボタンを生成
         Button dateButton = new Button(this);
         dateButton.setTextSize(9);
@@ -433,57 +435,81 @@ public class CalendarActivity extends AppCompatActivity {
                 );
             } else {
                 viewBusy(busys);
+                //addRepeatSchedule(linearLayout, year, month, day, busys, cell, dateButton);
             }
         });
-
-        Log.d(TAG, "test" + day + "+" + cell); // log
-
 
         // 読み込み終了後、ロック解除
         binding.progressBar.setVisibility(View.GONE);  // ローディング表示終了
         binding.lastMonthButton.setEnabled(true);      // ボタン再有効化
         binding.nextMonthButton.setEnabled(true);
 
+        // 繰り返しからスケジュールを取得
+        addRepeatSchedule(linearLayout, year, month, day, busys, cell, dateButton);
 
     }
 
     // 繰り返し予定の表示
-    private void addRepeatSchedule(LinearLayout linearLayout, int year, int month, int day, BusyData busys[], int cell, Button dateButton){
-        Log.d(TAG, "testtt" + day + "+" + cell); // log
-        LiveData<List<Repeat>> repeatLiveData = repeatViewModel.getSpecificRepeats("毎週");
-        repeatLiveData.observe(this, repeats -> {    //毎週予定をループ
+    private void addRepeatSchedule(LinearLayout linearLayout, int year, int month, int day, BusyData busys[], int cell, Button dateButton) {
+        Log.d(TAG, "testtt" + day + "+" + cell);
+
+        repeatViewModel.getSpecificRepeats("毎週").observe(this, repeats -> {
+            Log.d(TAG, "test_A" + repeats);
+            if (repeats == null || repeats.isEmpty()) {
+                Log.d(TAG, "リストが空です！");
+            }
+        });
+
+        repeatViewModel.getAllRepeats().observe(this, allRepeats -> {
+
+            Log.d(TAG, "test_全て");
+            for (Repeat r : allRepeats) {
+                Log.d(TAG, "全てのデータ: " + r.getRepeat()); // すべてのデータを確認
+            }
+        });
+
+        repeatViewModel.getSpecificRepeats("毎週").observe(this, repeats -> {
+            Log.d(TAG, "test_A" + repeats);
             if (repeats != null) {
-                for(Repeat repeat : repeats){
-                    //repeatのDate情報
+                Log.d(TAG, "test_B" + repeats);
+
+                for (Repeat repeat : repeats) {
+                    Log.d(TAG, "test_C" + repeat);
+
+                    // repeat の Date 情報を取得
                     LiveData<Date> repeatDateLiveData = dateViewModel.getDateById(repeat.getDateId());
-                    repeatDateLiveData.observe(this, repeatDate -> {
+
+                    // Transformations.switchMap を使って observe のネストを回避
+                    LiveData<Pair<Repeat, Date>> combinedLiveData = Transformations.map(repeatDateLiveData, repeatDate -> new Pair<>(repeat, repeatDate));
+
+                    combinedLiveData.observe(this, pair -> {
+                        Repeat repeatData = pair.first;
+                        Date repeatDate = pair.second;
+
                         int dataYear = repeatDate.getYear();
                         int dataMonth = repeatDate.getMonth();
                         int dataDay = repeatDate.getDay();
 
-                        // 週の情報(本当はRepeat内にあるint型の曜日を使いたい)
+                        // 週の情報
                         Calendar calendar0 = Calendar.getInstance();
                         calendar0.set(year, month, day);
                         int dayOfWeek0 = calendar0.get(Calendar.DAY_OF_WEEK);
+
                         Calendar calendar1 = Calendar.getInstance();
                         calendar1.set(dataYear, dataMonth, dataDay);
                         int dayOfWeek1 = calendar1.get(Calendar.DAY_OF_WEEK);
 
-                        //Scheduleの情報
-                        int dataId = repeat.getScheduleId();
+                        // Schedule の情報
+                        int dataId = repeatData.getScheduleId();
                         LinearLayout ll = findViewById(cell);
 
-                        //表示(dateButtonとScheduleLayoutを取得)
-                        if ((year > dataYear || (year == dataYear && month > dataMonth) || (year == dataYear && month == dataMonth && day > dataDay)) && dayOfWeek0 == dayOfWeek1) {
-                            addScheduleById(dataId, linearLayout, dateButton, ll, year, month, day, busys, cell , new Runnable(){
-                                @Override
-                                public void run() { }
-                            });
-                        }
+                        // 表示処理
+                        addScheduleById(dataId, linearLayout, dateButton, ll, year, month, day, busys, cell, () -> {});
                     });
                 }
             }
         });
+
 
     viewBusy(busys);
 
@@ -532,9 +558,9 @@ public class CalendarActivity extends AppCompatActivity {
 
     // 予定の表示(idで実行)
     private void addScheduleById(int id, LinearLayout linearLayout, Button dateButton, LinearLayout scheduleLayout, int year, int month, int day, BusyData busys[], int cell, Runnable onComplete) {
+        Log.d(TAG, "test  " + day + "+" + cell); // log
         observeOnce(scheduleViewModel.getSchedulesByDateId(id), schedules -> {
                     if (schedules != null) {
-
                         BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this);
                         LayoutInflater inflater = this.getLayoutInflater();
                         View dialogView = inflater.inflate(R.layout.dialog_detail_layout, null);

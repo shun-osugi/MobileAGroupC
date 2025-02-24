@@ -18,6 +18,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProvider;
 
 import java.util.Calendar;
@@ -50,8 +51,8 @@ public class AddScheduleActivity extends AppCompatActivity {
 
     private String selectedColor = "#00FF00";
 
-    private RepeatViewModel repeatViewModel;
-    private RepeatExclusionViewModel repeatExclusionViewModel;
+    //private RepeatViewModel repeatViewModel;
+    //private RepeatExclusionViewModel repeatExclusionViewModel;
 
 
     @SuppressLint("ClickableViewAccessibility")
@@ -66,8 +67,8 @@ public class AddScheduleActivity extends AppCompatActivity {
 
         ScheduleViewModel scheduleViewModel = new ViewModelProvider(this).get(ScheduleViewModel.class);
         DateViewModel dateViewModel = new ViewModelProvider(this).get(DateViewModel.class);
-        repeatViewModel = new ViewModelProvider(this).get(RepeatViewModel.class);
-        repeatExclusionViewModel = new ViewModelProvider(this).get(RepeatExclusionViewModel.class);
+        RepeatViewModel repeatViewModel = new ViewModelProvider(this).get(RepeatViewModel.class);
+        RepeatExclusionViewModel repeatExclusionViewModel = new ViewModelProvider(this).get(RepeatExclusionViewModel.class);
 
 
         // Spinnerの設定
@@ -154,24 +155,22 @@ public class AddScheduleActivity extends AppCompatActivity {
                 LiveData<Date> dateLiveData = dateViewModel.getDateBySpecificDay(selectedYear, selectedMonth, selectedDay);
                 dateLiveData.observe(this, date -> {
                     int dateId = getOrMakeDateId(dateViewModel, date);
-                    saveSchedule(scheduleViewModel, dateId, title, memo, strong, startTime, endTime, selectedColor, repeatOption);
+                    int scheduleId = saveSchedule(scheduleViewModel, dateId, title, memo, strong, startTime, endTime, selectedColor, repeatOption);
+                       // scheduleId が取得できたので、その後にリピートデータを保存
+                        int week = getWeekOfMonth(selectedYear, selectedMonth, selectedDay);
+                        int dayOfWeek = getDayOfWeek(selectedYear, selectedMonth, selectedDay);
 
-                    dateLiveData.removeObservers(this);
-                    // 保存処理の最後にカレンダー更新用のデータを渡す
-                    Intent resultIntent = new Intent(AddScheduleActivity.this, CalendarActivity.class);
-                    resultIntent.putExtra("selectedYear", selectedYear);
-                    resultIntent.putExtra("selectedMonth", selectedMonth);
-                    startActivity(resultIntent);
+                        saveScheduleWithRepeat(selectedYear, selectedMonth, selectedDay, dateId, scheduleId, week, dayOfWeek, repeatOption, repeatViewModel, repeatExclusionViewModel);
 
-                    // 日付から週番号と曜日を計算
-                    int week = getWeekOfMonth(selectedYear, selectedMonth, selectedDay);
-                    int dayOfWeek = getDayOfWeek(selectedYear, selectedMonth, selectedDay);
-                    // リピートデータを保存
-                    saveScheduleWithRepeat(selectedYear, selectedMonth, selectedDay, week, dayOfWeek, repeatOption);
+                        // リピートデータ保存後、画面遷移
+                        dateLiveData.removeObservers(this);
+                        Intent resultIntent = new Intent(AddScheduleActivity.this, CalendarActivity.class);
+                        resultIntent.putExtra("selectedYear", selectedYear);
+                        resultIntent.putExtra("selectedMonth", selectedMonth);
+                        startActivity(resultIntent);
 
-
-                    finish(); // 画面を閉じる
-                });
+                        finish(); // 画面を閉じる
+                    });
             } else {
                 // **条件を満たしていない場合、データは保存せずエラーメッセージを表示**
                 if (!isTitleNotEmpty && !isValidTime) {
@@ -186,7 +185,7 @@ public class AddScheduleActivity extends AppCompatActivity {
     }
 
     // データベースに保存
-    private void saveSchedule(ScheduleViewModel scheduleViewModel,int dateId, String title, String memo, String strong,
+    private int saveSchedule(ScheduleViewModel scheduleViewModel,int dateId, String title, String memo, String strong,
                               String startTime, String endTime, String selectedColor, String repeatOption) {
             // スケジュール保存
             Schedule schedule = new Schedule();
@@ -199,9 +198,14 @@ public class AddScheduleActivity extends AppCompatActivity {
             schedule.setColor(selectedColor);
             schedule.setRepeat(repeatOption);
             scheduleViewModel.insert(schedule);  // 非同期実行
+            long newId = scheduleViewModel.insert(schedule);
+            schedule.setId((int) newId);  // 生成されたIDをセット
 
             // ログ出力
             Log.d(TAG, "Schedule saved: " + schedule.getTitle());
+            Log.d(TAG, "id: " + schedule.getId());
+
+        return schedule.getId();    //idを返す
 
     }
 
@@ -256,17 +260,19 @@ public class AddScheduleActivity extends AppCompatActivity {
         return calendar.get(Calendar.DAY_OF_WEEK); // 1=Sunday, 2=Monday, ...
     }
 
-    private void saveScheduleWithRepeat(int selectedYear, int selectedMonth, int selectedDay, int week, int dayOfWeek, String repeatOption) {
+    private void saveScheduleWithRepeat(int selectedYear, int selectedMonth, int selectedDay, int dateId, int scheduleId, int week, int dayOfWeek, String repeatOption, RepeatViewModel repeatViewModel, RepeatExclusionViewModel repeatExclusionViewModel) {
 
             // リピートデータを保存
             Repeat repeat = new Repeat();
-            repeat.setDateId(repeat.getDateId()); // 仮のdateId
-            repeat.setScheduleId(repeat.getScheduleId()); // ScheduleのIDを設定
+            repeat.setDateId(dateId);
+            repeat.setScheduleId(scheduleId); // ScheduleのIDを設定
             repeat.setRepeat(repeatOption);
             repeat.setWeek(week); // 週番号を設定
             repeat.setDoW(dayOfWeek); // 曜日を設定
             repeatViewModel.insert(repeat);
 
+            Log.d(TAG, "repeat:" + repeat.getRepeat());
+            Log.d(TAG, "DateId:" + repeat.getDateId() + "ScheduleId:" + repeat.getScheduleId() + "repeatOption:" + repeat.getRepeat());
             Log.d(TAG, "Repeat saved: Week " + repeat.getWeek() + ", Day of Week " + repeat.getDoW());
 
             // リピート除外データを保存
@@ -381,6 +387,7 @@ public class AddScheduleActivity extends AppCompatActivity {
             return (int)newId;
         }
     }
+
 
     private void setColor(String color) {
         selectedColor = color;
