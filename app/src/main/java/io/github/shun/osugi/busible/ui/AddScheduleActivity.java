@@ -24,6 +24,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProvider;
 
 import java.util.Calendar;
+import java.util.List;
 import java.util.Locale;
 
 import io.github.shun.osugi.busible.R;
@@ -164,14 +165,20 @@ public class AddScheduleActivity extends AppCompatActivity {
                 LiveData<Date> dateLiveData = dateViewModel.getDateBySpecificDay(selectedYear, selectedMonth, selectedDay);
                 dateLiveData.observe(this, date -> {
                     int dateId = getOrMakeDateId(dateViewModel, date);
-                    saveSchedule(scheduleViewModel, dateId, title, memo, strong, startTime, endTime, selectedColor, repeatOption);
-
-                    // 日付から週番号と曜日を計算
-                    int week = getWeekOfMonth(selectedYear, selectedMonth, selectedDay);
-                    int dayOfWeek = getDayOfWeek(selectedYear, selectedMonth, selectedDay);
-
-                    // リピートデータを保存
-                    saveScheduleWithRepeat(selectedYear, selectedMonth, selectedDay,week ,dayOfWeek,repeatOption);
+                    saveSchedule(scheduleViewModel, dateId, title, memo, strong, startTime, endTime, selectedColor, repeatOption,new ScheduleViewModel.OnInsertCallback() {
+                        @Override
+                        public void onInsertCompleted(int scheduleId) {
+                            // 日付から週番号と曜日を計算
+                            int week = getWeekOfMonth(selectedYear, selectedMonth, selectedDay);
+                            int dayOfWeek = getDayOfWeek(selectedYear, selectedMonth, selectedDay);
+                            if (repeatOption != "なし"){
+                                // スケジュール保存後にリピートデータを保存
+                                saveScheduleWithRepeat(dateId, scheduleId, selectedDay, week, dayOfWeek, repeatOption);
+                            }else {
+                                Log.d(TAG,"なしのため繰り返しには保存しない");
+                            }
+                        }
+                    });
 
                     dateLiveData.removeObservers(this);
                     // 保存処理の最後にカレンダー更新用のデータを渡す
@@ -198,7 +205,7 @@ public class AddScheduleActivity extends AppCompatActivity {
 
     // データベースに保存
     private void saveSchedule(ScheduleViewModel scheduleViewModel,int dateId, String title, String memo, String strong,
-                              String startTime, String endTime, String selectedColor, String repeatOption) {
+                              String startTime, String endTime, String selectedColor, String repeatOption, ScheduleViewModel.OnInsertCallback onSuccess) {
             // スケジュール保存
             Schedule schedule = new Schedule();
             schedule.setDateId(dateId);
@@ -209,11 +216,11 @@ public class AddScheduleActivity extends AppCompatActivity {
             schedule.setEndTime(endTime);
             schedule.setColor(selectedColor);
             schedule.setRepeat(repeatOption);
-            scheduleViewModel.insert(schedule);  // 非同期実行
 
-            // ログ出力
-            Log.d(TAG, "Schedule saved: " + schedule.getTitle());
-
+            scheduleViewModel.insert(schedule, scheduleId -> {
+                Log.d(TAG, "Schedule saved: " + schedule.getTitle() + " with ID: " + scheduleId);
+                onSuccess.onInsertCompleted(scheduleId); // 保存完了後にコールバックを実行
+            });
     }
 
 
@@ -267,18 +274,20 @@ public class AddScheduleActivity extends AppCompatActivity {
         return calendar.get(Calendar.DAY_OF_WEEK) + 40; // 1=Sunday, 2=Monday, ...
     }
 
-    private void saveScheduleWithRepeat(int selectedYear, int selectedMonth, int selectedDay,int week,int Dow, String repeatOption) {
+    private void saveScheduleWithRepeat(int dateId, int scheduleId, int selectedDay,int week,int Dow, String repeatOption) {
 
             // リピートデータを保存
             Repeat repeat = new Repeat();
-            repeat.setDateId(repeat.getDateId()); // 仮のdateId
-            repeat.setScheduleId(repeat.getScheduleId()); // ScheduleのIDを設定
+            repeat.setDateId(dateId); // dateId
+            repeat.setScheduleId(scheduleId); // ScheduleのIDを設定
             if (repeatOption == "毎週"){
                 repeat.setRepeat(Dow);
             }else if (repeatOption == "隔週"){
                 repeat.setRepeat(week);
             } else if (repeatOption == "毎月") {
                 repeat.setRepeat(selectedDay);
+            }else {
+                repeat.setRepeat(0);
             }
         repeatViewModel.insert(repeat);
 

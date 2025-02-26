@@ -1,11 +1,14 @@
 package io.github.shun.osugi.busible.viewmodel;
 
 import android.app.Application;
+import android.util.Log;
 
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import io.github.shun.osugi.busible.dao.ScheduleDao;
 import io.github.shun.osugi.busible.database.AppDatabase;
@@ -14,18 +17,28 @@ import io.github.shun.osugi.busible.entity.Schedule;
 public class ScheduleViewModel extends AndroidViewModel {
     private ScheduleDao scheduleDao;
     private LiveData<List<Schedule>> allSchedules;
+    private ExecutorService executorService;
 
+    public interface OnInsertCallback {
+        void onInsertCompleted(int scheduleId);
+    }
 
     public ScheduleViewModel(Application application) {
         super(application);
         AppDatabase db = AppDatabase.getDatabase(application);
         scheduleDao = db.scheduleDao();
         allSchedules = scheduleDao.getAllSchedules();
+        executorService = Executors.newSingleThreadExecutor(); // 非同期処理用のスレッドプール
+
     }
 
     // スケジュールの挿入
-    public void insert(Schedule schedule) {
-        new Thread(() -> scheduleDao.insert(schedule)).start();
+    public void insert(Schedule schedule, OnInsertCallback callback) {
+        executorService.execute(() -> {
+            long id = scheduleDao.insert(schedule); // Room は long を返す
+            Log.d("ScheduleViewModel", "Inserted Schedule ID: " + id);
+            callback.onInsertCompleted((int) id);
+        });
     }
 
     // スケジュールの更新
