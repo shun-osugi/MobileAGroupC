@@ -166,19 +166,19 @@ public class AddScheduleActivity extends AppCompatActivity {
                     int dateId = getOrMakeDateId(dateViewModel, date);
                     saveSchedule(scheduleViewModel, dateId, title, memo, strong, startTime, endTime, selectedColor, repeatOption);
 
+                    // 日付から週番号と曜日を計算
+                    int week = getWeekOfMonth(selectedYear, selectedMonth, selectedDay);
+                    int dayOfWeek = getDayOfWeek(selectedYear, selectedMonth, selectedDay);
+
+                    // リピートデータを保存
+                    saveScheduleWithRepeat(selectedYear, selectedMonth, selectedDay,week ,dayOfWeek,repeatOption);
+
                     dateLiveData.removeObservers(this);
                     // 保存処理の最後にカレンダー更新用のデータを渡す
                     Intent resultIntent = new Intent(AddScheduleActivity.this, CalendarActivity.class);
                     resultIntent.putExtra("selectedYear", selectedYear);
                     resultIntent.putExtra("selectedMonth", selectedMonth);
                     startActivity(resultIntent);
-
-                    // 日付から週番号と曜日を計算
-                    int week = getWeekOfMonth(selectedYear, selectedMonth, selectedDay);
-                    int dayOfWeek = getDayOfWeek(selectedYear, selectedMonth, selectedDay);
-                    // リピートデータを保存
-                    saveScheduleWithRepeat(selectedYear, selectedMonth, selectedDay, week, dayOfWeek, repeatOption);
-
 
                     finish(); // 画面を閉じる
                 });
@@ -264,29 +264,33 @@ public class AddScheduleActivity extends AppCompatActivity {
     private int getDayOfWeek(int year, int month, int day) {
         Calendar calendar = Calendar.getInstance();
         calendar.set(year, month, day);
-        return calendar.get(Calendar.DAY_OF_WEEK); // 1=Sunday, 2=Monday, ...
+        return calendar.get(Calendar.DAY_OF_WEEK) + 40; // 1=Sunday, 2=Monday, ...
     }
 
-    private void saveScheduleWithRepeat(int selectedYear, int selectedMonth, int selectedDay, int week, int dayOfWeek, String repeatOption) {
+    private void saveScheduleWithRepeat(int selectedYear, int selectedMonth, int selectedDay,int week,int Dow, String repeatOption) {
 
             // リピートデータを保存
             Repeat repeat = new Repeat();
             repeat.setDateId(repeat.getDateId()); // 仮のdateId
             repeat.setScheduleId(repeat.getScheduleId()); // ScheduleのIDを設定
-            repeat.setRepeat(repeatOption);
-            repeat.setWeek(week); // 週番号を設定
-            repeat.setDoW(dayOfWeek); // 曜日を設定
-            repeatViewModel.insert(repeat);
+            if (repeatOption == "毎週"){
+                repeat.setRepeat(Dow);
+            }else if (repeatOption == "隔週"){
+                repeat.setRepeat(week);
+            } else if (repeatOption == "毎月") {
+                repeat.setRepeat(selectedDay);
+            }
+        repeatViewModel.insert(repeat);
 
-            Log.d(TAG, "Repeat saved: Week " + repeat.getWeek() + ", Day of Week " + repeat.getDoW());
+            Log.d(TAG, "Repeat saved:" + repeatOption + " ," + repeat.getRepeat());
 
-            // リピート除外データを保存
-            RepeatExclusion exclusion = new RepeatExclusion();
-            exclusion.setRepeatId(exclusion.getRepeatId()); // RepeatのIDを設定
-            exclusion.setDate(selectedYear+ "/"+(selectedMonth+1)+ "/"+selectedDay);
-            repeatExclusionViewModel.insert(exclusion);
-
-            Log.d(TAG, "Repeat Exclusion saved: " + exclusion.getDate());
+//            // リピート除外データを保存
+//            RepeatExclusion exclusion = new RepeatExclusion();
+//            exclusion.setRepeatId(exclusion.getRepeatId()); // RepeatのIDを設定
+//            exclusion.setDate(selectedYear+ "/"+(selectedMonth+1)+ "/"+selectedDay);
+//            repeatExclusionViewModel.insert(exclusion);
+//
+//            Log.d(TAG, "Repeat Exclusion saved: " + exclusion.getDate());
     }
 
 

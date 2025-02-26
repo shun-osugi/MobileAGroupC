@@ -33,9 +33,7 @@ public class Repeat {
 
     private int dateId; // 外部キー(日付)
     private int scheduleId; // 外部キー(予定)
-    private String repeat; //繰り返し
-    private int week;//週
-    private int DoW;//曜日(Day of Week の略)
+    private int repeat; //繰り返し
 
 
 
@@ -64,28 +62,12 @@ public class Repeat {
         this.scheduleId = scheduleId;
     }
 
-    public String getRepeat() {
+    public int getRepeat() {
         return repeat;
     }
 
-    public void setRepeat(String repeat) {
+    public void setRepeat(int repeat) {
         this.repeat = repeat;
-    }
-
-    public int getWeek() {
-        return week;
-    }
-
-    public void setWeek(int week) {
-        this.week = week;
-    }
-
-    public int getDoW() {
-        return DoW;
-    }
-
-    public void setDoW(int DoW) {
-        this.DoW = DoW;
     }
 
 }
