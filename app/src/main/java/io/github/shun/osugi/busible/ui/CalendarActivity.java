@@ -202,10 +202,6 @@ public class CalendarActivity extends AppCompatActivity {
 
             FrameLayout dateFrame = new FrameLayout(this);
 
-            // 予定超過数を表示するテキストを生成
-            TextView moreTextView = getMoreTextView();
-            dateFrame.addView(moreTextView);
-
             // 日付を計算
             int date = i + 1 - firstDay;
             if (date <= 0) {
@@ -214,19 +210,19 @@ public class CalendarActivity extends AppCompatActivity {
                 addCircle(dateFrame,year,month,date, true);
                 addDate(dateFrame,linearLayout,year,month,date,true);
                 calendar.add(Calendar.MONTH, 1);
-                searchDateData(moreTextView, linearLayout,year,month-1,date,busys,i);
+                searchDateData(linearLayout,year,month-1,date,busys,i);
                 busys[i].setGray(true);
             } else if (date > calendar.getActualMaximum(Calendar.DAY_OF_MONTH)) {
                 date -= calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
                 addCircle(dateFrame,year,month,date, true);
                 addDate(dateFrame,linearLayout,year,month,date,true);
-                searchDateData(moreTextView, linearLayout,year,month+1,date,busys,i);
+                searchDateData(linearLayout,year,month+1,date,busys,i);
                 busys[i].setGray(true);
             } else {
                 addCircle(dateFrame,year,month,date, false);
                 addDate(dateFrame,linearLayout,year,month,date,false);
                 setDefaultBusy(year,month, date,busys,i);
-                searchDateData(moreTextView, linearLayout,year,month,date,busys,i);
+                searchDateData(linearLayout,year,month,date,busys,i);
                 busys[i].setGray(false);
             }
             viewBusy(busys, i);
@@ -234,11 +230,15 @@ public class CalendarActivity extends AppCompatActivity {
     }
 
     // 日付から予定の有無を判断し、日付毎のレイアウトを生成
-    private void searchDateData(TextView moreTextView, LinearLayout linearLayout, int year, int month, int day, BusyData busys[], int cell) {
+    private void searchDateData(LinearLayout linearLayout, int year, int month, int day, BusyData busys[], int cell) {
 
         // ダイアログボタン用のフレームを生成
         FrameLayout frameLayout = new FrameLayout(this);
         linearLayout.addView(frameLayout);
+
+        // 予定超過数を表示するテキストを生成
+        TextView moreTextView = getMoreTextView();
+        linearLayout.addView(moreTextView);
 
         // 日付毎に1つのボタンを生成
         Button dateButton = getDateButton();
@@ -304,9 +304,19 @@ public class CalendarActivity extends AppCompatActivity {
                     Log.d(TAG, "repeatType:" + repeatType + "week:" + week + "dayOfWeek:" + dayOfWeek);
 
                     if (repeatType == week || repeatType == day || repeatType == dayOfWeek) {
-                        observeOnce(scheduleViewModel.getScheduleById(repeatSchedule.getScheduleId()), schedule -> {
-                            if (schedule != null) {
-                                addSchedule(schedule, moreTextView, scheduleLayout, bottomSheetDialog, scheduleContainer, strongText, year, month, busys, numSchedules, cell);
+                        int firstDateId = repeatSchedule.getDateId();
+                        observeOnce(dateViewModel.getDateById(firstDateId), firstDate -> {
+                            Calendar cellDay = Calendar.getInstance();
+                            cellDay.set(year, month, day);
+                            Calendar firstDay = Calendar.getInstance();
+                            firstDay.set(firstDate.getYear(), firstDate.getMonth(), firstDate.getDay());
+
+                            if (cellDay.after(firstDay)) {
+                                observeOnce(scheduleViewModel.getScheduleById(repeatSchedule.getScheduleId()), schedule -> {
+                                    if (schedule != null) {
+                                        addSchedule(schedule, moreTextView, scheduleLayout, bottomSheetDialog, scheduleContainer, strongText, year, month, busys, numSchedules, cell);
+                                    }
+                                });
                             }
                         });
                     }
@@ -335,10 +345,12 @@ public class CalendarActivity extends AppCompatActivity {
         // 忙しさの表示
         busys[cell].setBusy(strong);
         // スケジュール数の取得
+        numSchedules[cell]++;
         int countSchedule = numSchedules[cell];
+        Log.d(TAG, "count:" + countSchedule);
 
         // カレンダー表示用テキストビューを生成
-        if (countSchedule < 3) {
+        if (countSchedule < 4) {
             TextView indexTextView = new TextView(this);
             indexTextView.setText(title);
             indexTextView.setTextColor(Color.WHITE);
@@ -358,6 +370,7 @@ public class CalendarActivity extends AppCompatActivity {
         }else{
             // 予定超過数を更新
             moreTextView.setText("+" + (countSchedule - 3));
+            Log.d(TAG, "more:" + (countSchedule - 3));
         }
 
         // ダイアログ用のレイアウトを生成
