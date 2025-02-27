@@ -23,11 +23,9 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
@@ -47,7 +45,6 @@ import android.util.Log;
 
 import org.json.JSONObject;
 
-import io.github.shun.osugi.busible.entity.Date;
 import io.github.shun.osugi.busible.entity.Repeat;
 import io.github.shun.osugi.busible.entity.Schedule;
 import io.github.shun.osugi.busible.model.BusyData;
@@ -86,8 +83,6 @@ public class CalendarActivity extends AppCompatActivity {
         dateViewModel = new ViewModelProvider(this).get(DateViewModel.class);
         scheduleViewModel = new ViewModelProvider(this).get(ScheduleViewModel.class);
         repeatViewModel = new ViewModelProvider(this).get(RepeatViewModel.class);
-
-        Calendar calendar = Calendar.getInstance();  // 現在のカレンダーを取得
 
         //ホームボタンのクリックリスナー
         binding.homeButton.setOnClickListener(view -> {
@@ -210,19 +205,19 @@ public class CalendarActivity extends AppCompatActivity {
                 addCircle(dateFrame,year,month,date, true);
                 addDate(dateFrame,linearLayout,year,month,date,true);
                 calendar.add(Calendar.MONTH, 1);
-                searchDateData(linearLayout,year,month-1,date,busys,i);
+                searchSchedule(linearLayout,year,month-1,date,busys,i);
                 busys[i].setGray(true);
             } else if (date > calendar.getActualMaximum(Calendar.DAY_OF_MONTH)) {
                 date -= calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
                 addCircle(dateFrame,year,month,date, true);
                 addDate(dateFrame,linearLayout,year,month,date,true);
-                searchDateData(linearLayout,year,month+1,date,busys,i);
+                searchSchedule(linearLayout,year,month+1,date,busys,i);
                 busys[i].setGray(true);
             } else {
                 addCircle(dateFrame,year,month,date, false);
                 addDate(dateFrame,linearLayout,year,month,date,false);
                 setDefaultBusy(year,month, date,busys,i);
-                searchDateData(linearLayout,year,month,date,busys,i);
+                searchSchedule(linearLayout,year,month,date,busys,i);
                 busys[i].setGray(false);
             }
             viewBusy(busys, i);
@@ -230,7 +225,7 @@ public class CalendarActivity extends AppCompatActivity {
     }
 
     // 日付から予定の有無を判断し、日付毎のレイアウトを生成
-    private void searchDateData(LinearLayout linearLayout, int year, int month, int day, BusyData busys[], int cell) {
+    private void searchSchedule(LinearLayout linearLayout, int year, int month, int day, BusyData busys[], int cell) {
 
         // 各日のスケジュール数の記録
         Integer[] numSchedules = new Integer[42];
@@ -239,12 +234,7 @@ public class CalendarActivity extends AppCompatActivity {
         }
 
         // ダイアログボタン用のフレームを生成
-        FrameLayout frameLayout = new FrameLayout(this);
-        LinearLayout.LayoutParams frameLayoutParams = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-        );
-        frameLayout.setLayoutParams(frameLayoutParams);
+        FrameLayout frameLayout = getButtonFrame();
         linearLayout.addView(frameLayout);
 
         // 予定超過数を表示するテキストを生成
@@ -359,19 +349,7 @@ public class CalendarActivity extends AppCompatActivity {
 
         // カレンダー表示用テキストビューを生成
         if (countSchedule < 4) {
-            TextView indexTextView = new TextView(this);
-            indexTextView.setText(title);
-            indexTextView.setTextColor(Color.WHITE);
-            indexTextView.setTextSize(16);
-            indexTextView.setSingleLine(true);
-            indexTextView.setBackgroundColor(Color.parseColor(eventColor));
-            indexTextView.setGravity(Gravity.CENTER_VERTICAL);
-            LinearLayout.LayoutParams indexLayoutParams = (new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT
-            ));
-            indexLayoutParams.setMargins(5, 0, 5, 5);
-            indexTextView.setLayoutParams(indexLayoutParams);
+            TextView indexTextView = getIndexTextView(title, eventColor);
             scheduleLayout.addView(indexTextView);
             // 予定超過数を更新
             moreTextView.setText("");
@@ -381,94 +359,33 @@ public class CalendarActivity extends AppCompatActivity {
             Log.d(TAG, "more:" + (countSchedule - 3));
         }
 
-        // ダイアログ用のレイアウトを生成
-        LinearLayout detailDialog = new LinearLayout(this);
-        detailDialog.setOrientation(LinearLayout.HORIZONTAL);
-        detailDialog.setBackgroundColor(Color.WHITE);
-        LinearLayout.LayoutParams detailDialogParams = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                150
-        );
-        detailDialogParams.topMargin = 10;
-        detailDialog.setLayoutParams(detailDialogParams);
-        detailDialog.setGravity(Gravity.CENTER_VERTICAL);
+        // ダイアログ内予定表示用のレイアウトを生成
+        LinearLayout detailDialog = getDialogLayout();
 
         // TextView（時間）
-        TextView timeTextView = new TextView(this);
-        timeTextView.setText(startTime + " ~ " + endTime);
-        timeTextView.setPadding(20, 0, 0, 0);
-        timeTextView.setGravity(Gravity.CENTER_VERTICAL);
-        timeTextView.setLayoutParams(new LinearLayout.LayoutParams(
-                0,
-                LinearLayout.LayoutParams.WRAP_CONTENT, 1
-        ));
+        TextView timeTextView = getDialogTimeTextView(startTime, endTime);
         detailDialog.addView(timeTextView);
 
         // LinearLayout (タイトル + メモ)
-        LinearLayout titleContainer = new LinearLayout(this);
-        titleContainer.setOrientation(LinearLayout.VERTICAL);
-        LinearLayout.LayoutParams titleContainerParams = new LinearLayout.LayoutParams(
-                0,
-                LinearLayout.LayoutParams.WRAP_CONTENT, 3
-        );
-        titleContainerParams.leftMargin = 30;
-        titleContainer.setLayoutParams(titleContainerParams);
+        LinearLayout titleContainer = getTitleContainer();
 
         // TextView (タイトル)
-        TextView titleTextView = new TextView(this);
-        titleTextView.setText(title);
-        titleTextView.setTextSize(20);
-        titleTextView.setGravity(Gravity.CENTER_VERTICAL);
-        titleTextView.setEllipsize(TextUtils.TruncateAt.END);
-        titleTextView.setSingleLine(true);
-        LinearLayout.LayoutParams titleTextParams = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-        );
-        titleTextParams.rightMargin = 30;
-        titleTextView.setLayoutParams(titleTextParams);
+        TextView titleTextView = getTitleTextView(title);
         titleContainer.addView(titleTextView);
 
         // TextView (メモ)
         if(memo != null && !memo.isEmpty()) {
-            TextView memoTextView = new TextView(this);
-            memoTextView.setText(memo);
-            memoTextView.setTextSize(14);
-            memoTextView.setEllipsize(TextUtils.TruncateAt.END);
-            memoTextView.setSingleLine(true);
-            LinearLayout.LayoutParams memoTextParams = new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
-            );
-            memoTextParams.leftMargin = 30;
-            memoTextParams.rightMargin = 30;
-            memoTextView.setLayoutParams(memoTextParams);
+            TextView memoTextView = getMemoTextView(memo);
             titleContainer.addView(memoTextView);
         }
 
         detailDialog.addView(titleContainer);
 
         // ボタン用LinearLayout
-        LinearLayout buttonContainer = new LinearLayout(this);
-        buttonContainer.setOrientation(LinearLayout.HORIZONTAL);
-        LinearLayout.LayoutParams buttonContainerParams = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.MATCH_PARENT
-        );
-        buttonContainer.setGravity(Gravity.END);
-        buttonContainer.setLayoutParams(buttonContainerParams);
+        LinearLayout buttonContainer = getButtonContainer();
 
         // ImageButton (削除ボタン)
-        ImageButton deleteButton = new ImageButton(this);
-        deleteButton.setBackgroundColor(Color.TRANSPARENT);
-        deleteButton.setImageResource(R.drawable.ic_delete);
-        deleteButton.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
-        LinearLayout.LayoutParams buttonParams = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
-        );
-        buttonParams.rightMargin = 50;
-        deleteButton.setLayoutParams(buttonParams);
+        ImageButton deleteButton = getDeleteButton();
         buttonContainer.addView(deleteButton);
 
         deleteButton.setOnClickListener(edit -> {
@@ -498,11 +415,7 @@ public class CalendarActivity extends AppCompatActivity {
         });
 
         // ImageButton (編集ボタン)
-        ImageButton editButton = new ImageButton(this);
-        editButton.setBackgroundColor(Color.TRANSPARENT);
-        editButton.setImageResource(R.drawable.ic_arrow_forward);
-        editButton.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
-        editButton.setLayoutParams(buttonParams);
+        ImageButton editButton = getEditButton();
         buttonContainer.addView(editButton);
 
         editButton.setOnClickListener(edit -> {
@@ -699,6 +612,18 @@ public class CalendarActivity extends AppCompatActivity {
 
     /* ---------- UI 関連 の 設定 ---------- */
 
+    // 日付のボタン用のフレームを生成
+    private @NonNull FrameLayout getButtonFrame() {
+        FrameLayout frameLayout = new FrameLayout(this);
+        LinearLayout.LayoutParams frameLayoutParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        frameLayout.setLayoutParams(frameLayoutParams);
+        return frameLayout;
+    }
+
+    // 予定超過数を表示するテキストを生成
     private @NonNull TextView getMoreTextView() {
         TextView moreTextView = new TextView(this);
         moreTextView.setTextColor(Color.WHITE);
@@ -717,6 +642,7 @@ public class CalendarActivity extends AppCompatActivity {
         return moreTextView;
     }
 
+    // 日付のボタンを生成
     private @NonNull Button getDateButton() {
         Button dateButton = new Button(this);
         dateButton.setTextSize(9);
@@ -732,6 +658,7 @@ public class CalendarActivity extends AppCompatActivity {
         return dateButton;
     }
 
+    // 予定表示用のレイアウトを生成
     private @NonNull LinearLayout getScheduleLayout() {
         LinearLayout scheduleLayout = new LinearLayout(this);
         scheduleLayout.setLayoutParams( new ViewGroup.LayoutParams(
@@ -741,6 +668,141 @@ public class CalendarActivity extends AppCompatActivity {
         scheduleLayout.removeAllViews();
         scheduleLayout.setOrientation(LinearLayout.VERTICAL);
         return scheduleLayout;
+    }
+
+    // カレンダー上に表示する予定のテキストを生成
+    private @NonNull TextView getIndexTextView(String title, String eventColor) {
+        TextView indexTextView = new TextView(this);
+        indexTextView.setText(title);
+        indexTextView.setTextColor(Color.WHITE);
+        indexTextView.setTextSize(16);
+        indexTextView.setSingleLine(true);
+        indexTextView.setBackgroundColor(Color.parseColor(eventColor));
+        indexTextView.setGravity(Gravity.CENTER_VERTICAL);
+        LinearLayout.LayoutParams indexLayoutParams = (new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        ));
+        indexLayoutParams.setMargins(5, 0, 5, 5);
+        indexTextView.setLayoutParams(indexLayoutParams);
+        return indexTextView;
+    }
+
+    // ダイアログ内予定表示用のレイアウトを生成
+    private @NonNull LinearLayout getDialogLayout() {
+        LinearLayout detailDialog = new LinearLayout(this);
+        detailDialog.setOrientation(LinearLayout.HORIZONTAL);
+        detailDialog.setBackgroundColor(Color.WHITE);
+        LinearLayout.LayoutParams detailDialogParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                150
+        );
+        detailDialogParams.topMargin = 10;
+        detailDialog.setLayoutParams(detailDialogParams);
+        detailDialog.setGravity(Gravity.CENTER_VERTICAL);
+        return detailDialog;
+    }
+
+    // ダイアログ内予定のテキスト（時間）を生成
+    private @NonNull TextView getDialogTimeTextView(String startTime, String endTime) {
+        TextView timeTextView = new TextView(this);
+        timeTextView.setText(startTime + " ~ " + endTime);
+        timeTextView.setPadding(20, 0, 0, 0);
+        timeTextView.setGravity(Gravity.CENTER_VERTICAL);
+        timeTextView.setLayoutParams(new LinearLayout.LayoutParams(
+                0,
+                LinearLayout.LayoutParams.WRAP_CONTENT, 1
+        ));
+        return timeTextView;
+    }
+
+    // ダイアログ内予定のテキスト（タイトル・メモ）を含むレイアウトを生成
+    private @NonNull LinearLayout getTitleContainer() {
+        LinearLayout titleContainer = new LinearLayout(this);
+        titleContainer.setOrientation(LinearLayout.VERTICAL);
+        LinearLayout.LayoutParams titleContainerParams = new LinearLayout.LayoutParams(
+                0,
+                LinearLayout.LayoutParams.WRAP_CONTENT, 3
+        );
+        titleContainerParams.leftMargin = 30;
+        titleContainer.setLayoutParams(titleContainerParams);
+        return titleContainer;
+    }
+
+    // ダイアログ内予定のテキスト（タイトル）を生成
+    private @NonNull TextView getTitleTextView(String title) {
+        TextView titleTextView = new TextView(this);
+        titleTextView.setText(title);
+        titleTextView.setTextSize(20);
+        titleTextView.setGravity(Gravity.CENTER_VERTICAL);
+        titleTextView.setEllipsize(TextUtils.TruncateAt.END);
+        titleTextView.setSingleLine(true);
+        LinearLayout.LayoutParams titleTextParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        );
+        titleTextParams.rightMargin = 30;
+        titleTextView.setLayoutParams(titleTextParams);
+        return titleTextView;
+    }
+
+    // ダイアログ内予定のテキスト（メモ）を生成
+    private @NonNull TextView getMemoTextView(String memo) {
+        TextView memoTextView = new TextView(this);
+        memoTextView.setText(memo);
+        memoTextView.setTextSize(14);
+        memoTextView.setEllipsize(TextUtils.TruncateAt.END);
+        memoTextView.setSingleLine(true);
+        LinearLayout.LayoutParams memoTextParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        );
+        memoTextParams.leftMargin = 30;
+        memoTextParams.rightMargin = 30;
+        memoTextView.setLayoutParams(memoTextParams);
+        return memoTextView;
+    }
+
+    // ダイアログ内予定のボタンを含むレイアウトを生成
+    private @NonNull LinearLayout getButtonContainer() {
+        LinearLayout buttonContainer = new LinearLayout(this);
+        buttonContainer.setOrientation(LinearLayout.HORIZONTAL);
+        LinearLayout.LayoutParams buttonContainerParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.MATCH_PARENT
+        );
+        buttonContainer.setGravity(Gravity.END);
+        buttonContainer.setLayoutParams(buttonContainerParams);
+        return buttonContainer;
+    }
+
+    // ダイアログ内予定の削除ボタンを生成
+    private @NonNull ImageButton getDeleteButton() {
+        ImageButton deleteButton = new ImageButton(this);
+        deleteButton.setBackgroundColor(Color.TRANSPARENT);
+        deleteButton.setImageResource(R.drawable.ic_delete);
+        deleteButton.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+        LinearLayout.LayoutParams buttonParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+        );
+        buttonParams.rightMargin = 50;
+        deleteButton.setLayoutParams(buttonParams);
+        return deleteButton;
+    }
+
+    // ダイアログ内予定の編集ボタンを生成
+    private @NonNull ImageButton getEditButton() {
+        ImageButton editButton = new ImageButton(this);
+        editButton.setBackgroundColor(Color.TRANSPARENT);
+        editButton.setImageResource(R.drawable.ic_arrow_forward);
+        editButton.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+        LinearLayout.LayoutParams buttonParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+        );
+        editButton.setLayoutParams(buttonParams);
+        return editButton;
     }
 
     /* ---------- 忙しさ の 表示 ---------- */
@@ -840,15 +902,20 @@ public class CalendarActivity extends AppCompatActivity {
 
     // 忙しさの表示(ダイアログ用)
     private String stringBusy(int busy) {
-        switch (busy) {
-            case 5 : return "⑤";
-            case 4 : return "④";
-            case 3 : return "③";
-            case 2 : return "②";
-            case 1 : return "①";
+        if (busy >= 7) {
+            return "⑦+";
         }
-        return "";
+        switch (busy) {
+            case 6: return "⑥";
+            case 5: return "⑤";
+            case 4: return "④";
+            case 3: return "③";
+            case 2: return "②";
+            case 1: return "①";
+            default: return "";
+        }
     }
+
 
     /* ---------- observe の 解放 ---------- */
 
