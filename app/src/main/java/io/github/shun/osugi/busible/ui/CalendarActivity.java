@@ -232,8 +232,19 @@ public class CalendarActivity extends AppCompatActivity {
     // 日付から予定の有無を判断し、日付毎のレイアウトを生成
     private void searchDateData(LinearLayout linearLayout, int year, int month, int day, BusyData busys[], int cell) {
 
+        // 各日のスケジュール数の記録
+        Integer[] numSchedules = new Integer[42];
+        for (int h = 0; h < 42; h++) {
+            numSchedules[h] = 0;
+        }
+
         // ダイアログボタン用のフレームを生成
         FrameLayout frameLayout = new FrameLayout(this);
+        LinearLayout.LayoutParams frameLayoutParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        frameLayout.setLayoutParams(frameLayoutParams);
         linearLayout.addView(frameLayout);
 
         // 予定超過数を表示するテキストを生成
@@ -268,14 +279,11 @@ public class CalendarActivity extends AppCompatActivity {
         bottomSheetDialog.setCanceledOnTouchOutside(true);
 
         dateButton.setOnClickListener(showDialog -> {
-            bottomSheetDialog.show();
+            if (numSchedules[cell] > 0) {
+                bottomSheetDialog.show();
+            }
         });
         dateButton.bringToFront();
-
-        Integer[] numSchedules = new Integer[42];
-        for (int h = 0; h < 42; h++) {
-            numSchedules[h] = 0;
-        }
 
         // 予定の取得
         observeOnce(dateViewModel.getDateBySpecificDay(year, month, day), date -> {
