@@ -290,7 +290,7 @@ public class CalendarActivity extends AppCompatActivity {
                     if (schedules != null) {
                         for (Schedule schedule : schedules) {
                             if (!schedule.getRepeat()) {
-                                addSchedule(schedule, moreTextView, scheduleLayout, bottomSheetDialog, scheduleContainer, strongText, year, month, day, busys, numSchedules, cell, 0);
+                                addSchedule(schedule, moreTextView, scheduleLayout, bottomSheetDialog, scheduleContainer, strongText, year, month, day, busys, numSchedules, cell, null);
                             }
                         }
                     }else{
@@ -307,7 +307,6 @@ public class CalendarActivity extends AppCompatActivity {
                     // 繰り返し条件を満たすスケジュールをrepeatSchedulesに追加
                     int repeatType = repeatSchedule.getRepeat();
                     int dayOfWeek = getDayOfWeek(year, month, day);
-                    int repeatId = repeatSchedule.getId();
 
                     if (repeatType == day || repeatType == dayOfWeek) {
                         int firstDateId = repeatSchedule.getDateId();
@@ -334,7 +333,7 @@ public class CalendarActivity extends AppCompatActivity {
                                     if(exclude == 0) {
                                         observeOnce(scheduleViewModel.getScheduleById(repeatSchedule.getScheduleId()), schedule -> {
                                             if (schedule != null) {
-                                                addSchedule(schedule, moreTextView, scheduleLayout, bottomSheetDialog, scheduleContainer, strongText, year, month, day, busys, numSchedules, cell, repeatId);
+                                                addSchedule(schedule, moreTextView, scheduleLayout, bottomSheetDialog, scheduleContainer, strongText, year, month, day, busys, numSchedules, cell, repeatSchedule);
                                             }
                                         });
                                     }
@@ -353,7 +352,7 @@ public class CalendarActivity extends AppCompatActivity {
     }
 
     // 予定の追加
-    private void addSchedule(Schedule schedule, TextView moreTextView, LinearLayout scheduleLayout, BottomSheetDialog bottomSheetDialog, LinearLayout scheduleContainer, TextView strongText, int year, int month, int day, BusyData[] busys, Integer[] numSchedules, int cell, int repeatId) {
+    private void addSchedule(Schedule schedule, TextView moreTextView, LinearLayout scheduleLayout, BottomSheetDialog bottomSheetDialog, LinearLayout scheduleContainer, TextView strongText, int year, int month, int day, BusyData[] busys, Integer[] numSchedules, int cell, Repeat repeatSchedule) {
         // 予定の各フィールドを取得
         String title = schedule.getTitle();
         String startTime = schedule.getStartTime();
@@ -410,7 +409,7 @@ public class CalendarActivity extends AppCompatActivity {
         LinearLayout buttonContainer = getButtonContainer();
 
         // ImageButton (削除ボタン)
-        ImageButton deleteButton = getDeleteButton(bottomSheetDialog, schedule, year, month, day, repeat, repeatId);
+        ImageButton deleteButton = getDeleteButton(bottomSheetDialog, schedule, year, month, day, repeatSchedule);
         buttonContainer.addView(deleteButton);
 
         // ImageButton (編集ボタン)
@@ -776,7 +775,7 @@ public class CalendarActivity extends AppCompatActivity {
     }
 
     // ダイアログ内予定の削除ボタンを生成
-    private @NonNull ImageButton getDeleteButton(BottomSheetDialog bottomSheetDialog, Schedule schedule, int year, int month, int day, boolean repeat, int repeatId) {
+    private @NonNull ImageButton getDeleteButton(BottomSheetDialog bottomSheetDialog, Schedule schedule, int year, int month, int day, Repeat repeatSchedule) {
         ImageButton deleteButton = new ImageButton(this);
         deleteButton.setBackgroundColor(Color.TRANSPARENT);
         deleteButton.setImageResource(R.drawable.ic_delete);
@@ -789,32 +788,61 @@ public class CalendarActivity extends AppCompatActivity {
         deleteButton.setLayoutParams(buttonParams);
 
         deleteButton.setOnClickListener(edit -> {
-            AlertDialog.Builder builder2 = new AlertDialog.Builder(this);
-            builder2.setTitle("予定を削除しますか？")
-                    .setPositiveButton("削除", (dialog2, which) -> {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("予定を削除しますか？")
+                    .setPositiveButton("削除", (dialog, which) -> {
 
                         Log.d(TAG, "delete:" + schedule.getTitle());
 
-                        if (!repeat) {
+                        if (!schedule.getRepeat()) {
                             scheduleViewModel.delete(schedule);
+
+                            bottomSheetDialog.dismiss();
+
+                            Intent resultIntent = new Intent(CalendarActivity.this, CalendarActivity.class);
+                            resultIntent.putExtra("selectedYear", year);
+                            resultIntent.putExtra("selectedMonth", month);
+                            resultIntent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+                            startActivity(resultIntent);
+                            finish(); // 画面を閉じる
                         }else{
-                            RepeatExclusion repeatExclusion = new RepeatExclusion();
-                            repeatExclusion.setDate(String.format("%04d-%02d-%02d", year, month + 1, day));
-                            repeatExclusion.setRepeatId(repeatId);
-                            repeatExclusionViewModel.insert(repeatExclusion);
+                            String[] options = {"この日程のみ削除", "全ての日程を削除"};
+                            final int[] selectedItem = {0};
+
+                            AlertDialog.Builder builder2 = new AlertDialog.Builder(CalendarActivity.this);
+                            builder2.setTitle("繰り返し予定の削除")
+                                    .setSingleChoiceItems(options, selectedItem[0], (dialog2, which2) -> {
+                                        selectedItem[0] = which2;
+                                    })
+                                    .setPositiveButton("削除", (dialog2, which2) -> {
+                                        switch (selectedItem[0]) {
+                                            case 0:
+                                                RepeatExclusion repeatExclusion = new RepeatExclusion();
+                                                repeatExclusion.setDate(String.format("%04d-%02d-%02d", year, month + 1, day));
+                                                repeatExclusion.setRepeatId(repeatSchedule.getId());
+                                                repeatExclusionViewModel.insert(repeatExclusion);
+                                                break;
+                                            case 1:
+                                                scheduleViewModel.delete(schedule);
+                                                break;
+                                        }
+
+                                        bottomSheetDialog.dismiss();
+
+                                        Intent resultIntent = new Intent(CalendarActivity.this, CalendarActivity.class);
+                                        resultIntent.putExtra("selectedYear", year);
+                                        resultIntent.putExtra("selectedMonth", month);
+                                        resultIntent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+                                        startActivity(resultIntent);
+                                        finish(); // 画面を閉じる
+                                    })
+                                    .setNegativeButton("キャンセル", (dialog2, which2) -> {
+                                        dialog2.dismiss();
+                                    })
+                                    .show();
                         }
-
-                        bottomSheetDialog.dismiss();
-
-                        Intent resultIntent = new Intent(CalendarActivity.this, CalendarActivity.class);
-                        resultIntent.putExtra("selectedYear", year);
-                        resultIntent.putExtra("selectedMonth", month);
-                        resultIntent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-                        startActivity(resultIntent);
-                        finish(); // 画面を閉じる
-
                     })
-                    .setNegativeButton("キャンセル", (dialog2, which) -> {
+                    .setNegativeButton("キャンセル", (dialog, which) -> {
                         // ダイアログを閉じる
                         bottomSheetDialog.dismiss();
                     })
