@@ -28,7 +28,7 @@ public class Schedule {
     private String startTime; // 開始時間
     private String endTime; // 終了時間
     private String color; // 色
-    private String repeat; //繰り返し
+    private Boolean repeat; //繰り返し
 
 
 
@@ -97,11 +97,11 @@ public class Schedule {
         this.color = color;
     }
 
-    public String getRepeat() {
+    public Boolean getRepeat() {
         return repeat;
     }
 
-    public void setRepeat(String repeat) {
+    public void setRepeat(Boolean repeat) {
         this.repeat = repeat;
     }
 

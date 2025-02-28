@@ -39,7 +39,7 @@ public interface ScheduleDao {
 
     // 繰り返し設定でスケジュールを取得
     @Query("SELECT * FROM schedule WHERE repeat = :repeat")
-    LiveData<List<Schedule>> getSchedulesByRepeat(String repeat);
+    LiveData<List<Schedule>> getSchedulesByRepeat(Boolean repeat);
 
     // 特定の開始時間を持つスケジュールを取得
     //@Query("SELECT * FROM schedule WHERE startTime = :startTime")

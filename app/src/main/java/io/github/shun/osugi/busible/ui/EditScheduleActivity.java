@@ -143,11 +143,13 @@ public class EditScheduleActivity extends AppCompatActivity {
                         String memo = binding.memo.getText().toString();
                         String strong = strongOptions[binding.spinnerNumber.getValue()];
                         String repeatOption = repeatOptions[binding.answer.getValue()];
+                        boolean isRepeat = !repeatOption.equals("なし");  // `!=` ではなく `.equals()` を使う
+
 
                         LiveData<Date> dateLiveData = dateViewModel.getDateBySpecificDay(selectedYear, selectedMonth, selectedDay);
                         dateLiveData.observe(this, date -> {
                             int dateId = getOrMakeDateId(dateViewModel, date);
-                            updateSchedule(scheduleViewModel, schedule, dateId, title, memo, strong, startTime, endTime, selectedColor, repeatOption);
+                            updateSchedule(scheduleViewModel, schedule, dateId, title, memo, strong, startTime, endTime, selectedColor, isRepeat);
                             dateLiveData.removeObservers(this);
                             // 保存処理の最後にカレンダー更新用のデータを渡す
                             Intent resultIntent = new Intent(EditScheduleActivity.this, CalendarActivity.class);
@@ -176,7 +178,7 @@ public class EditScheduleActivity extends AppCompatActivity {
 
     // データベースを更新
     private void updateSchedule(ScheduleViewModel scheduleViewModel, Schedule schedule,int dateId, String title, String memo, String strong,
-                              String startTime, String endTime, String selectedColor, String repeatOption) {
+                              String startTime, String endTime, String selectedColor, Boolean isRepeat) {
         schedule.setDateId(dateId);
         schedule.setTitle(title);
         schedule.setMemo(memo);
@@ -184,7 +186,7 @@ public class EditScheduleActivity extends AppCompatActivity {
         schedule.setStartTime(startTime);
         schedule.setEndTime(endTime);
         schedule.setColor(selectedColor);
-        schedule.setRepeat(repeatOption);
+        schedule.setRepeat(isRepeat);
 
         scheduleViewModel.update(schedule);
         Log.d(TAG, "Schedule By ID: " + schedule.getTitle());
@@ -276,7 +278,7 @@ public class EditScheduleActivity extends AppCompatActivity {
         String initialEndTime = schedule.getEndTime();
         int initialStrong = schedule.getStrong();
         String initialMemo = schedule.getMemo();
-        String initialRepeat = schedule.getRepeat();
+        Boolean initialRepeat = schedule.getRepeat();
         String initialColor = schedule.getColor();
 
         dateViewModel.getDateById(initialdateId).observe(this, date -> {

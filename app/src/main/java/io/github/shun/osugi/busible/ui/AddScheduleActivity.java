@@ -161,22 +161,25 @@ public class AddScheduleActivity extends AppCompatActivity {
                 String memo = binding.memo.getText().toString();
                 String strong = strongOptions[binding.spinnerNumber.getValue()];
                 String repeatOption = repeatOptions[binding.answer.getValue()];
+                boolean isRepeat = !repeatOption.equals("なし");  // `!=` ではなく `.equals()` を使う
 
                 LiveData<Date> dateLiveData = dateViewModel.getDateBySpecificDay(selectedYear, selectedMonth, selectedDay);
                 dateLiveData.observe(this, date -> {
                     int dateId = getOrMakeDateId(dateViewModel, date);
-                    saveSchedule(scheduleViewModel, dateId, title, memo, strong, startTime, endTime, selectedColor, repeatOption,new ScheduleViewModel.OnInsertCallback() {
+                    saveSchedule(scheduleViewModel, dateId, title, memo, strong, startTime, endTime, selectedColor, isRepeat,new ScheduleViewModel.OnInsertCallback() {
                         @Override
                         public void onInsertCompleted(int scheduleId) {
                             // 日付から週番号と曜日を計算
                             int week = getWeekOfMonth(selectedYear, selectedMonth, selectedDay);
                             int dayOfWeek = getDayOfWeek(selectedYear, selectedMonth, selectedDay);
-                            if (repeatOption != "なし"){
+                            Log.d(TAG, "isRepeat: " + isRepeat);
+                            if (isRepeat) {
                                 // スケジュール保存後にリピートデータを保存
                                 saveScheduleWithRepeat(dateId, scheduleId, selectedDay, week, dayOfWeek, repeatOption);
-                            }else {
-                                Log.d(TAG,"なしのため繰り返しには保存しない");
+                            } else {
+                                Log.d(TAG, "なしのため繰り返しには保存しない");
                             }
+
                         }
                     });
 
@@ -205,7 +208,7 @@ public class AddScheduleActivity extends AppCompatActivity {
 
     // データベースに保存
     private void saveSchedule(ScheduleViewModel scheduleViewModel,int dateId, String title, String memo, String strong,
-                              String startTime, String endTime, String selectedColor, String repeatOption, ScheduleViewModel.OnInsertCallback onSuccess) {
+                              String startTime, String endTime, String selectedColor, Boolean isRepeat, ScheduleViewModel.OnInsertCallback onSuccess) {
             // スケジュール保存
             Schedule schedule = new Schedule();
             schedule.setDateId(dateId);
@@ -215,7 +218,7 @@ public class AddScheduleActivity extends AppCompatActivity {
             schedule.setStartTime(startTime);
             schedule.setEndTime(endTime);
             schedule.setColor(selectedColor);
-            schedule.setRepeat(repeatOption);
+            schedule.setRepeat(isRepeat);
 
             scheduleViewModel.insert(schedule, scheduleId -> {
                 Log.d(TAG, "Schedule saved: " + schedule.getTitle() + " with ID: " + scheduleId);
@@ -283,7 +286,7 @@ public class AddScheduleActivity extends AppCompatActivity {
             if (repeatOption == "毎週"){
                 repeat.setRepeat(Dow);
             }else if (repeatOption == "隔週"){
-                repeat.setRepeat(week);
+                repeat.setRepeat(week * (-1));
             } else if (repeatOption == "毎月") {
                 repeat.setRepeat(selectedDay);
             }else {
