@@ -497,7 +497,7 @@ public class CalendarActivity extends AppCompatActivity {
         Point size = new Point();
         display.getSize(size);
         int screenHeight = size.y;
-        int marginHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 182, getResources().getDisplayMetrics());
+        int marginHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 152, getResources().getDisplayMetrics());
         int cellHeight = (screenHeight - marginHeight) / 6;
 
         // カレンダーテーブルに各セルを追加
