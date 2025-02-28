@@ -295,14 +295,6 @@ public class AddScheduleActivity extends AppCompatActivity {
         repeatViewModel.insert(repeat);
 
             Log.d(TAG, "Repeat saved:" + repeatOption + " ," + repeat.getRepeat());
-
-//            // リピート除外データを保存
-//            RepeatExclusion exclusion = new RepeatExclusion();
-//            exclusion.setRepeatId(exclusion.getRepeatId()); // RepeatのIDを設定
-//            exclusion.setDate(selectedYear+ "/"+(selectedMonth+1)+ "/"+selectedDay);
-//            repeatExclusionViewModel.insert(exclusion);
-//
-//            Log.d(TAG, "Repeat Exclusion saved: " + exclusion.getDate());
     }
 
 

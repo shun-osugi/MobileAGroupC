@@ -862,6 +862,7 @@ public class CalendarActivity extends AppCompatActivity {
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT
         );
+        buttonParams.rightMargin = 50;
         editButton.setLayoutParams(buttonParams);
         return editButton;
     }

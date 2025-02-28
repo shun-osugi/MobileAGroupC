@@ -48,6 +48,8 @@ public class EditScheduleActivity extends AppCompatActivity {
 
     private String selectedColor = "#FF0000";
 
+    private DateViewModel dateViewModel;
+    private ScheduleViewModel scheduleViewModel;
     private RepeatViewModel repeatViewModel;
 
     // 色とボタン・チェックマークの対応をマップにする
@@ -60,9 +62,10 @@ public class EditScheduleActivity extends AppCompatActivity {
         binding = ActivityAddScheduleBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        ScheduleViewModel scheduleViewModel = new ViewModelProvider(this).get(ScheduleViewModel.class);
-        DateViewModel dateViewModel = new ViewModelProvider(this).get(DateViewModel.class);
-        RepeatViewModel repeatViewModel = new  ViewModelProvider(this).get(RepeatViewModel.class);
+        // ViewModelの初期化
+        dateViewModel = new ViewModelProvider(this).get(DateViewModel.class);
+        scheduleViewModel = new ViewModelProvider(this).get(ScheduleViewModel.class);
+        repeatViewModel = new ViewModelProvider(this).get(RepeatViewModel.class);
 
         // CalendarActivityから取得したscheduleIDを基にscheduleを取得
         Intent intent = getIntent();
@@ -70,6 +73,10 @@ public class EditScheduleActivity extends AppCompatActivity {
         scheduleViewModel.getScheduleById(scheduleId).observe(this, schedule -> {
 
             if(schedule != null) {
+
+                // 繰り返しがあるか判別
+                boolean repeat = schedule.getRepeat();
+
                 // Button名を変更
                 binding.incident.setText("イベントを編集");
                 binding.save.setText("変更を適用");
@@ -182,32 +189,41 @@ public class EditScheduleActivity extends AppCompatActivity {
                             updateSchedule(scheduleViewModel, schedule, dateId, title, memo, strong, startTime, endTime, selectedColor, isRepeat);
                             dateLiveData.removeObservers(this);
 
-                            repeatViewModel.getRepeatByScheduleId(scheduleId).observe(this, repeats -> {
-                                if (repeats != null && !repeats.isEmpty()) {
-                                    Repeat repeat = repeats.get(0);
-                                    if (repeat != null) {
-                                        if (isRepeat){
-                                            updateScheduleWithRepeat(repeat, dateId, scheduleId, selectedDay, week, dayOfWeek, repeatOption);
-                                        }else {
-                                            // 繰り返しを削除
-                                            repeatViewModel.delete(repeat);
-                                            Log.d(TAG, "Repeat deleted for scheduleId: " + scheduleId);
-                                        }
-                                    }else {
-                                        if (isRepeat){
-                                            // **repeatが存在しない場合の処理**
-                                            Log.d(TAG, "No repeat data found for scheduleId: " + scheduleId + "and create new Repeat");
-
+                            if (isRepeat) {
+                                if (repeat) {
+                                    repeatViewModel.getRepeatByScheduleId(scheduleId).observe(this, repeatSchedules -> {
+                                        if (repeatSchedules != null) {
+                                            for (Repeat repeatSchedule : repeatSchedules) {
+                                                if (repeatSchedule.getRepeat() == getRepeatType(selectedDay, week, dayOfWeek, repeatOption)) {
+                                                    Log.d(TAG, "R->R:delete&update");
+                                                    updateScheduleWithRepeat(repeatSchedule, dateId, scheduleId, selectedDay, week, dayOfWeek, repeatOption);
+                                                }else{
+                                                    Log.d(TAG, "R->R:delete&new");
+                                                    repeatViewModel.delete(repeatSchedule);
+                                                    saveScheduleWithRepeat(dateId, scheduleId, selectedDay, week, dayOfWeek, repeatOption);
+                                                }
+                                            }
+                                        }else{
+                                            Log.d(TAG, "->R:new");
                                             saveScheduleWithRepeat(dateId, scheduleId, selectedDay, week, dayOfWeek, repeatOption);
-
-                                        }else {
-                                            Log.d(TAG, "No repeat data found for scheduleId: " + scheduleId + "and finish");
-
                                         }
-
-                                    }
+                                    });
+                                }else{
+                                    Log.d(TAG, "->R:new");
+                                    saveScheduleWithRepeat(dateId, scheduleId, selectedDay, week, dayOfWeek, repeatOption);
                                 }
-                            });
+                            }else{
+                                if(repeat) {
+                                    repeatViewModel.getRepeatByScheduleId(scheduleId).observe(this, repeatSchedules -> {
+                                        if (repeatSchedules != null) {
+                                            for (Repeat repeatSchedule : repeatSchedules) {
+                                                Log.d(TAG, "R->:delete");
+                                                repeatViewModel.delete(repeatSchedule);
+                                            }
+                                        }
+                                    });
+                                }
+                            }
 
                             // 保存処理の最後にカレンダー更新用のデータを渡す
                             Intent resultIntent = new Intent(EditScheduleActivity.this, CalendarActivity.class);
@@ -276,15 +292,7 @@ public class EditScheduleActivity extends AppCompatActivity {
         Repeat repeat = new Repeat();
         repeat.setDateId(dateId); // dateId
         repeat.setScheduleId(scheduleId); // ScheduleのIDを設定
-        if (repeatOption.equals("毎週")) {
-            repeat.setRepeat(Dow);
-        } else if (repeatOption.equals("隔週")) {
-            repeat.setRepeat(week * (-1));
-        } else if (repeatOption.equals("毎月")) {
-            repeat.setRepeat(selectedDay);
-        } else {
-            repeat.setRepeat(0);
-        }
+        repeat.setRepeat(getRepeatType(selectedDay, week, Dow, repeatOption)); // Repeatを設定
 
         repeatViewModel.insert(repeat);
 
@@ -292,6 +300,17 @@ public class EditScheduleActivity extends AppCompatActivity {
 
     }
 
+    private int getRepeatType(int selectedDay,int week,int Dow, String repeatOption) {
+        if (repeatOption.equals("毎週")) {
+            return(Dow);
+        } else if (repeatOption.equals("隔週")) {
+            return(week * (-1));
+        } else if (repeatOption.equals("毎月")) {
+            return(selectedDay);
+        } else {
+            return(0);
+        }
+    }
 
     // 日付ピッカー
     private void showDatePickerDialog() {
@@ -313,7 +332,6 @@ public class EditScheduleActivity extends AppCompatActivity {
 
         datePickerDialog.show();
     }
-
 
     // 時間ピッカー
     private void showTimePickerDialog(final EditText editText) {
