@@ -125,7 +125,6 @@ public class AddScheduleActivity extends AppCompatActivity {
         binding.colorBlue.setOnClickListener(v -> setColorAndCheck("#0000FF", binding.checkBlue));
         binding.colorPurple.setOnClickListener(v -> setColorAndCheck("#8F35B5", binding.checkPurple));
         binding.colorOrange.setOnClickListener(v -> setColorAndCheck("#FF6C00", binding.checkOrange));
-        binding.colorWhite.setOnClickListener(v -> setColorAndCheck("#FFFFFF", binding.checkWhite));
 
         // 初期状態で保存ボタンの色を薄くする
         binding.save.setTextColor(Color.parseColor("#B0B0B0")); // 無効化時の色
@@ -283,15 +282,16 @@ public class AddScheduleActivity extends AppCompatActivity {
             Repeat repeat = new Repeat();
             repeat.setDateId(dateId); // dateId
             repeat.setScheduleId(scheduleId); // ScheduleのIDを設定
-            if (repeatOption == "毎週"){
-                repeat.setRepeat(Dow);
-            }else if (repeatOption == "隔週"){
-                repeat.setRepeat(week * (-1));
-            } else if (repeatOption == "毎月") {
-                repeat.setRepeat(selectedDay);
-            }else {
-                repeat.setRepeat(0);
-            }
+        if (repeatOption.equals("毎週")) {
+            repeat.setRepeat(Dow);
+        } else if (repeatOption.equals("隔週")) {
+            repeat.setRepeat(week * (-1));
+        } else if (repeatOption.equals("毎月")) {
+            repeat.setRepeat(selectedDay);
+        } else {
+            repeat.setRepeat(0);
+        }
+
         repeatViewModel.insert(repeat);
 
             Log.d(TAG, "Repeat saved:" + repeatOption + " ," + repeat.getRepeat());
@@ -418,7 +418,6 @@ public class AddScheduleActivity extends AppCompatActivity {
         binding.checkBlue.setVisibility(View.GONE);
         binding.checkPurple.setVisibility(View.GONE);
         binding.checkOrange.setVisibility(View.GONE);
-        binding.checkWhite.setVisibility(View.GONE);
 
         // 選択した色のチェックマークを表示
         selectedCheck.setVisibility(View.VISIBLE);
@@ -431,7 +430,6 @@ public class AddScheduleActivity extends AppCompatActivity {
         binding.colorBlue.setAlpha(color.equals("#0000FF") ? 1.0f : 0.5f);
         binding.colorPurple.setAlpha(color.equals("#8F35B5") ? 1.0f : 0.5f);
         binding.colorOrange.setAlpha(color.equals("#FF6C00") ? 1.0f : 0.5f);
-        binding.colorWhite.setAlpha(color.equals("#FFFFFF") ? 1.0f : 0.5f);
     }
 
 

@@ -152,27 +152,6 @@
                 android:visibility="gone"/> <!-- 初期状態は非表示 -->
 
         </FrameLayout>
-
-        <FrameLayout
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginStart="10dp">
-
-            <Button
-                android:id="@+id/color_white"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:backgroundTint="#FFFFFF"
-                android:tag="#FFFFFF" />
-
-            <ImageView
-                android:id="@+id/checkWhite"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:src="@drawable/check_icon"
-                android:visibility="gone"/> <!-- 初期状態は非表示 -->
-
-        </FrameLayout>
     </LinearLayout>
 
 
