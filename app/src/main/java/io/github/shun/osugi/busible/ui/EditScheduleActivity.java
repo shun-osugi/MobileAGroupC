@@ -144,24 +144,6 @@ public class EditScheduleActivity extends AppCompatActivity {
                     ImageView check = entry.getValue().second;
                     button.setOnClickListener(v -> setColorAndCheck(color));
                 }
-                // 初期状態で保存ボタンの色を薄くする
-                binding.save.setTextColor(Color.parseColor("#B0B0B0")); // 無効化時の色
-                setColorAndCheck(selectedColor);
-
-                // 入力されたタイトルに応じて保存ボタンを有効化
-                binding.inputText.addTextChangedListener(new TextWatcher() {
-                    @Override
-                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
-                    @Override
-                    public void onTextChanged(CharSequence s, int start, int before, int count) {
-                        checkSaveButtonState();
-                    }
-
-                    @Override
-                    public void afterTextChanged(Editable s) {}
-                });
-
 
                 // 保存ボタンのクリックイベント
                 binding.save.setOnClickListener(v -> {
