@@ -13,6 +13,7 @@ import java.util.concurrent.Executors;
 import io.github.shun.osugi.busible.database.AppDatabase;
 import io.github.shun.osugi.busible.dao.RepeatDao;
 import io.github.shun.osugi.busible.entity.Repeat;
+import io.github.shun.osugi.busible.entity.Schedule;
 
 public class RepeatViewModel extends AndroidViewModel {
     private final RepeatDao repeatDao;
@@ -43,6 +44,11 @@ public class RepeatViewModel extends AndroidViewModel {
 
     public LiveData<Repeat> getRepeatById(int id) {
         return repeatDao.getRepeatById(id);
+    }
+
+    // scheduleIdでスケジュールを取得
+    public LiveData<List<Repeat>> getRepeatByScheduleId(int id) {
+        return repeatDao.getRepeatsByScheduleId(id);
     }
 
     }

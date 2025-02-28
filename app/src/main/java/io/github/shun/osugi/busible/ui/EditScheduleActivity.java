@@ -9,9 +9,12 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.util.Pair;
 import android.view.MotionEvent;
+import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
@@ -21,13 +24,17 @@ import androidx.lifecycle.ViewModelProvider;
 
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 import io.github.shun.osugi.busible.R;
 import io.github.shun.osugi.busible.databinding.ActivityAddScheduleBinding;
 import io.github.shun.osugi.busible.entity.Date;
+import io.github.shun.osugi.busible.entity.Repeat;
 import io.github.shun.osugi.busible.entity.Schedule;
 import io.github.shun.osugi.busible.viewmodel.DateViewModel;
+import io.github.shun.osugi.busible.viewmodel.RepeatViewModel;
 import io.github.shun.osugi.busible.viewmodel.ScheduleViewModel;
 
 public class EditScheduleActivity extends AppCompatActivity {
@@ -39,8 +46,12 @@ public class EditScheduleActivity extends AppCompatActivity {
     private int selectedMonth = Calendar.getInstance().get(Calendar.MONTH); // 1-based
     private int selectedDay = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
 
-    private String selectedColor = "#00FF00";
+    private String selectedColor = "#FF0000";
 
+    private RepeatViewModel repeatViewModel;
+
+    // 色とボタン・チェックマークの対応をマップにする
+    private final Map<String, Pair<View, ImageView>> colorToButtonMap = new HashMap<>();
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -51,6 +62,7 @@ public class EditScheduleActivity extends AppCompatActivity {
 
         ScheduleViewModel scheduleViewModel = new ViewModelProvider(this).get(ScheduleViewModel.class);
         DateViewModel dateViewModel = new ViewModelProvider(this).get(DateViewModel.class);
+        RepeatViewModel repeatViewModel = new  ViewModelProvider(this).get(RepeatViewModel.class);
 
         // CalendarActivityから取得したscheduleIDを基にscheduleを取得
         Intent intent = getIntent();
@@ -110,9 +122,24 @@ public class EditScheduleActivity extends AppCompatActivity {
                     return false;
                 });
 
-                binding.colorRed.setOnClickListener(v -> setColor("#FF0000"));
-                binding.colorGreen.setOnClickListener(v -> setColor("#00FF00"));
-                binding.colorBlue.setOnClickListener(v -> setColor("#0000FF"));
+
+                // 色とボタン・チェックマークの対応関係をセット
+                colorToButtonMap.put("#FF0000", new Pair<>(binding.colorRed, binding.checkRed));
+                colorToButtonMap.put("#008D00", new Pair<>(binding.colorGreen, binding.checkGreen));
+                colorToButtonMap.put("#0000FF", new Pair<>(binding.colorBlue, binding.checkBlue));
+                colorToButtonMap.put("#8F35B5", new Pair<>(binding.colorPurple, binding.checkPurple));
+                colorToButtonMap.put("#FF6C00", new Pair<>(binding.colorOrange, binding.checkOrange));
+
+                // 色ボタンのクリックリスナー設定
+                for (Map.Entry<String, Pair<View, ImageView>> entry : colorToButtonMap.entrySet()) {
+                    String color = entry.getKey();
+                    View button = entry.getValue().first;
+                    ImageView check = entry.getValue().second;
+                    button.setOnClickListener(v -> setColorAndCheck(color));
+                }
+                // 初期状態で保存ボタンの色を薄くする
+                binding.save.setTextColor(Color.parseColor("#B0B0B0")); // 無効化時の色
+                setColorAndCheck(selectedColor);
 
                 // 入力されたタイトルに応じて保存ボタンを有効化
                 binding.inputText.addTextChangedListener(new TextWatcher() {
@@ -145,12 +172,43 @@ public class EditScheduleActivity extends AppCompatActivity {
                         String repeatOption = repeatOptions[binding.answer.getValue()];
                         boolean isRepeat = !repeatOption.equals("なし");  // `!=` ではなく `.equals()` を使う
 
+                        // 日付から週番号と曜日を計算
+                        int week = getWeekOfMonth(selectedYear, selectedMonth, selectedDay);
+                        int dayOfWeek = getDayOfWeek(selectedYear, selectedMonth, selectedDay);
 
                         LiveData<Date> dateLiveData = dateViewModel.getDateBySpecificDay(selectedYear, selectedMonth, selectedDay);
                         dateLiveData.observe(this, date -> {
                             int dateId = getOrMakeDateId(dateViewModel, date);
                             updateSchedule(scheduleViewModel, schedule, dateId, title, memo, strong, startTime, endTime, selectedColor, isRepeat);
                             dateLiveData.removeObservers(this);
+
+                            repeatViewModel.getRepeatByScheduleId(scheduleId).observe(this, repeats -> {
+                                if (repeats != null && !repeats.isEmpty()) {
+                                    Repeat repeat = repeats.get(0);
+                                    if (repeat != null) {
+                                        if (isRepeat){
+                                            updateScheduleWithRepeat(repeat, dateId, scheduleId, selectedDay, week, dayOfWeek, repeatOption);
+                                        }else {
+                                            // 繰り返しを削除
+                                            repeatViewModel.delete(repeat);
+                                            Log.d(TAG, "Repeat deleted for scheduleId: " + scheduleId);
+                                        }
+                                    }else {
+                                        if (isRepeat){
+                                            // **repeatが存在しない場合の処理**
+                                            Log.d(TAG, "No repeat data found for scheduleId: " + scheduleId + "and create new Repeat");
+
+                                            saveScheduleWithRepeat(dateId, scheduleId, selectedDay, week, dayOfWeek, repeatOption);
+
+                                        }else {
+                                            Log.d(TAG, "No repeat data found for scheduleId: " + scheduleId + "and finish");
+
+                                        }
+
+                                    }
+                                }
+                            });
+
                             // 保存処理の最後にカレンダー更新用のデータを渡す
                             Intent resultIntent = new Intent(EditScheduleActivity.this, CalendarActivity.class);
                             resultIntent.putExtra("selectedYear", selectedYear);
@@ -191,6 +249,49 @@ public class EditScheduleActivity extends AppCompatActivity {
         scheduleViewModel.update(schedule);
         Log.d(TAG, "Schedule By ID: " + schedule.getTitle());
     }
+
+    private void updateScheduleWithRepeat(Repeat repeat,int dateId, int scheduleId, int selectedDay,int week,int Dow, String repeatOption) {
+        //変更必要
+        // リピートデータを保存
+        repeat.setDateId(dateId); // dateId
+        repeat.setScheduleId(scheduleId); // ScheduleのIDを設定
+        if (repeatOption.equals("毎週")) {
+            repeat.setRepeat(Dow);
+        } else if (repeatOption.equals("隔週")) {
+            repeat.setRepeat(week * (-1));
+        } else if (repeatOption.equals("毎月")) {
+            repeat.setRepeat(selectedDay);
+        } else {
+            repeat.setRepeat(0);
+        }
+
+        repeatViewModel.update(repeat);
+
+        Log.d(TAG, "Repeat update:" + repeatOption + " ," + repeat.getRepeat());
+    }
+
+    private void saveScheduleWithRepeat(int dateId, int scheduleId, int selectedDay,int week,int Dow, String repeatOption) {
+
+        // リピートデータを保存
+        Repeat repeat = new Repeat();
+        repeat.setDateId(dateId); // dateId
+        repeat.setScheduleId(scheduleId); // ScheduleのIDを設定
+        if (repeatOption.equals("毎週")) {
+            repeat.setRepeat(Dow);
+        } else if (repeatOption.equals("隔週")) {
+            repeat.setRepeat(week * (-1));
+        } else if (repeatOption.equals("毎月")) {
+            repeat.setRepeat(selectedDay);
+        } else {
+            repeat.setRepeat(0);
+        }
+
+        repeatViewModel.insert(repeat);
+
+        Log.d(TAG, "Repeat saved:" + repeatOption + " ," + repeat.getRepeat());
+
+    }
+
 
     // 日付ピッカー
     private void showDatePickerDialog() {
@@ -322,11 +423,55 @@ public class EditScheduleActivity extends AppCompatActivity {
         }
     }
 
+    // 週番号を取得
+    private int getWeekOfMonth(int year, int month, int day) {
+        Calendar calendar = Calendar.getInstance();
+
+        // 月初の日を設定
+        calendar.set(year, month - 1, 1);  // 月は0ベースなので、-1
+        int startDayOfWeek = calendar.get(Calendar.DAY_OF_WEEK); // 月初の曜日（1=日曜日, 2=月曜日, ..., 7=土曜日）
+
+        // 入力された日付を設定
+        calendar.set(year, month - 1, day);
+        int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);  // 月の日付
+
+        // 月初からの経過日数
+        int daysSinceStartOfMonth = dayOfMonth - 1;
+
+        // 月の最初の週を基準にして週番号を計算
+        int weekNumber = (daysSinceStartOfMonth + startDayOfWeek - 1) / 7 + 1;
+
+        return weekNumber;
+    }
+
+    // 曜日を取得 (1 = Sunday, 2 = Monday, ..., 7 = Saturday)
+    private int getDayOfWeek(int year, int month, int day) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(year, month, day);
+        return calendar.get(Calendar.DAY_OF_WEEK) + 40; // 1=Sunday, 2=Monday, ...
+    }
+
+    private void setColorAndCheck(String selectedColor) {
+        setColor(selectedColor); // 色の選択処理
+
+        // すべてのチェックマークを非表示にする
+        for (Pair<View, ImageView> pair : colorToButtonMap.values()) {
+            pair.second.setVisibility(View.GONE);
+        }
+
+        // 選択された色に対応するチェックマークを表示
+        if (colorToButtonMap.containsKey(selectedColor)) {
+            colorToButtonMap.get(selectedColor).second.setVisibility(View.VISIBLE);
+        }
+    }
+
     private void setColor(String color) {
         selectedColor = color;
-        binding.colorRed.setAlpha(color.equals("#FF0000") ? 1.0f : 0.5f);
-        binding.colorGreen.setAlpha(color.equals("#00FF00") ? 1.0f : 0.5f);
-        binding.colorBlue.setAlpha(color.equals("#0000FF") ? 1.0f : 0.5f);
+
+        // すべてのボタンを半透明にし、選択されたボタンのみ有効化
+        for (Map.Entry<String, Pair<View, ImageView>> entry : colorToButtonMap.entrySet()) {
+            entry.getValue().first.setAlpha(entry.getKey().equals(color) ? 1.0f : 0.5f);
+        }
     }
 
 }
