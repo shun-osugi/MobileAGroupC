@@ -397,11 +397,11 @@ public class EditScheduleActivity extends AppCompatActivity {
         String initialEndTime = schedule.getEndTime();
         int initialStrong = schedule.getStrong();
         String initialMemo = schedule.getMemo();
-        Boolean initialRepeat = schedule.getRepeat();
+        Boolean initialRepeat = schedule.getRepeat(); // ここで繰り返しの設定を取得
         String initialColor = schedule.getColor();
 
         dateViewModel.getDateById(initialdateId).observe(this, date -> {
-            if(date != null) {
+            if (date != null) {
                 // 日付フィールドの初期化
                 int year = date.getYear();
                 int month = date.getMonth();
@@ -422,8 +422,56 @@ public class EditScheduleActivity extends AppCompatActivity {
         binding.TimeFinal.setText(initialEndTime);
         binding.spinnerNumber.setValue(initialStrong - 1);
         binding.memo.setText(initialMemo);
-        binding.answer.setValue(Arrays.asList(repeatOptions).indexOf(initialRepeat));
+
+        // 繰り返し設定を取得してスピナーに反映
+        if (initialRepeat != null) {
+            // `initialRepeat` が null でない場合のみ設定
+            if (initialRepeat) {
+                // 繰り返しが有効なら、繰り返しの種類をセット
+                initializeRepeatSpinner(schedule, repeatOptions);
+            } else {
+                // 繰り返しなしなら「なし」をセット
+                binding.answer.setValue(0);
+            }
+        } else {
+            // `initialRepeat` が null の場合も「なし」を設定
+            binding.answer.setValue(0);
+        }
+
         setColor(initialColor);
+    }
+
+    // 繰り返しスピナーの初期化メソッド
+    private void initializeRepeatSpinner(Schedule schedule, String[] repeatOptions) {
+        // RepeatViewModelのインスタンス取得
+        RepeatViewModel repeatViewModel = new ViewModelProvider(this).get(RepeatViewModel.class);
+
+        // scheduleIdで繰り返しデータを取得
+        repeatViewModel.getRepeatByScheduleId(schedule.getId()).observe(this, repeatList -> {
+            int repeatValue;
+
+            if (repeatList == null || repeatList.isEmpty()) {
+                // Repeatデータが存在しない場合、「なし」を初期値に設定
+                repeatValue = 0;
+            } else {
+                // データが存在する場合、最初の要素の `repeat` を取得
+                repeatValue = repeatList.get(0).getRepeat();
+            }
+
+            int index = 0; // デフォルト「なし」
+
+            // `repeatValue` に基づきスピナーの値を設定
+            if (repeatValue < 0) {
+                index = 2; // 負の値なら「隔週」
+            } else if (repeatValue >= 1 && repeatValue <= 31) {
+                index = 3; // 1~31なら「毎月」
+            } else if (repeatValue >= 41 && repeatValue <= 47) {
+                index = 1; // 41~47なら「毎週」
+            }
+
+            // スピナーの初期値設定
+            binding.answer.setValue(index);
+        });
     }
 
     // dateId取得
