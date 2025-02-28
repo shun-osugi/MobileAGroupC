@@ -4,6 +4,7 @@ import android.app.Application;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
+import androidx.lifecycle.LiveData;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -32,7 +33,7 @@ public class RepeatExclusionViewModel extends AndroidViewModel {
         executorService.execute(() -> repeatExclusionDao.delete(exclusion));
     }
 
-    public List<RepeatExclusion> getExclusionsForRepeat(int repeatId) {
+    public LiveData<List<RepeatExclusion>> getExclusionsForRepeat(int repeatId) {
         return repeatExclusionDao.getExclusionsForRepeat(repeatId);
     }
 }
