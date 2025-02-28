@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.Typeface;
+import android.nfc.Tag;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.TypedValue;
@@ -23,9 +24,11 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
@@ -46,6 +49,7 @@ import android.util.Log;
 import org.json.JSONObject;
 
 import io.github.shun.osugi.busible.entity.Repeat;
+import io.github.shun.osugi.busible.entity.RepeatExclusion;
 import io.github.shun.osugi.busible.entity.Schedule;
 import io.github.shun.osugi.busible.model.BusyData;
 import io.github.shun.osugi.busible.model.HolidayApiFetcher;
@@ -53,6 +57,7 @@ import io.github.shun.osugi.busible.model.PrefDataStore;
 import io.github.shun.osugi.busible.R;
 import io.github.shun.osugi.busible.databinding.ActivityCalendarBinding;
 import io.github.shun.osugi.busible.viewmodel.DateViewModel;
+import io.github.shun.osugi.busible.viewmodel.RepeatExclusionViewModel;
 import io.github.shun.osugi.busible.viewmodel.RepeatViewModel;
 import io.github.shun.osugi.busible.viewmodel.ScheduleViewModel;
 
@@ -66,6 +71,7 @@ public class CalendarActivity extends AppCompatActivity {
     private DateViewModel dateViewModel;
     private ScheduleViewModel scheduleViewModel;
     private RepeatViewModel repeatViewModel;
+    private RepeatExclusionViewModel repeatExclusionViewModel;
 
     /* ---------- 主要 な 関数 ---------- */
 
@@ -83,6 +89,7 @@ public class CalendarActivity extends AppCompatActivity {
         dateViewModel = new ViewModelProvider(this).get(DateViewModel.class);
         scheduleViewModel = new ViewModelProvider(this).get(ScheduleViewModel.class);
         repeatViewModel = new ViewModelProvider(this).get(RepeatViewModel.class);
+        repeatExclusionViewModel = new ViewModelProvider(this).get(RepeatExclusionViewModel.class);
 
         //ホームボタンのクリックリスナー
         binding.homeButton.setOnClickListener(view -> {
@@ -282,7 +289,9 @@ public class CalendarActivity extends AppCompatActivity {
                 observeOnce(scheduleViewModel.getSchedulesByDateId(dateId), schedules -> {
                     if (schedules != null) {
                         for (Schedule schedule : schedules) {
-                            addSchedule(schedule, moreTextView, scheduleLayout, bottomSheetDialog, scheduleContainer, strongText, year, month, busys, numSchedules, cell);
+                            if (!schedule.getRepeat()) {
+                                addSchedule(schedule, moreTextView, scheduleLayout, bottomSheetDialog, scheduleContainer, strongText, year, month, day, busys, numSchedules, cell, 0);
+                            }
                         }
                     }else{
                         dateViewModel.delete(date);
@@ -297,11 +306,10 @@ public class CalendarActivity extends AppCompatActivity {
                 for (Repeat repeatSchedule : repeatSchedules) {
                     // 繰り返し条件を満たすスケジュールをrepeatSchedulesに追加
                     int repeatType = repeatSchedule.getRepeat();
-                    int week = getWeekOfMonth(year, month, day);
                     int dayOfWeek = getDayOfWeek(year, month, day);
-                    Log.d(TAG, "repeatType:" + repeatType + "week:" + week + "dayOfWeek:" + dayOfWeek);
+                    int repeatId = repeatSchedule.getId();
 
-                    if (repeatType == week || repeatType == day || repeatType == dayOfWeek) {
+                    if (repeatType == day || repeatType == dayOfWeek) {
                         int firstDateId = repeatSchedule.getDateId();
                         observeOnce(dateViewModel.getDateById(firstDateId), firstDate -> {
                             Calendar cellDay = Calendar.getInstance();
@@ -309,10 +317,26 @@ public class CalendarActivity extends AppCompatActivity {
                             Calendar firstDay = Calendar.getInstance();
                             firstDay.set(firstDate.getYear(), firstDate.getMonth(), firstDate.getDay());
 
-                            if (cellDay.after(firstDay)) {
-                                observeOnce(scheduleViewModel.getScheduleById(repeatSchedule.getScheduleId()), schedule -> {
-                                    if (schedule != null) {
-                                        addSchedule(schedule, moreTextView, scheduleLayout, bottomSheetDialog, scheduleContainer, strongText, year, month, busys, numSchedules, cell);
+                            if (!cellDay.before(firstDay)) {
+                                observeOnce(repeatExclusionViewModel.getExclusionsForRepeat(repeatSchedule.getId()), repeatExclusions -> {
+                                    int exclude = 0;
+                                    if (!repeatExclusions.isEmpty()) {
+                                        for(RepeatExclusion repeatExclusion : repeatExclusions) {
+                                            String exDayStr = repeatExclusion.getDate();
+                                            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                                            String cellDayStr = sdf.format(cellDay.getTime());
+                                            Log.d(TAG, "ex:" +exDayStr + " cell:" + cellDayStr);
+                                            if (cellDayStr.equals(exDayStr)) {
+                                                exclude = 1;
+                                            }
+                                        }
+                                    }
+                                    if(exclude == 0) {
+                                        observeOnce(scheduleViewModel.getScheduleById(repeatSchedule.getScheduleId()), schedule -> {
+                                            if (schedule != null) {
+                                                addSchedule(schedule, moreTextView, scheduleLayout, bottomSheetDialog, scheduleContainer, strongText, year, month, day, busys, numSchedules, cell, repeatId);
+                                            }
+                                        });
                                     }
                                 });
                             }
@@ -329,7 +353,7 @@ public class CalendarActivity extends AppCompatActivity {
     }
 
     // 予定の追加
-    private void addSchedule(Schedule schedule, TextView moreTextView, LinearLayout scheduleLayout, BottomSheetDialog bottomSheetDialog, LinearLayout scheduleContainer, TextView strongText, int year, int month, BusyData[] busys, Integer[] numSchedules, int cell) {
+    private void addSchedule(Schedule schedule, TextView moreTextView, LinearLayout scheduleLayout, BottomSheetDialog bottomSheetDialog, LinearLayout scheduleContainer, TextView strongText, int year, int month, int day, BusyData[] busys, Integer[] numSchedules, int cell, int repeatId) {
         // 予定の各フィールドを取得
         String title = schedule.getTitle();
         String startTime = schedule.getStartTime();
@@ -337,6 +361,7 @@ public class CalendarActivity extends AppCompatActivity {
         int strong = schedule.getStrong();
         String eventColor = schedule.getColor();
         String memo = schedule.getMemo();
+        boolean repeat = schedule.getRepeat();
 
         Log.d(TAG, "Schedule By ID[" + cell + "]: " + title + " id: " + schedule.getId());
 
@@ -385,34 +410,8 @@ public class CalendarActivity extends AppCompatActivity {
         LinearLayout buttonContainer = getButtonContainer();
 
         // ImageButton (削除ボタン)
-        ImageButton deleteButton = getDeleteButton();
+        ImageButton deleteButton = getDeleteButton(bottomSheetDialog, schedule, year, month, day, repeat, repeatId);
         buttonContainer.addView(deleteButton);
-
-        deleteButton.setOnClickListener(edit -> {
-            AlertDialog.Builder builder2 = new AlertDialog.Builder(this);
-            builder2.setTitle("予定を削除しますか？")
-                    .setPositiveButton("削除", (dialog2, which) -> {
-
-                        Log.d(TAG, "delete:" + schedule.getTitle());
-
-                        scheduleViewModel.delete(schedule);
-
-                        bottomSheetDialog.dismiss();
-
-                        Intent resultIntent = new Intent(CalendarActivity.this, CalendarActivity.class);
-                        resultIntent.putExtra("selectedYear", year);
-                        resultIntent.putExtra("selectedMonth", month);
-                        resultIntent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-                        startActivity(resultIntent);
-                        finish(); // 画面を閉じる
-
-                    })
-                    .setNegativeButton("キャンセル", (dialog2, which) -> {
-                        // ダイアログを閉じる
-                        bottomSheetDialog.dismiss();
-                    })
-                    .show();
-        });
 
         // ImageButton (編集ボタン)
         ImageButton editButton = getEditButton();
@@ -777,7 +776,7 @@ public class CalendarActivity extends AppCompatActivity {
     }
 
     // ダイアログ内予定の削除ボタンを生成
-    private @NonNull ImageButton getDeleteButton() {
+    private @NonNull ImageButton getDeleteButton(BottomSheetDialog bottomSheetDialog, Schedule schedule, int year, int month, int day, boolean repeat, int repeatId) {
         ImageButton deleteButton = new ImageButton(this);
         deleteButton.setBackgroundColor(Color.TRANSPARENT);
         deleteButton.setImageResource(R.drawable.ic_delete);
@@ -788,6 +787,40 @@ public class CalendarActivity extends AppCompatActivity {
         );
         buttonParams.rightMargin = 50;
         deleteButton.setLayoutParams(buttonParams);
+
+        deleteButton.setOnClickListener(edit -> {
+            AlertDialog.Builder builder2 = new AlertDialog.Builder(this);
+            builder2.setTitle("予定を削除しますか？")
+                    .setPositiveButton("削除", (dialog2, which) -> {
+
+                        Log.d(TAG, "delete:" + schedule.getTitle());
+
+                        if (!repeat) {
+                            scheduleViewModel.delete(schedule);
+                        }else{
+                            RepeatExclusion repeatExclusion = new RepeatExclusion();
+                            repeatExclusion.setDate(String.format("%04d-%02d-%02d", year, month + 1, day));
+                            repeatExclusion.setRepeatId(repeatId);
+                            repeatExclusionViewModel.insert(repeatExclusion);
+                        }
+
+                        bottomSheetDialog.dismiss();
+
+                        Intent resultIntent = new Intent(CalendarActivity.this, CalendarActivity.class);
+                        resultIntent.putExtra("selectedYear", year);
+                        resultIntent.putExtra("selectedMonth", month);
+                        resultIntent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+                        startActivity(resultIntent);
+                        finish(); // 画面を閉じる
+
+                    })
+                    .setNegativeButton("キャンセル", (dialog2, which) -> {
+                        // ダイアログを閉じる
+                        bottomSheetDialog.dismiss();
+                    })
+                    .show();
+        });
+
         return deleteButton;
     }
 

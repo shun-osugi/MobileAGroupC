@@ -1,5 +1,6 @@
 package io.github.shun.osugi.busible.dao;
 
+import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.Delete;
@@ -17,6 +18,6 @@ public interface RepeatExclusionDao {
     void delete(RepeatExclusion exclusion);
 
     @Query("SELECT * FROM repeat_exclusion WHERE repeatId = :repeatId")
-    List<RepeatExclusion> getExclusionsForRepeat(int repeatId);
+    LiveData<List<RepeatExclusion>> getExclusionsForRepeat(int repeatId);
 }
 
