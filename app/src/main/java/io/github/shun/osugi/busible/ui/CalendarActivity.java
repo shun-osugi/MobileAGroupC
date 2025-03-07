@@ -178,7 +178,7 @@ public class CalendarActivity extends AppCompatActivity {
         calendar.set(year, month, 1);
         int firstDay = 0;
 
-        BusyData[] busys = new BusyData[43];
+        BusyData[] busys = new BusyData[42];
         for (int h = 0; h < 42; h++) {
             busys[h] = new BusyData();
         }
@@ -302,8 +302,8 @@ public class CalendarActivity extends AppCompatActivity {
 
         // 繰り返し予定を取得
         observeOnce(repeatViewModel.getAllRepeats(), repeatSchedules -> {
-            if (repeatSchedules != null) {
-                for (Repeat repeatSchedule : repeatSchedules) {
+            if (repeatSchedules == null) return;
+            for (Repeat repeatSchedule : repeatSchedules) {
                     // 繰り返し条件を満たすスケジュールをrepeatSchedulesに追加
                     int repeatType = repeatSchedule.getRepeat();
                     int dayOfWeek = getDayOfWeek(year, month, day);
@@ -311,6 +311,8 @@ public class CalendarActivity extends AppCompatActivity {
                     if (repeatType == day || repeatType == dayOfWeek) {
                         int firstDateId = repeatSchedule.getDateId();
                         observeOnce(dateViewModel.getDateById(firstDateId), firstDate -> {
+                            if (firstDate == null) return;
+
                             Calendar cellDay = Calendar.getInstance();
                             cellDay.set(year, month, day);
                             Calendar firstDay = Calendar.getInstance();
@@ -318,7 +320,7 @@ public class CalendarActivity extends AppCompatActivity {
 
                             if (!cellDay.before(firstDay)) {
                                 observeOnce(repeatExclusionViewModel.getExclusionsForRepeat(repeatSchedule.getId()), repeatExclusions -> {
-                                    int exclude = 0;
+                                    boolean isExcluded = false;
                                     if (!repeatExclusions.isEmpty()) {
                                         for(RepeatExclusion repeatExclusion : repeatExclusions) {
                                             String exDayStr = repeatExclusion.getDate();
@@ -326,11 +328,12 @@ public class CalendarActivity extends AppCompatActivity {
                                             String cellDayStr = sdf.format(cellDay.getTime());
                                             Log.d(TAG, "ex:" +exDayStr + " cell:" + cellDayStr);
                                             if (cellDayStr.equals(exDayStr)) {
-                                                exclude = 1;
+                                                isExcluded = true;
+                                                break;
                                             }
                                         }
                                     }
-                                    if(exclude == 0) {
+                                    if(!isExcluded) {
                                         observeOnce(scheduleViewModel.getScheduleById(repeatSchedule.getScheduleId()), schedule -> {
                                             if (schedule != null) {
                                                 addSchedule(schedule, moreTextView, scheduleLayout, bottomSheetDialog, scheduleContainer, strongText, year, month, day, busys, numSchedules, cell, repeatSchedule);
@@ -342,7 +345,7 @@ public class CalendarActivity extends AppCompatActivity {
                         });
                     }
                 }
-            }
+
         });
 
         // 読み込み終了後、ロック解除
@@ -427,8 +430,8 @@ public class CalendarActivity extends AppCompatActivity {
 
         scheduleContainer.addView(detailDialog);
 
-        viewBusy(busys, cell - 1);
-        viewBusy(busys, cell + 1);
+        if (cell != 0) { viewBusy(busys, cell - 1); }
+        if (cell != 41) { viewBusy(busys, cell + 1); }
         strongText.setText(stringBusy(viewBusy(busys, cell)));
     }
 
