@@ -81,7 +81,7 @@ public class AddScheduleActivity extends AppCompatActivity {
         binding.spinnerNumber.setDisplayedValues(strongOptions);
         binding.spinnerNumber.setWrapSelectorWheel(true);
 
-        String[] repeatOptions = {"なし", "毎週", "隔週", "毎月"};
+        String[] repeatOptions = {"なし", "毎週"/*, "隔週"*/, "毎月"};
         binding.answer.setMinValue(0);
         binding.answer.setMaxValue(repeatOptions.length - 1);
         binding.answer.setDisplayedValues(repeatOptions);

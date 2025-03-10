@@ -2,6 +2,7 @@ package io.github.shun.osugi.busible.ui;
 
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.Typeface;
@@ -906,6 +907,8 @@ public class CalendarActivity extends AppCompatActivity {
     private int viewBusy(BusyData[] busydata, int i) {
         int busy;
         LinearLayout ll = findViewById(i);
+        SharedPreferences preferences = getSharedPreferences("AppSettings", MODE_PRIVATE);
+        boolean isColorTypeSwitchChecked = preferences.getBoolean("colorTypeSwitch", false);
         if(i == 0){
             busy = busydata[i].getBusy() + busydata[i+1].getBusy()/3;
         } else if (i == 41) {
@@ -917,16 +920,30 @@ public class CalendarActivity extends AppCompatActivity {
         if(busy != 0){Log.d(TAG, "viewBusy[ " + i + "]:"+ busy);}
         if(busy > 7){busy = 7;}
         if(busy < 0){busy = 0;}
-        switch (busy) {
-            case 7 -> ll.setBackgroundResource(R.drawable.border7);
-            case 6 -> ll.setBackgroundResource(R.drawable.border6);
-            case 5 -> ll.setBackgroundResource(R.drawable.border5);
-            case 4 -> ll.setBackgroundResource(R.drawable.border4);
-            case 3 -> ll.setBackgroundResource(R.drawable.border3);
-            case 2 -> ll.setBackgroundResource(R.drawable.border2);
-            case 1 -> ll.setBackgroundResource(R.drawable.border1);
-            case 0 -> ll.setBackgroundResource(R.drawable.border0);
-            default -> ll.setBackgroundResource(R.drawable.borderx);
+        if (isColorTypeSwitchChecked) {
+            switch (busy) {
+                case 7 -> ll.setBackgroundResource(R.drawable.border7_mono);
+                case 6 -> ll.setBackgroundResource(R.drawable.border6_mono);
+                case 5 -> ll.setBackgroundResource(R.drawable.border5_mono);
+                case 4 -> ll.setBackgroundResource(R.drawable.border4_mono);
+                case 3 -> ll.setBackgroundResource(R.drawable.border3_mono);
+                case 2 -> ll.setBackgroundResource(R.drawable.border2_mono);
+                case 1 -> ll.setBackgroundResource(R.drawable.border1_mono);
+                case 0 -> ll.setBackgroundResource(R.drawable.border0_mono);
+                default -> ll.setBackgroundResource(R.drawable.borderx_mono);
+            }
+        }else {
+            switch (busy) {
+                case 7 -> ll.setBackgroundResource(R.drawable.border7);
+                case 6 -> ll.setBackgroundResource(R.drawable.border6);
+                case 5 -> ll.setBackgroundResource(R.drawable.border5);
+                case 4 -> ll.setBackgroundResource(R.drawable.border4);
+                case 3 -> ll.setBackgroundResource(R.drawable.border3);
+                case 2 -> ll.setBackgroundResource(R.drawable.border2);
+                case 1 -> ll.setBackgroundResource(R.drawable.border1);
+                case 0 -> ll.setBackgroundResource(R.drawable.border0);
+                default -> ll.setBackgroundResource(R.drawable.borderx);
+            }
         }
         if(busydata[i].getGray() == true){
             ll.setBackgroundResource(R.drawable.borderx);
