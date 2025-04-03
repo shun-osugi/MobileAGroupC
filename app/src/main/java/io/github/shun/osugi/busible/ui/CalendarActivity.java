@@ -6,13 +6,14 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.Typeface;
-import android.nfc.Tag;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.Display;
+import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -29,7 +30,6 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
@@ -69,10 +69,14 @@ public class CalendarActivity extends AppCompatActivity {
     private ActivityCalendarBinding binding;
     private PrefDataStore prefDataStore;
 
+    Calendar calendar;
+
     private DateViewModel dateViewModel;
     private ScheduleViewModel scheduleViewModel;
     private RepeatViewModel repeatViewModel;
     private RepeatExclusionViewModel repeatExclusionViewModel;
+
+    private GestureDetector gestureDetector;
 
     /* ---------- 主要 な 関数 ---------- */
 
@@ -123,7 +127,7 @@ public class CalendarActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        Calendar calendar = Calendar.getInstance();  // 現在のカレンダーを取得
+        calendar = Calendar.getInstance();
 
         // Intentの取得
         Intent resultIntent = getIntent();
@@ -142,17 +146,16 @@ public class CalendarActivity extends AppCompatActivity {
 
         // 前月ボタンのクリックリスナーを設定
         binding.lastMonthButton.setOnClickListener(view -> {
-            calendar.add(Calendar.MONTH, -1);
-            updateHeaderText(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH));
-            refreshCalendarData(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH));
+            moveLastMonth();
         });
 
         // 次月ボタンのクリックリスナーを設定
         binding.nextMonthButton.setOnClickListener(view -> {
-            calendar.add(Calendar.MONTH, 1);
-            updateHeaderText(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH));
-            refreshCalendarData(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH));
+            moveNextMonth();
         });
+
+        // スワイプを検知するGestureDetectorを生成
+        gestureDetector = new GestureDetector(this, new GestureListener());
 
         // ヘッダーを更新
         updateHeaderText(year, month);
@@ -1009,6 +1012,67 @@ public class CalendarActivity extends AppCompatActivity {
                 liveData.removeObserver(this);
             }
         });
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent event) {
+        // タッチイベントがTableLayout内で発生しているかをチェック
+        TableLayout tableLayout = findViewById(R.id.calender);
+        int[] location = new int[2];
+        tableLayout.getLocationOnScreen(location); // TableLayoutの位置を取得
+        int tableLeft = location[0];
+        int tableTop = location[1];
+        int tableRight = tableLeft + tableLayout.getWidth();
+        int tableBottom = tableTop + tableLayout.getHeight();
+
+        // タッチ座標がTableLayout内かどうかをチェック
+        if (event.getRawX() >= tableLeft && event.getRawX() <= tableRight &&
+                event.getRawY() >= tableTop && event.getRawY() <= tableBottom) {
+            // TableLayout内でのイベントの場合のみ、GestureDetectorに渡す
+            return gestureDetector.onTouchEvent(event);
+        }
+        return super.dispatchTouchEvent(event);
+    }
+
+    // スワイプを検知するクラス
+    private class GestureListener extends GestureDetector.SimpleOnGestureListener {
+        private static final int SWIPE_THRESHOLD = 80; // スワイプの最小距離
+        private static final int SWIPE_VELOCITY_THRESHOLD = 80; // スワイプの最小速度
+
+        @Override
+        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+            float diffX = e2.getX() - e1.getX();
+            float diffY = e2.getY() - e1.getY();
+
+            if (Math.abs(diffX) > Math.abs(diffY)) {
+                // 横方向のスワイプ
+                if (Math.abs(diffX) > SWIPE_THRESHOLD && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
+                    if (diffX > 0) {
+                        // 右スワイプ
+                        moveLastMonth();
+                    } else {
+                        // 左スワイプ
+                        moveNextMonth();
+                    }
+                    return true;
+                }
+            }
+            return true;
+        }
+    }
+
+    private void moveLastMonth() {
+        // 前の月に移動する処理
+        calendar.add(Calendar.MONTH, -1);
+        updateHeaderText(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH));
+        refreshCalendarData(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH));
+    }
+
+    private void moveNextMonth() {
+        // 次の月に移動する処理
+        calendar.add(Calendar.MONTH, 1);
+        updateHeaderText(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH));
+        refreshCalendarData(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH));
     }
 
 }
