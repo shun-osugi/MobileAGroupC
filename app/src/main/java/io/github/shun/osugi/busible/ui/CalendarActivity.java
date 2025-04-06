@@ -795,13 +795,12 @@ public class CalendarActivity extends AppCompatActivity {
         deleteButton.setLayoutParams(buttonParams);
 
         deleteButton.setOnClickListener(edit -> {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle("予定を削除しますか？")
-                    .setPositiveButton("削除", (dialog, which) -> {
+            if (!schedule.getRepeat()) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle("予定を削除しますか？")
+                        .setPositiveButton("削除", (dialog, which) -> {
 
-                        Log.d(TAG, "delete:" + schedule.getTitle());
-
-                        if (!schedule.getRepeat()) {
+                            Log.d(TAG, "delete:" + schedule.getTitle());
                             scheduleViewModel.delete(schedule);
 
                             bottomSheetDialog.dismiss();
@@ -812,48 +811,49 @@ public class CalendarActivity extends AppCompatActivity {
                             resultIntent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
                             startActivity(resultIntent);
                             finish(); // 画面を閉じる
-                        }else{
-                            String[] options = {"この日程のみ削除", "全ての日程を削除"};
-                            final int[] selectedItem = {0};
 
-                            AlertDialog.Builder builder2 = new AlertDialog.Builder(CalendarActivity.this);
-                            builder2.setTitle("繰り返し予定の削除")
-                                    .setSingleChoiceItems(options, selectedItem[0], (dialog2, which2) -> {
-                                        selectedItem[0] = which2;
-                                    })
-                                    .setPositiveButton("削除", (dialog2, which2) -> {
-                                        switch (selectedItem[0]) {
-                                            case 0:
-                                                RepeatExclusion repeatExclusion = new RepeatExclusion();
-                                                repeatExclusion.setDate(String.format("%04d-%02d-%02d", year, month + 1, day));
-                                                repeatExclusion.setRepeatId(repeatSchedule.getId());
-                                                repeatExclusionViewModel.insert(repeatExclusion);
-                                                break;
-                                            case 1:
-                                                scheduleViewModel.delete(schedule);
-                                                break;
-                                        }
+                        })
+                        .setNegativeButton("キャンセル", (dialog, which) -> {
+                            // ダイアログを閉じる
+                            bottomSheetDialog.dismiss();
+                        })
+                        .show();
+            }else{
+                String[] options = {"この日程のみ削除", "全ての日程を削除"};
+                final int[] selectedItem = {0};
 
-                                        bottomSheetDialog.dismiss();
+                AlertDialog.Builder builder2 = new AlertDialog.Builder(CalendarActivity.this);
+                builder2.setTitle("繰り返し予定の削除")
+                        .setSingleChoiceItems(options, selectedItem[0], (dialog2, which2) -> {
+                            selectedItem[0] = which2;
+                        })
+                        .setPositiveButton("削除", (dialog2, which2) -> {
+                            switch (selectedItem[0]) {
+                                case 0:
+                                    RepeatExclusion repeatExclusion = new RepeatExclusion();
+                                    repeatExclusion.setDate(String.format("%04d-%02d-%02d", year, month + 1, day));
+                                    repeatExclusion.setRepeatId(repeatSchedule.getId());
+                                    repeatExclusionViewModel.insert(repeatExclusion);
+                                    break;
+                                case 1:
+                                    scheduleViewModel.delete(schedule);
+                                    break;
+                            }
 
-                                        Intent resultIntent = new Intent(CalendarActivity.this, CalendarActivity.class);
-                                        resultIntent.putExtra("selectedYear", year);
-                                        resultIntent.putExtra("selectedMonth", month);
-                                        resultIntent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-                                        startActivity(resultIntent);
-                                        finish(); // 画面を閉じる
-                                    })
-                                    .setNegativeButton("キャンセル", (dialog2, which2) -> {
-                                        dialog2.dismiss();
-                                    })
-                                    .show();
-                        }
-                    })
-                    .setNegativeButton("キャンセル", (dialog, which) -> {
-                        // ダイアログを閉じる
-                        bottomSheetDialog.dismiss();
-                    })
-                    .show();
+                            bottomSheetDialog.dismiss();
+
+                            Intent resultIntent = new Intent(CalendarActivity.this, CalendarActivity.class);
+                            resultIntent.putExtra("selectedYear", year);
+                            resultIntent.putExtra("selectedMonth", month);
+                            resultIntent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+                            startActivity(resultIntent);
+                            finish(); // 画面を閉じる
+                        })
+                        .setNegativeButton("キャンセル", (dialog2, which2) -> {
+                            dialog2.dismiss();
+                        })
+                        .show();
+            }
         });
 
         return deleteButton;
@@ -1029,7 +1029,7 @@ public class CalendarActivity extends AppCompatActivity {
         if (event.getRawX() >= tableLeft && event.getRawX() <= tableRight &&
                 event.getRawY() >= tableTop && event.getRawY() <= tableBottom) {
             // TableLayout内でのイベントの場合のみ、GestureDetectorに渡す
-            return gestureDetector.onTouchEvent(event);
+            gestureDetector.onTouchEvent(event);
         }
         return super.dispatchTouchEvent(event);
     }
