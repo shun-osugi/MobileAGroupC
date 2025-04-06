@@ -144,6 +144,9 @@ public class EditScheduleActivity extends AppCompatActivity {
                     ImageView check = entry.getValue().second;
                     button.setOnClickListener(v -> setColorAndCheck(color));
                 }
+                String initialColor = schedule.getColor();
+                setColorAndCheck(initialColor);
+
 
                 // 保存ボタンのクリックイベント
                 binding.save.setOnClickListener(v -> {
@@ -420,7 +423,7 @@ public class EditScheduleActivity extends AppCompatActivity {
             binding.answer.setValue(0);
         }
 
-        setColor(initialColor);
+        setColorAndCheck(initialColor);
     }
 
     // 繰り返しスピナーの初期化メソッド
