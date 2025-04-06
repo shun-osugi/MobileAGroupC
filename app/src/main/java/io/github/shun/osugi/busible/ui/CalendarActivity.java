@@ -98,7 +98,11 @@ public class CalendarActivity extends AppCompatActivity {
 
         //ホームボタンのクリックリスナー
         binding.homeButton.setOnClickListener(view -> {
-            recreate();
+            Intent intent = new Intent(this, CalendarActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+            overridePendingTransition(0, 0);
+            finish();
         });
 
         //設定ボタンのクリックリスナー
