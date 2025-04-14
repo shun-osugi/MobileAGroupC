@@ -152,7 +152,7 @@ public class SettingActivity extends AppCompatActivity {
 
         // プライバシーポリシーへ飛ぶリンクを設定
         TextView linkText = findViewById(R.id.linkText);
-        String textWithLink = "<a href='https://sites.google.com/ccmailg.meijo-u.ac.jp/privacy-policy'>こちら</a>";
+        String textWithLink = "<a href='https://sites.google.com/view/busibleprivacy-policy/'>こちら</a>";
         linkText.setText(HtmlCompat.fromHtml(textWithLink, HtmlCompat.FROM_HTML_MODE_LEGACY));
         linkText.setMovementMethod(LinkMovementMethod.getInstance());
 
